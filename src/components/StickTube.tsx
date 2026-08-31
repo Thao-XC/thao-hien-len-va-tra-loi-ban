@@ -40,17 +40,29 @@ export const StickTube: React.FC<StickTubeProps> = ({
   const [motionPermNeeded, setMotionPermNeeded] = useState<boolean>(false);
   const [shakeDetectedFeedback, setShakeDetectedFeedback] = useState<boolean>(false);
 
-  // Realistic fan of 11 authentic bamboo sticks inside the cylinder
+  // Dense vertical bundle of authentic fortune sticks packed inside the cylinder opening
   const initialSticks: StickState[] = [
-    { id: 1, height: 105, rotation: -14, offsetX: -28, offsetY: 4, cinnabarRatio: 26 },
-    { id: 2, height: 118, rotation: -9, offsetX: -20, offsetY: -2, cinnabarRatio: 28 },
-    { id: 3, height: 126, rotation: -5, offsetX: -12, offsetY: -8, cinnabarRatio: 30 },
-    { id: 4, height: 132, rotation: -2, offsetX: -6, offsetY: -12, cinnabarRatio: 32 },
-    { id: 5, height: 138, rotation: 1, offsetX: 0, offsetY: -16, cinnabarRatio: 34 },
-    { id: 6, height: 134, rotation: 3, offsetX: 6, offsetY: -13, cinnabarRatio: 32 },
-    { id: 7, height: 128, rotation: 6, offsetX: 12, offsetY: -9, cinnabarRatio: 30 },
-    { id: 8, height: 120, rotation: 10, offsetX: 20, offsetY: -4, cinnabarRatio: 28 },
-    { id: 9, height: 110, rotation: 15, offsetX: 28, offsetY: 2, cinnabarRatio: 26 },
+    // Back & Middle Layer (taller, densely packed parallel sticks)
+    { id: 1, height: 132, rotation: -3, offsetX: -34, offsetY: -38, cinnabarRatio: 55 },
+    { id: 2, height: 138, rotation: -2, offsetX: -29, offsetY: -42, cinnabarRatio: 58 },
+    { id: 3, height: 144, rotation: -1, offsetX: -24, offsetY: -46, cinnabarRatio: 60 },
+    { id: 4, height: 148, rotation: -1, offsetX: -19, offsetY: -49, cinnabarRatio: 62 },
+    { id: 5, height: 152, rotation: 0, offsetX: -14, offsetY: -52, cinnabarRatio: 64 },
+    { id: 6, height: 155, rotation: 0, offsetX: -9, offsetY: -54, cinnabarRatio: 65 },
+    { id: 7, height: 156, rotation: 0, offsetX: -4, offsetY: -55, cinnabarRatio: 65 },
+    { id: 8, height: 156, rotation: 0, offsetX: 1, offsetY: -55, cinnabarRatio: 65 },
+    { id: 9, height: 155, rotation: 0, offsetX: 6, offsetY: -54, cinnabarRatio: 65 },
+    { id: 10, height: 152, rotation: 1, offsetX: 11, offsetY: -52, cinnabarRatio: 64 },
+    { id: 11, height: 148, rotation: 1, offsetX: 16, offsetY: -49, cinnabarRatio: 62 },
+    { id: 12, height: 144, rotation: 1, offsetX: 21, offsetY: -46, cinnabarRatio: 60 },
+    { id: 13, height: 138, rotation: 2, offsetX: 26, offsetY: -42, cinnabarRatio: 58 },
+    { id: 14, height: 132, rotation: 3, offsetX: 31, offsetY: -38, cinnabarRatio: 55 },
+    // Front staggered layer
+    { id: 15, height: 136, rotation: -1.5, offsetX: -21, offsetY: -40, cinnabarRatio: 58 },
+    { id: 16, height: 142, rotation: -0.5, offsetX: -11, offsetY: -45, cinnabarRatio: 62 },
+    { id: 17, height: 145, rotation: 0, offsetX: -1, offsetY: -48, cinnabarRatio: 64 },
+    { id: 18, height: 142, rotation: 0.5, offsetX: 9, offsetY: -45, cinnabarRatio: 62 },
+    { id: 19, height: 136, rotation: 1.5, offsetX: 19, offsetY: -40, cinnabarRatio: 58 },
   ];
 
   const [sticks, setSticks] = useState<StickState[]>(initialSticks);
@@ -157,17 +169,13 @@ export const StickTube: React.FC<StickTubeProps> = ({
       setPhase('ejecting');
 
       // The drawn stick dramatically rises above the others
-      setSticks([
-        { id: 1, height: 105, rotation: -22, offsetX: -32, offsetY: -18, cinnabarRatio: 26 },
-        { id: 2, height: 118, rotation: -14, offsetX: -22, offsetY: -30, cinnabarRatio: 28 },
-        { id: 3, height: 126, rotation: -8, offsetX: -14, offsetY: -42, cinnabarRatio: 30 },
-        { id: 4, height: 132, rotation: -3, offsetX: -6, offsetY: -58, cinnabarRatio: 32 },
-        { id: 5, height: 156, rotation: 1, offsetX: 0, offsetY: -118, isWinner: true, cinnabarRatio: 36 },
-        { id: 6, height: 134, rotation: 5, offsetX: 8, offsetY: -60, cinnabarRatio: 32 },
-        { id: 7, height: 128, rotation: 11, offsetX: 16, offsetY: -46, cinnabarRatio: 30 },
-        { id: 8, height: 120, rotation: 18, offsetX: 24, offsetY: -32, cinnabarRatio: 28 },
-        { id: 9, height: 110, rotation: 25, offsetX: 34, offsetY: -20, cinnabarRatio: 26 },
-      ]);
+      setSticks((prev) =>
+        prev.map((s) =>
+          s.id === 10
+            ? { ...s, offsetY: -125, isWinner: true }
+            : { ...s, offsetY: s.offsetY + (Math.random() * 8 - 4) }
+        )
+      );
 
       // STEP 3: THE XĂM FALLS OUT & REVEALS AUTHENTIC I CHING PLAQUE
       setTimeout(() => {
@@ -323,7 +331,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
               </div>
 
               {/* 2. BAMBOO STICKS RESTING INSIDE THE TUBE (z-index: 15 - Between Back Wall and Front Wall) */}
-              <div className="absolute top-[8px] left-1/2 -translate-x-1/2 z-15 flex justify-center items-end pointer-events-none w-[100px] h-[160px]">
+              <div className="absolute top-[0px] left-1/2 -translate-x-1/2 z-15 flex justify-center items-end pointer-events-none w-[100px] h-[175px] overflow-visible">
                 {sticks.map((stick) => {
                   const isEjectingWinner = stick.isWinner && (phase === 'ejecting' || phase === 'fallen');
                   return (
@@ -332,16 +340,16 @@ export const StickTube: React.FC<StickTubeProps> = ({
                       animate={
                         phase === 'shaking'
                           ? {
-                              y: [stick.offsetY, stick.offsetY - 22, stick.offsetY + 4, stick.offsetY - 14, stick.offsetY],
-                              x: stick.offsetX + (Math.random() * 4 - 2),
-                              rotate: stick.rotation + (Math.random() * 4 - 2),
+                              y: [stick.offsetY, stick.offsetY - 26, stick.offsetY + 3, stick.offsetY - 18, stick.offsetY],
+                              x: stick.offsetX + (Math.random() * 3 - 1.5),
+                              rotate: stick.rotation + (Math.random() * 2 - 1),
                             }
                           : isEjectingWinner
                           ? {
-                              y: -95,
+                              y: -115,
                               x: stick.offsetX,
                               rotate: stick.rotation * 0.5,
-                              scale: 1.08,
+                              scale: 1.06,
                             }
                           : {
                               y: stick.offsetY,
@@ -352,44 +360,46 @@ export const StickTube: React.FC<StickTubeProps> = ({
                       }
                       transition={
                         phase === 'shaking'
-                          ? { repeat: Infinity, duration: 0.28, ease: 'easeInOut' }
-                          : { type: 'spring', stiffness: 260, damping: 18 }
+                          ? { repeat: Infinity, duration: 0.26, ease: 'easeInOut' }
+                          : { type: 'spring', stiffness: 280, damping: 18 }
                       }
-                      style={{ height: `${stick.height + 40}px` }}
-                      className={`w-[7.5px] mx-[1px] rounded-t-sm rounded-b-xs border-[0.5px] border-[#3D2914] relative shadow-sm flex-shrink-0 ${
+                      style={{
+                        height: `${stick.height + 45}px`,
+                        clipPath: 'polygon(50% 0%, 100% 7px, 100% 100%, 0% 100%, 0% 7px)',
+                      }}
+                      className={`w-[7.8px] mx-[0.5px] border-x-[0.5px] border-[#2A0F07]/70 relative shadow-sm flex-shrink-0 ${
                         isEjectingWinner
-                          ? 'bg-gradient-to-b from-[#D4A359] via-[#DECBA0] to-[#8C6D3F] shadow-[0_0_14px_rgba(233,206,132,0.9)]'
-                          : 'bg-gradient-to-b from-[#EFE5CE] via-[#DECBA0] to-[#BFA878]'
+                          ? 'bg-gradient-to-b from-[#C62828] via-[#E53935] to-[#B71C1C] shadow-[0_0_16px_rgba(255,215,0,0.9)] ring-1 ring-[#FFE599]'
+                          : 'bg-gradient-to-b from-[#8E0000] via-[#C62828] to-[#DECBA0]'
                       }`}
                     >
-                      {/* Natural Bamboo Wood Grain */}
+                      {/* Rich Traditional Red Cinnabar Lacquer (Son Son Thếp Vàng) */}
                       <div
-                        className="absolute inset-0 opacity-30 pointer-events-none"
-                        style={{
-                          backgroundImage:
-                            'linear-gradient(90deg, transparent 0%, rgba(70,50,20,0.35) 50%, transparent 100%)',
-                        }}
-                      />
-
-                      {/* Traditional Dipped Cinnabar Red Cap at Top of Stick */}
-                      <div
-                        style={{ height: `${stick.cinnabarRatio || 30}%` }}
-                        className={`w-full rounded-t-sm shadow-inner transition-colors duration-300 ${
+                        style={{ height: `${stick.cinnabarRatio || 60}%` }}
+                        className={`w-full relative shadow-inner ${
                           isEjectingWinner
                             ? 'bg-gradient-to-b from-[#E53935] via-[#C62828] to-[#8E0000]'
-                            : 'bg-gradient-to-b from-[#B23B28] to-[#7C2A1C]'
+                            : 'bg-gradient-to-b from-[#B71C1C] via-[#C62828] to-[#7F0000]'
                         }`}
                       >
+                        {/* High-gloss vertical lacquer reflection */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/25 via-transparent to-black/20" />
+                        
                         {/* Gold accent dot on winner stick */}
                         {isEjectingWinner && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mx-auto mt-1 shadow-xs" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mx-auto mt-2.5 shadow-sm border border-[#AD8A2E]" />
                         )}
                       </div>
 
-                      {/* Laser-etched Que number markings on bamboo body */}
-                      <div className="absolute top-[38%] left-1/2 -translate-x-1/2 flex flex-col gap-1 items-center opacity-40">
-                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
-                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
+                      {/* Natural Aged Bamboo Body at bottom */}
+                      <div className="w-full h-full bg-gradient-to-b from-[#DECBA0] to-[#A89467] border-t border-[#AD8A2E]/40 relative">
+                        <div
+                          className="absolute inset-0 opacity-35 pointer-events-none"
+                          style={{
+                            backgroundImage:
+                              'linear-gradient(90deg, transparent 0%, rgba(70,50,20,0.4) 50%, transparent 100%)',
+                          }}
+                        />
                       </div>
                     </motion.div>
                   );
