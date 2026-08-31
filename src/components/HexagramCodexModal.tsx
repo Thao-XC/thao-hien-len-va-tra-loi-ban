@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HexagramDataset } from '../types';
 import { HEXAGRAM_DATA, getHexagramLines } from '../utils/hexagramPatterns';
+import { LadyThaoAvatar } from './LadyThaoAvatar';
 import {
   Search,
   X,
@@ -100,12 +101,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[#AD8A2E]/40 bg-[#EFE4CB]/90">
           <div className="flex items-center gap-2.5">
-            <img
-              src="/src/assets/images/thao_app_icon_1788162188158.jpg"
-              alt="Thao Fortune Teller App Icon"
-              referrerPolicy="no-referrer"
-              className="w-8 h-8 rounded-full border border-[#AD8A2E] shadow-xs object-cover"
-            />
+            <LadyThaoAvatar sizeClassName="w-8 h-8" />
             <div>
               <h2 className="font-serif font-bold text-base sm:text-lg text-[#7C2A1C] tracking-tight leading-tight">
                 {language === 'vi' ? 'Thao Fortune Teller' : 'Thao Fortune Teller'}
@@ -336,12 +332,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-[#FAF3E4]/70">
             {/* App Branding Card */}
             <div className="bg-gradient-to-r from-[#FFFDF9] via-[#FAF1DE] to-[#FFFDF9] border border-[#AD8A2E]/40 p-4 rounded-xs shadow-xs flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              <img
-                src="/src/assets/images/thao_app_icon_1788162188158.jpg"
-                alt="Thao Fortune Teller App Icon"
-                referrerPolicy="no-referrer"
-                className="w-20 h-20 rounded-2xl border-2 border-[#AD8A2E] shadow-md object-cover flex-shrink-0"
-              />
+              <LadyThaoAvatar sizeClassName="w-20 h-20" />
               <div className="flex-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
                   <h3 className="font-serif font-bold text-xl text-[#7C2A1C]">Thao Fortune Teller</h3>

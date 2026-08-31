@@ -46,15 +46,83 @@ app.get('/api/hexagrams', (req, res) => {
   res.json(hexagramsData);
 });
 
+function generateRichFallbackInterpretation(
+  que: number,
+  hao: number,
+  question: string,
+  language: 'en' | 'vi',
+  history?: any[]
+): string {
+  const hexMap = hexagramsData as Record<string, any>;
+  const primaryHex = hexMap[String(que)];
+  const primaryMeta = HEXAGRAM_DATA[que] || HEXAGRAM_DATA[1];
+  const transformed = getTransformedHexagram(Number(que) || 1, Number(hao) || 1);
+  const transformedHex = hexMap[String(transformed.number)] || primaryHex;
+  const transformedMeta = transformed.meta;
+
+  const primaryJudgment = primaryHex?.wilhelm_judgment?.text || 'Thuận theo đạo trung chính, giữ tâm kiên định ắt vạn sự hanh thông.';
+  const primaryLineText = primaryHex?.wilhelm_lines?.[String(hao)]?.text || 'Hành sự cẩn trọng, quan sát thời thế trước khi dốc toàn lực.';
+  const transformedJudgment = transformedHex?.wilhelm_judgment?.text || 'Tương lai rộng mở khi bước qua biến cố chuyển hóa.';
+
+  // If this is a follow-up question
+  if (history && history.length > 1) {
+    if (language === 'vi') {
+      return `Thảo hiểu băn khoăn của bạn! Với câu hỏi này, quẻ gốc #${que} (${primaryMeta.vietnameseName}) đang chuyển dịch mạnh mẽ tại Hào ${hao} để tiến tới quẻ #${transformed.number} (${transformedMeta.vietnameseName}).\n\n` +
+        `Lời khuyên mấu chốt: "${primaryLineText}". Bạn chớ nên nóng vội hay cưỡng cầu điều chưa chín muồi. Hãy tập trung củng cố nội lực (${primaryMeta.element}), giữ sự chân thành và khiêm nhường thì mọi sự sẽ dần thuận buồm xuôi gió.`;
+    } else {
+      return `Lady Thao hears your heart! For your follow-up, Primary Hexagram #${que} (${primaryHex?.english || 'The Oracle'}) shifting at Line ${hao} toward Hexagram #${transformed.number} (${transformedHex?.english || 'The Future'}) advises:\n\n` +
+        `"${primaryLineText}". Do not rush or force premature outcomes. Nurture your inner composure and act with sincerity to navigate toward clarity.`;
+    }
+  }
+
+  // Initial interpretation
+  if (language === 'vi') {
+    return `🌸 Chào bạn, hãy an lòng. Thảo đã gieo được quẻ xăm linh ứng cho bạn:\n\n` +
+      `📜 Quẻ Chủ: #${que} - ${primaryMeta.vietnameseName} (${primaryMeta.upperTrigram} trên ${primaryMeta.lowerTrigram}, ngũ hành ${primaryMeta.element}).\n` +
+      `Thoán Từ dạy rằng: "${primaryJudgment}". Đây là nền tảng hiện tại của sự việc.\n\n` +
+      `⚡ Hào Động: Hào ${hao} (${transformed.wasSolid ? 'Hào Dương' : 'Hào Âm'} biến đổi).\n` +
+      `Lời Hào mách nước: "${primaryLineText}". Đây chính là điểm then chốt nhất mà bạn cần lưu tâm.\n\n` +
+      `✨ Quẻ Biến: #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedHex?.english || ''}).\n` +
+      `Thoán Từ Quẻ Biến: "${transformedJudgment}".\n\n` +
+      `🔮 Lời Thảo nhắn gửi về câu hỏi "${question || 'vận trình'}": Hãy lắng nghe lời răn của Hào ${hao}, giữ tâm trung chính, thuận theo lẽ tự nhiên thì điềm hung cũng hóa cát, tiền đồ sẽ hanh thông sáng rõ.`;
+  } else {
+    return `🌸 Welcome, dear traveler. Lady Thao has cast the sacred bamboo stick for you:\n\n` +
+      `📜 Primary Hexagram: #${que} - ${primaryHex?.english || 'The Creative'} (Upper: ${primaryMeta.upperTrigram}, Lower: ${primaryMeta.lowerTrigram}, Element: ${primaryMeta.element}).\n` +
+      `Judgment: "${primaryJudgment}". This reflects your present root condition.\n\n` +
+      `⚡ Changing Line: Line ${hao} (${transformed.wasSolid ? 'Solid Line' : 'Broken Line'} transforming).\n` +
+      `Line Oracle: "${primaryLineText}". This is the precise turning point.\n\n` +
+      `✨ Transformed Hexagram: #${transformed.number} - ${transformedHex?.english || 'The Result'}.\n` +
+      `Resulting Judgment: "${transformedJudgment}".\n\n` +
+      `🔮 Lady Thao's Insight for "${question || 'your question'}": Pay close attention to Line ${hao}. By aligning action with virtue and patience, challenges will transform into fruitful outcomes.`;
+  }
+}
+
 // Interpretation streaming endpoint
 app.post('/api/interpret', async (req, res) => {
+  const { que, hao, question, history, language } = req.body;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+
+  const streamFallback = async () => {
+    const fallbackText = generateRichFallbackInterpretation(
+      Number(que) || 1,
+      Number(hao) || 1,
+      question || '',
+      language || 'vi',
+      history
+    );
+    const words = fallbackText.split(' ');
+    for (const word of words) {
+      res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
+      await new Promise((r) => setTimeout(r, 25));
+    }
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  };
+
   try {
-    const { que, hao, question, history, language } = req.body;
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-
     const apiKey = process.env.GEMINI_API_KEY;
     const hexMap = hexagramsData as Record<string, any>;
     const primaryHex = hexMap[String(que)];
@@ -70,31 +138,13 @@ app.post('/api/interpret', async (req, res) => {
     const transformedJudgment = transformedHex?.wilhelm_judgment?.text || 'Future unfolds step by step.';
 
     if (!apiKey) {
-      // Fallback offline grounded interpretation
-      const fallbackText = language === 'vi'
-        ? `Quẻ Chủ là Quẻ ${que} (${primaryMeta.vietnameseName}), động Hào ${hao} biến thành Quẻ ${transformed.number} (${transformedMeta.vietnameseName}). ` +
-          `Phán từ Quẻ Chủ: "${primaryJudgment}". Lời Hào ${hao}: "${primaryLineText}". ` +
-          `Xu hướng tương lai ở Quẻ Biến: "${transformedJudgment}". ` +
-          `Đối với câu hỏi "${question || 'vận trình'}", bạn đang ở giai đoạn cần cân nhắc cẩn trọng lời Hào ${hao}, thuận theo đạo trung chính để chuyển hung thành cát khi bước sang quẻ ${transformedMeta.vietnameseName}.`
-        : `You drew Primary Hexagram ${que} (${primaryHex?.english || 'The Oracle'}), Active Line ${hao}, transforming into Hexagram ${transformed.number} (${transformedHex?.english || 'The Future'}). ` +
-          `Primary Judgment: "${primaryJudgment}". Line ${hao}: "${primaryLineText}". Resulting Hexagram: "${transformedJudgment}". ` +
-          `For your question "${question || 'your path'}": The current momentum is shifting at line ${hao}. Stay centered and act with sincerity to navigate toward the clarity of Hexagram ${transformed.number}.`;
-
-      // Stream words smoothly
-      const words = fallbackText.split(' ');
-      for (const word of words) {
-        res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
-        await new Promise((r) => setTimeout(r, 40));
-      }
-      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-      res.end();
+      await streamFallback();
       return;
     }
 
     const ai = getAI();
     if (!ai) {
-      res.write(`data: ${JSON.stringify({ error: 'AI Client could not be initialized' })}\n\n`);
-      res.end();
+      await streamFallback();
       return;
     }
 
@@ -125,8 +175,9 @@ app.post('/api/interpret', async (req, res) => {
       contentsArray = [{ role: 'user', parts: [{ text: openingPrompt }] }];
     }
 
-    const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-2.5-flash',
+    // Call Gemini with a 5-second timeout race to guarantee instantaneous response
+    const geminiPromise = ai.models.generateContentStream({
+      model: 'gemini-3.7-flash',
       config: {
         systemInstruction: SYSTEM_PROMPT,
         temperature: 0.65,
@@ -134,18 +185,35 @@ app.post('/api/interpret', async (req, res) => {
       contents: contentsArray,
     });
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('AI response timed out')), 5000)
+    );
+
+    const responseStream: any = await Promise.race([geminiPromise, timeoutPromise]);
+
+    let streamedAny = false;
     for await (const chunk of responseStream) {
       if (chunk.text) {
+        streamedAny = true;
         res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
       }
+    }
+
+    if (!streamedAny) {
+      await streamFallback();
+      return;
     }
 
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
   } catch (err: any) {
-    console.error('Interpret API error:', err);
-    res.write(`data: ${JSON.stringify({ error: err.message || 'An error occurred during interpretation' })}\n\n`);
-    res.end();
+    console.error('Interpret API error or timeout, falling back smoothly to authentic I Ching interpretation:', err);
+    try {
+      await streamFallback();
+    } catch (fallbackErr) {
+      res.write(`data: ${JSON.stringify({ error: 'Quẻ đang được chiêm nghiệm. Xin bạn thử lại.' })}\n\n`);
+      res.end();
+    }
   }
 });
 

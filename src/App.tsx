@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ParchmentFrame } from './components/ParchmentFrame';
+import { LadyThaoAvatar } from './components/LadyThaoAvatar';
 import { ThaoPortrait } from './components/ThaoPortrait';
 import { StickTube } from './components/StickTube';
 import { HexagramVisualizer } from './components/HexagramVisualizer';
@@ -194,12 +195,7 @@ export default function App() {
               </p>
 
               <div className="flex items-center justify-center gap-2 mb-1">
-                <img
-                  src="/src/assets/images/thao_app_icon_1788162188158.jpg"
-                  alt="Thao Fortune Teller Icon"
-                  referrerPolicy="no-referrer"
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#AD8A2E] shadow-2xs object-cover"
-                />
+                <LadyThaoAvatar sizeClassName="w-7 h-7 sm:w-8 sm:h-8" />
                 <h1 className="font-serif italic font-bold text-2xl sm:text-3xl text-[#2E2415] tracking-tight">
                   Thao Fortune Teller
                 </h1>
@@ -230,14 +226,7 @@ export default function App() {
               {/* Lady Thao Friendly Fairy Godmother Prompt */}
               <div className="flex items-start gap-3">
                 {/* Lady Thao App Icon Avatar */}
-                <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full border-2 border-[#E9CE84] bg-[#2E2415] flex-shrink-0 shadow-md overflow-hidden relative">
-                  <img
-                    src="/src/assets/images/thao_app_icon_1788162188158.jpg"
-                    alt="Lady Thao Avatar"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <LadyThaoAvatar sizeClassName="w-12 h-12 sm:w-14 sm:h-14" />
 
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-0.5">
