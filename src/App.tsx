@@ -193,14 +193,22 @@ export default function App() {
                 {language === 'vi' ? 'QUẺ · HÀO · KINH DỊCH · TỬ VI' : 'QUE · HAO · FORTUNE · I CHING'}
               </p>
 
-              <h1 className="font-serif italic font-bold text-2xl sm:text-3xl text-[#2E2415] tracking-tight mb-1">
-                {language === 'vi' ? "Sạp Bói Thảo" : "Thao's Fortune Stall"}
-              </h1>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <img
+                  src="/src/assets/images/thao_app_icon_1788162188158.jpg"
+                  alt="Thao Fortune Teller Icon"
+                  referrerPolicy="no-referrer"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#AD8A2E] shadow-2xs object-cover"
+                />
+                <h1 className="font-serif italic font-bold text-2xl sm:text-3xl text-[#2E2415] tracking-tight">
+                  Thao Fortune Teller
+                </h1>
+              </div>
 
               <p className="font-serif italic text-xs sm:text-sm text-[#6E5C3E]">
                 {language === 'vi'
-                  ? 'Gieo xăm cầu cát hung · Thấu tỏ vạn sự cùng Kinh Dịch'
-                  : 'Divine fortune & wisdom through ancient I Ching bamboo sticks'}
+                  ? 'Sạp Bói Thảo · Gieo xăm cầu cát hung & Thấu tỏ vạn sự cùng Kinh Dịch'
+                  : 'Lady Thao · Divine fortune & wisdom through ancient I Ching bamboo sticks'}
               </p>
             </div>
 
@@ -221,18 +229,14 @@ export default function App() {
 
               {/* Lady Thao Friendly Fairy Godmother Prompt */}
               <div className="flex items-start gap-3">
-                {/* Mini Thao Avatar */}
-                <div className="w-12 h-12 rounded-full border-2 border-[#E9CE84] bg-[#2E2415] flex-shrink-0 shadow-sm overflow-hidden flex items-center justify-center p-0.5 relative">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#B23B28]/40 to-[#E9CE84]/40" />
-                  <svg className="w-full h-full relative z-10" viewBox="0 0 160 190">
-                    <circle cx="80" cy="75" r="60" fill="none" stroke="#E9CE84" strokeWidth="2" strokeDasharray="3 3" opacity="0.6" />
-                    <ellipse cx="80" cy="115" rx="36" ry="14" fill="#B23B28" />
-                    <ellipse cx="80" cy="85" rx="20" ry="24" fill="#FDF3E7" />
-                    <path d="M60 85 Q 80 50 100 85 Q 92 68 80 68 Q 68 68 60 85 Z" fill="#1C1814" />
-                    <circle cx="73" cy="84" r="2.2" fill="#1C1814" />
-                    <circle cx="87" cy="84" r="2.2" fill="#1C1814" />
-                    <path d="M76 96 Q 80 100 84 96" stroke="#B23B28" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-                  </svg>
+                {/* Lady Thao App Icon Avatar */}
+                <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full border-2 border-[#E9CE84] bg-[#2E2415] flex-shrink-0 shadow-md overflow-hidden relative">
+                  <img
+                    src="/src/assets/images/thao_app_icon_1788162188158.jpg"
+                    alt="Lady Thao Avatar"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
                 <div className="flex-1">
@@ -244,8 +248,8 @@ export default function App() {
 
                   <p className="font-serif italic text-xs sm:text-sm text-[#4A3B22] leading-relaxed">
                     {language === 'vi'
-                      ? 'Có điều chi trăn trở, duyên cớ nào đưa bạn ghé Sạp Bói Thảo hôm nay? Hãy nói Thảo nghe nhé:'
-                      : 'What brings you to consult Lady Thao today? What troubles your heart and mind? Tell me below:'}
+                      ? 'Có điều chi trăn trở, duyên cớ nào đưa bạn ghé Thao Fortune Teller hôm nay? Hãy nói Thảo nghe nhé:'
+                      : 'What brings you to consult Thao Fortune Teller today? What troubles your heart and mind? Tell me below:'}
                   </p>
                 </div>
               </div>
@@ -332,7 +336,7 @@ export default function App() {
 
                 <div className="text-[0.68rem] font-sans uppercase tracking-widest text-[#AD8A2E] font-bold flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-[#B23B28]" />
-                  <span>{language === 'vi' ? 'BƯỚC 4: THẦY BÓI THẢO DIỆN KIẾN' : 'STEP 4: LADY THAO CONSULTATION'}</span>
+                  <span>{language === 'vi' ? 'THẦY BÓI THẢO DIỆN KIẾN' : 'LADY THAO CONSULTATION'}</span>
                 </div>
               </div>
 
