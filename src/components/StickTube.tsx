@@ -40,29 +40,19 @@ export const StickTube: React.FC<StickTubeProps> = ({
   const [motionPermNeeded, setMotionPermNeeded] = useState<boolean>(false);
   const [shakeDetectedFeedback, setShakeDetectedFeedback] = useState<boolean>(false);
 
-  // Dense vertical bundle of authentic fortune sticks packed inside the cylinder opening
+  // Authentic tightly-clustered bundle of wooden fortune sticks inside the cylinder mouth
   const initialSticks: StickState[] = [
-    // Back & Middle Layer (taller, densely packed parallel sticks)
-    { id: 1, height: 132, rotation: -3, offsetX: -34, offsetY: -38, cinnabarRatio: 55 },
-    { id: 2, height: 138, rotation: -2, offsetX: -29, offsetY: -42, cinnabarRatio: 58 },
-    { id: 3, height: 144, rotation: -1, offsetX: -24, offsetY: -46, cinnabarRatio: 60 },
-    { id: 4, height: 148, rotation: -1, offsetX: -19, offsetY: -49, cinnabarRatio: 62 },
-    { id: 5, height: 152, rotation: 0, offsetX: -14, offsetY: -52, cinnabarRatio: 64 },
-    { id: 6, height: 155, rotation: 0, offsetX: -9, offsetY: -54, cinnabarRatio: 65 },
-    { id: 7, height: 156, rotation: 0, offsetX: -4, offsetY: -55, cinnabarRatio: 65 },
-    { id: 8, height: 156, rotation: 0, offsetX: 1, offsetY: -55, cinnabarRatio: 65 },
-    { id: 9, height: 155, rotation: 0, offsetX: 6, offsetY: -54, cinnabarRatio: 65 },
-    { id: 10, height: 152, rotation: 1, offsetX: 11, offsetY: -52, cinnabarRatio: 64 },
-    { id: 11, height: 148, rotation: 1, offsetX: 16, offsetY: -49, cinnabarRatio: 62 },
-    { id: 12, height: 144, rotation: 1, offsetX: 21, offsetY: -46, cinnabarRatio: 60 },
-    { id: 13, height: 138, rotation: 2, offsetX: 26, offsetY: -42, cinnabarRatio: 58 },
-    { id: 14, height: 132, rotation: 3, offsetX: 31, offsetY: -38, cinnabarRatio: 55 },
-    // Front staggered layer
-    { id: 15, height: 136, rotation: -1.5, offsetX: -21, offsetY: -40, cinnabarRatio: 58 },
-    { id: 16, height: 142, rotation: -0.5, offsetX: -11, offsetY: -45, cinnabarRatio: 62 },
-    { id: 17, height: 145, rotation: 0, offsetX: -1, offsetY: -48, cinnabarRatio: 64 },
-    { id: 18, height: 142, rotation: 0.5, offsetX: 9, offsetY: -45, cinnabarRatio: 62 },
-    { id: 19, height: 136, rotation: 1.5, offsetX: 19, offsetY: -40, cinnabarRatio: 58 },
+    { id: 1, height: 135, rotation: -3.5, offsetX: -22, offsetY: 0, cinnabarRatio: 100 },
+    { id: 2, height: 138, rotation: -2.5, offsetX: -17, offsetY: -2, cinnabarRatio: 100 },
+    { id: 3, height: 140, rotation: -1.8, offsetX: -12, offsetY: -3, cinnabarRatio: 100 },
+    { id: 4, height: 142, rotation: -1.0, offsetX: -7, offsetY: -5, cinnabarRatio: 100 },
+    { id: 5, height: 144, rotation: -0.5, offsetX: -3, offsetY: -6, cinnabarRatio: 100 },
+    { id: 6, height: 145, rotation: 0, offsetX: 0, offsetY: -7, cinnabarRatio: 100 },
+    { id: 7, height: 144, rotation: 0.5, offsetX: 3, offsetY: -6, cinnabarRatio: 100 },
+    { id: 8, height: 142, rotation: 1.0, offsetX: 7, offsetY: -5, cinnabarRatio: 100 },
+    { id: 9, height: 140, rotation: 1.8, offsetX: 12, offsetY: -3, cinnabarRatio: 100 },
+    { id: 10, height: 138, rotation: 2.5, offsetX: 17, offsetY: -2, cinnabarRatio: 100 },
+    { id: 11, height: 135, rotation: 3.5, offsetX: 22, offsetY: 0, cinnabarRatio: 100 },
   ];
 
   const [sticks, setSticks] = useState<StickState[]>(initialSticks);
@@ -163,28 +153,28 @@ export const StickTube: React.FC<StickTubeProps> = ({
       }, 150);
     }
 
-    // 1.35s of intense authentic tube shaking
+    // 1.35s of authentic tube shaking
     setTimeout(() => {
       if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
       setPhase('ejecting');
 
-      // The drawn stick dramatically rises above the others
+      // The designated fortune stick slides upwards out of the interior bundle
       setSticks((prev) =>
         prev.map((s) =>
-          s.id === 10
-            ? { ...s, offsetY: -125, isWinner: true }
-            : { ...s, offsetY: s.offsetY + (Math.random() * 8 - 4) }
+          s.id === 7
+            ? { ...s, offsetY: -85, isWinner: true }
+            : { ...s, offsetY: s.offsetY + (Math.random() * 4 - 2) }
         )
       );
 
-      // STEP 3: THE XĂM FALLS OUT & REVEALS AUTHENTIC I CHING PLAQUE
+      // STEP 3: THE XĂM FALLS OUT OF THE TUBE ONTO THE ALTAR MAT
       setTimeout(() => {
         setPhase('fallen');
         if (soundEnabled) {
           playGong(0.45);
         }
         onStickFallen(que, hao);
-      }, 950);
+      }, 900);
     }, 1350);
   };
 
@@ -313,43 +303,43 @@ export const StickTube: React.FC<StickTubeProps> = ({
                   ? { repeat: Infinity, duration: 0.3, ease: 'easeInOut' }
                   : { duration: 0.35 }
               }
-              className="relative w-[124px] h-[195px] overflow-visible flex items-end justify-center z-10"
+              className="relative w-[124px] h-[195px] overflow-visible flex items-end justify-center z-[10]"
             >
               {/* Hanging Traditional Red Silk Tassel / Cát Tường Knot on Left */}
-              <div className="absolute top-[52px] -left-[15px] pointer-events-none z-30 flex flex-col items-center">
+              <div className="absolute top-[52px] -left-[15px] pointer-events-none z-[35] flex flex-col items-center">
                 <div className="w-3.5 h-3.5 bg-[#B23B28] rotate-45 border border-[#FFE599]/80 shadow-sm" />
                 <div className="w-2 h-2 rounded-full bg-[#E5C368] -mt-0.5 shadow-sm" />
                 <div className="w-1.5 h-12 bg-gradient-to-b from-[#B23B28] via-[#C8402C] to-[#7C2A1C] rounded-b-full shadow-md" />
               </div>
 
-              {/* 1. BACK INTERIOR WALL & CAVITY OF TUBE (z-index: 5) */}
-              <div className="absolute inset-0 z-5 flex flex-col items-center pointer-events-none">
+              {/* 1. BACK INTERIOR CAVITY & SHADOW OF TUBE (z-[5]) */}
+              <div className="absolute inset-0 z-[5] flex flex-col items-center pointer-events-none">
                 {/* Top Back Rim of the Opening */}
-                <div className="w-[116px] h-[22px] rounded-[50%] bg-[#120502] border-t-2 border-[#38160B] shadow-inner" />
-                {/* Dark Inner Hollow Space */}
-                <div className="w-[108px] h-[168px] -mt-[11px] rounded-b-[14px] bg-gradient-to-b from-[#180703] via-[#2A0F07] to-[#120502] shadow-[inset_0_12px_24px_rgba(0,0,0,0.9)]" />
+                <div className="w-[116px] h-[24px] rounded-[50%] bg-[#120502] border-t-2 border-[#38160B] shadow-inner" />
+                {/* Dark Inner Hollow Cavity */}
+                <div className="w-[108px] h-[166px] -mt-[12px] rounded-b-[14px] bg-gradient-to-b from-[#150603] via-[#2A0F07] to-[#120502] shadow-[inset_0_16px_28px_rgba(0,0,0,0.95)]" />
               </div>
 
-              {/* 2. BAMBOO STICKS RESTING INSIDE THE TUBE (z-index: 15 - Between Back Wall and Front Wall) */}
-              <div className="absolute top-[0px] left-1/2 -translate-x-1/2 z-15 flex justify-center items-end pointer-events-none w-[100px] h-[175px] overflow-visible">
+              {/* 2. BAMBOO STICKS BUNDLED TOGETHER STRICTLY INSIDE THE TUBE (z-[15] - Inside cavity between Back Wall and Front Wall) */}
+              <div className="absolute bottom-[12px] left-1/2 -translate-x-1/2 z-[15] flex justify-center items-end pointer-events-none w-[88px] h-[185px]">
                 {sticks.map((stick) => {
-                  const isEjectingWinner = stick.isWinner && (phase === 'ejecting' || phase === 'fallen');
+                  const isEjectingWinner失 = stick.isWinner && (phase === 'ejecting' || phase === 'fallen');
                   return (
                     <motion.div
                       key={stick.id}
                       animate={
                         phase === 'shaking'
                           ? {
-                              y: [stick.offsetY, stick.offsetY - 26, stick.offsetY + 3, stick.offsetY - 18, stick.offsetY],
-                              x: stick.offsetX + (Math.random() * 3 - 1.5),
-                              rotate: stick.rotation + (Math.random() * 2 - 1),
+                              y: [stick.offsetY, stick.offsetY - 16, stick.offsetY + 3, stick.offsetY - 10, stick.offsetY],
+                              x: stick.offsetX + (Math.random() * 2 - 1),
+                              rotate: stick.rotation + (Math.random() * 1.5 - 0.75),
                             }
-                          : isEjectingWinner
+                          : isEjectingWinner失
                           ? {
-                              y: -115,
+                              y: -90,
                               x: stick.offsetX,
                               rotate: stick.rotation * 0.5,
-                              scale: 1.06,
+                              scale: 1.05,
                             }
                           : {
                               y: stick.offsetY,
@@ -360,57 +350,49 @@ export const StickTube: React.FC<StickTubeProps> = ({
                       }
                       transition={
                         phase === 'shaking'
-                          ? { repeat: Infinity, duration: 0.26, ease: 'easeInOut' }
-                          : { type: 'spring', stiffness: 280, damping: 18 }
+                          ? { repeat: Infinity, duration: 0.28, ease: 'easeInOut' }
+                          : { type: 'spring', stiffness: 280, damping: 20 }
                       }
                       style={{
-                        height: `${stick.height + 45}px`,
-                        clipPath: 'polygon(50% 0%, 100% 7px, 100% 100%, 0% 100%, 0% 7px)',
+                        height: `${stick.height + 30}px`,
                       }}
-                      className={`w-[7.8px] mx-[0.5px] border-x-[0.5px] border-[#2A0F07]/70 relative shadow-sm flex-shrink-0 ${
-                        isEjectingWinner
-                          ? 'bg-gradient-to-b from-[#C62828] via-[#E53935] to-[#B71C1C] shadow-[0_0_16px_rgba(255,215,0,0.9)] ring-1 ring-[#FFE599]'
-                          : 'bg-gradient-to-b from-[#8E0000] via-[#C62828] to-[#DECBA0]'
+                      className={`w-[7px] mx-[0.5px] rounded-t-xs border-x border-[#3D2914]/80 relative flex-shrink-0 shadow-sm ${
+                        isEjectingWinner失
+                          ? 'bg-gradient-to-b from-[#FAF0D7] via-[#E8D3A0] to-[#BFA878] shadow-[0_0_14px_rgba(233,206,132,0.9)]'
+                          : 'bg-gradient-to-b from-[#F7EBD0] via-[#E2CE9E] to-[#B89F70]'
                       }`}
                     >
-                      {/* Rich Traditional Red Cinnabar Lacquer (Son Son Thếp Vàng) */}
-                      <div
-                        style={{ height: `${stick.cinnabarRatio || 60}%` }}
-                        className={`w-full relative shadow-inner ${
-                          isEjectingWinner
-                            ? 'bg-gradient-to-b from-[#E53935] via-[#C62828] to-[#8E0000]'
-                            : 'bg-gradient-to-b from-[#B71C1C] via-[#C62828] to-[#7F0000]'
-                        }`}
-                      >
-                        {/* High-gloss vertical lacquer reflection */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/25 via-transparent to-black/20" />
-                        
-                        {/* Gold accent dot on winner stick */}
-                        {isEjectingWinner && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mx-auto mt-2.5 shadow-sm border border-[#AD8A2E]" />
+                      {/* Top Red Cinnabar Dipped Head (Chóp thẻ chu sa đỏ) */}
+                      <div className="w-full h-[26px] bg-gradient-to-b from-[#B82B1B] via-[#9E2416] to-[#7A1C10] rounded-t-xs border-b border-[#5C140B] shadow-inner relative flex items-center justify-center">
+                        {isEjectingWinner失 && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] shadow-xs" />
                         )}
                       </div>
 
-                      {/* Natural Aged Bamboo Body at bottom */}
-                      <div className="w-full h-full bg-gradient-to-b from-[#DECBA0] to-[#A89467] border-t border-[#AD8A2E]/40 relative">
-                        <div
-                          className="absolute inset-0 opacity-35 pointer-events-none"
-                          style={{
-                            backgroundImage:
-                              'linear-gradient(90deg, transparent 0%, rgba(70,50,20,0.4) 50%, transparent 100%)',
-                          }}
-                        />
+                      {/* Natural Bamboo Wood Grain */}
+                      <div
+                        className="absolute inset-x-0 bottom-0 top-[26px] opacity-35 pointer-events-none"
+                        style={{
+                          backgroundImage:
+                            'linear-gradient(90deg, transparent 0%, rgba(60,40,15,0.4) 50%, transparent 100%)',
+                        }}
+                      />
+
+                      {/* Etched I Ching Line Marks */}
+                      <div className="absolute top-[32px] left-1/2 -translate-x-1/2 flex flex-col gap-1 items-center opacity-40">
+                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
+                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
                       </div>
                     </motion.div>
                   );
                 })}
               </div>
 
-              {/* 3. FRONT HALF OF BAMBOO TUBE (z-index: 25 - Visibly covers lower half of sticks) */}
-              <div className="relative w-full z-25 flex flex-col items-center pointer-events-none">
+              {/* 3. FRONT HALF OF BAMBOO TUBE (z-[25] - Solidly covers the lower 80% of sticks) */}
+              <div className="relative w-full z-[25] flex flex-col items-center pointer-events-none">
                 {/* Front Lip / Opening Rim Rim (Gờ miệng ống xăm) */}
                 <div
-                  className="w-[124px] h-[22px] rounded-[50%] border-t border-[#F3D78A]/60 shadow-md -mb-[11px] relative z-2"
+                  className="w-[124px] h-[24px] rounded-[50%] border-t-2 border-[#F3D78A]/70 shadow-md -mb-[12px] relative z-[26]"
                   style={{
                     background: 'linear-gradient(180deg, #A83321 0%, #7C2416 60%, #4D140B 100%)',
                   }}
@@ -420,7 +402,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
 
                 {/* Front Cylinder Body */}
                 <div
-                  className="w-full h-[174px] rounded-b-[18px] shadow-[0_22px_38px_rgba(0,0,0,0.65),inset_0_0_0_1px_rgba(255,230,150,0.22)] overflow-hidden border-x border-b border-[#2D1B0D] relative"
+                  className="w-full h-[174px] rounded-b-[18px] shadow-[0_22px_38px_rgba(0,0,0,0.65),inset_0_0_0_1px_rgba(255,230,150,0.22)] overflow-hidden border-x border-b border-[#2D1B0D] relative z-[25]"
                   style={{
                     background: `
                       linear-gradient(108deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.06) 25%, transparent 42%, rgba(0,0,0,0.45) 80%, rgba(0,0,0,0.75) 100%),
