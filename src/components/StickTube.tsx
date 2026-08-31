@@ -263,247 +263,301 @@ export const StickTube: React.FC<StickTubeProps> = ({
         <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-[#AD8A2E]/60 pointer-events-none" />
         <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-[#AD8A2E]/60 pointer-events-none" />
 
-        {/* 3D Tube & Ejected Stick Stage */}
-        <div className="relative min-h-[245px] w-full flex items-end justify-center overflow-visible z-10 pt-4 pb-2">
-          {/* Animated Incense Smoke Trails */}
-          <div className="absolute bottom-[125px] left-1/2 -translate-x-1/2 pointer-events-none z-0">
-            <svg
-              className={`w-8 h-32 stroke-[#7A6444]/60 fill-none transition-opacity duration-700 ${
-                phase === 'shaking' ? 'opacity-90 scale-110' : 'opacity-40'
-              }`}
-              viewBox="0 0 30 120"
-            >
-              <path
-                d="M15 120 Q 8 90 22 60 T 14 0"
-                strokeWidth="1.5"
-                className={phase === 'shaking' ? 'animate-pulse' : ''}
-              />
-              <path
-                d="M12 120 Q 24 80 8 40 T 17 0"
-                strokeWidth="1.1"
-                opacity="0.65"
-              />
-            </svg>
-          </div>
-
-          {/* STEP 3: THE FALLEN XĂM (THẺ XĂM RƠI RA) - AUTHENTIC I CHING PLAQUE WITH QUẺ CHỦ -> HÀO ĐỘNG -> QUẺ BIẾN */}
-          <AnimatePresence>
-            {phase === 'fallen' && drawnQue !== null && drawnHao !== null && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.45, y: -10, rotate: -6 }}
-                animate={{ opacity: 1, scale: 1, y: -110, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                className="absolute z-30 flex flex-col items-center w-[92%] max-w-[340px]"
+          {/* 3D TUBE & STICKS STAGE */}
+          <div className="relative min-h-[260px] w-full flex items-end justify-center overflow-visible z-10 pt-4 pb-2">
+            {/* Animated Incense Smoke Trails */}
+            <div className="absolute bottom-[140px] left-1/2 -translate-x-1/2 pointer-events-none z-0">
+              <svg
+                className={`w-8 h-32 stroke-[#7A6444]/60 fill-none transition-opacity duration-700 ${
+                  phase === 'shaking' ? 'opacity-90 scale-110' : 'opacity-40'
+                }`}
+                viewBox="0 0 30 120"
               >
-                {/* Traditional Wooden Plaque with Cinnabar Header and Gold Foil Inlay */}
-                <div className="relative w-full flex flex-col items-center bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F1DFC0] border-2 border-[#B23B28] p-3.5 rounded-xs shadow-[0_16px_36px_rgba(178,59,40,0.36),0_4px_12px_rgba(0,0,0,0.15)]">
-                  {/* Top Red Cinnabar Cap with Auspicious Gold Rivet */}
-                  <div className="w-14 h-2.5 bg-gradient-to-r from-[#9C2C1E] via-[#C8402C] to-[#9C2C1E] rounded-t-xs -mt-4 mb-1.5 border border-[#7C2A1C] flex items-center justify-center shadow-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599]" />
+                <path
+                  d="M15 120 Q 8 90 22 60 T 14 0"
+                  strokeWidth="1.5"
+                  className={phase === 'shaking' ? 'animate-pulse' : ''}
+                />
+                <path
+                  d="M12 120 Q 24 80 8 40 T 17 0"
+                  strokeWidth="1.1"
+                  opacity="0.65"
+                />
+              </svg>
+            </div>
+
+            {/* Silk Altar Mat Underneath Tube */}
+            <div className="absolute bottom-[0px] left-1/2 -translate-x-1/2 w-[180px] h-[22px] bg-gradient-to-r from-[#7C2A1C]/25 via-[#B23B28]/45 to-[#7C2A1C]/25 rounded-full blur-[2px] pointer-events-none z-0" />
+
+            {/* THE COMPLETE 3D BAMBOO TUBE (ỐNG XĂM) CONTAINER WITH PROPER INSIDE CAVITY & FRONT/BACK LAYERING */}
+            <motion.div
+              animate={
+                phase === 'shaking'
+                  ? {
+                      rotate: [0, -14, 13, -11, 12, -8, 7, 0],
+                      x: [0, -9, 9, -7, 8, -5, 4, 0],
+                      y: [0, -5, 4, -6, 5, -2, 2, 0],
+                    }
+                  : { rotate: 0, x: 0, y: 0 }
+              }
+              transition={
+                phase === 'shaking'
+                  ? { repeat: Infinity, duration: 0.3, ease: 'easeInOut' }
+                  : { duration: 0.35 }
+              }
+              className="relative w-[124px] h-[195px] overflow-visible flex items-end justify-center z-10"
+            >
+              {/* Hanging Traditional Red Silk Tassel / Cát Tường Knot on Left */}
+              <div className="absolute top-[52px] -left-[15px] pointer-events-none z-30 flex flex-col items-center">
+                <div className="w-3.5 h-3.5 bg-[#B23B28] rotate-45 border border-[#FFE599]/80 shadow-sm" />
+                <div className="w-2 h-2 rounded-full bg-[#E5C368] -mt-0.5 shadow-sm" />
+                <div className="w-1.5 h-12 bg-gradient-to-b from-[#B23B28] via-[#C8402C] to-[#7C2A1C] rounded-b-full shadow-md" />
+              </div>
+
+              {/* 1. BACK INTERIOR WALL & CAVITY OF TUBE (z-index: 5) */}
+              <div className="absolute inset-0 z-5 flex flex-col items-center pointer-events-none">
+                {/* Top Back Rim of the Opening */}
+                <div className="w-[116px] h-[22px] rounded-[50%] bg-[#120502] border-t-2 border-[#38160B] shadow-inner" />
+                {/* Dark Inner Hollow Space */}
+                <div className="w-[108px] h-[168px] -mt-[11px] rounded-b-[14px] bg-gradient-to-b from-[#180703] via-[#2A0F07] to-[#120502] shadow-[inset_0_12px_24px_rgba(0,0,0,0.9)]" />
+              </div>
+
+              {/* 2. BAMBOO STICKS RESTING INSIDE THE TUBE (z-index: 15 - Between Back Wall and Front Wall) */}
+              <div className="absolute top-[8px] left-1/2 -translate-x-1/2 z-15 flex justify-center items-end pointer-events-none w-[100px] h-[160px]">
+                {sticks.map((stick) => {
+                  const isEjectingWinner = stick.isWinner && (phase === 'ejecting' || phase === 'fallen');
+                  return (
+                    <motion.div
+                      key={stick.id}
+                      animate={
+                        phase === 'shaking'
+                          ? {
+                              y: [stick.offsetY, stick.offsetY - 22, stick.offsetY + 4, stick.offsetY - 14, stick.offsetY],
+                              x: stick.offsetX + (Math.random() * 4 - 2),
+                              rotate: stick.rotation + (Math.random() * 4 - 2),
+                            }
+                          : isEjectingWinner
+                          ? {
+                              y: -95,
+                              x: stick.offsetX,
+                              rotate: stick.rotation * 0.5,
+                              scale: 1.08,
+                            }
+                          : {
+                              y: stick.offsetY,
+                              x: stick.offsetX,
+                              rotate: stick.rotation,
+                              scale: 1,
+                            }
+                      }
+                      transition={
+                        phase === 'shaking'
+                          ? { repeat: Infinity, duration: 0.28, ease: 'easeInOut' }
+                          : { type: 'spring', stiffness: 260, damping: 18 }
+                      }
+                      style={{ height: `${stick.height + 40}px` }}
+                      className={`w-[7.5px] mx-[1px] rounded-t-sm rounded-b-xs border-[0.5px] border-[#3D2914] relative shadow-sm flex-shrink-0 ${
+                        isEjectingWinner
+                          ? 'bg-gradient-to-b from-[#D4A359] via-[#DECBA0] to-[#8C6D3F] shadow-[0_0_14px_rgba(233,206,132,0.9)]'
+                          : 'bg-gradient-to-b from-[#EFE5CE] via-[#DECBA0] to-[#BFA878]'
+                      }`}
+                    >
+                      {/* Natural Bamboo Wood Grain */}
+                      <div
+                        className="absolute inset-0 opacity-30 pointer-events-none"
+                        style={{
+                          backgroundImage:
+                            'linear-gradient(90deg, transparent 0%, rgba(70,50,20,0.35) 50%, transparent 100%)',
+                        }}
+                      />
+
+                      {/* Traditional Dipped Cinnabar Red Cap at Top of Stick */}
+                      <div
+                        style={{ height: `${stick.cinnabarRatio || 30}%` }}
+                        className={`w-full rounded-t-sm shadow-inner transition-colors duration-300 ${
+                          isEjectingWinner
+                            ? 'bg-gradient-to-b from-[#E53935] via-[#C62828] to-[#8E0000]'
+                            : 'bg-gradient-to-b from-[#B23B28] to-[#7C2A1C]'
+                        }`}
+                      >
+                        {/* Gold accent dot on winner stick */}
+                        {isEjectingWinner && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mx-auto mt-1 shadow-xs" />
+                        )}
+                      </div>
+
+                      {/* Laser-etched Que number markings on bamboo body */}
+                      <div className="absolute top-[38%] left-1/2 -translate-x-1/2 flex flex-col gap-1 items-center opacity-40">
+                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
+                        <div className="w-1 h-0.5 bg-[#4A3B22]" />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* 3. FRONT HALF OF BAMBOO TUBE (z-index: 25 - Visibly covers lower half of sticks) */}
+              <div className="relative w-full z-25 flex flex-col items-center pointer-events-none">
+                {/* Front Lip / Opening Rim Rim (Gờ miệng ống xăm) */}
+                <div
+                  className="w-[124px] h-[22px] rounded-[50%] border-t border-[#F3D78A]/60 shadow-md -mb-[11px] relative z-2"
+                  style={{
+                    background: 'linear-gradient(180deg, #A83321 0%, #7C2416 60%, #4D140B 100%)',
+                  }}
+                >
+                  <div className="w-full h-full rounded-[50%] border border-[#FFE599]/30" />
+                </div>
+
+                {/* Front Cylinder Body */}
+                <div
+                  className="w-full h-[174px] rounded-b-[18px] shadow-[0_22px_38px_rgba(0,0,0,0.65),inset_0_0_0_1px_rgba(255,230,150,0.22)] overflow-hidden border-x border-b border-[#2D1B0D] relative"
+                  style={{
+                    background: `
+                      linear-gradient(108deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.06) 25%, transparent 42%, rgba(0,0,0,0.45) 80%, rgba(0,0,0,0.75) 100%),
+                      repeating-linear-gradient(90deg, rgba(45,25,10,0.16) 0px, rgba(45,25,10,0.16) 1px, transparent 1px, transparent 8px),
+                      linear-gradient(180deg, #B83A26 0%, #8C2518 45%, #56140B 85%, #2B0803 100%)
+                    `,
+                  }}
+                >
+                  {/* Upper Antique Brass Hoop */}
+                  <div className="absolute top-[14px] left-0 right-0 h-[8px] bg-gradient-to-b from-[#F3D78A] via-[#C99C3B] to-[#7A5B18] border-y border-[#381E0B] shadow-sm z-10 flex items-center justify-around px-2">
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
                   </div>
 
-                  {/* Auspicious Badge Header */}
-                  <div className="flex items-center gap-1.5 text-[0.68rem] tracking-[0.2em] uppercase font-sans text-[#AD8A2E] font-extrabold mb-1">
-                    <Sparkles className="w-3 h-3 text-[#B23B28]" />
-                    <span>{language === 'vi' ? 'THẺ XĂM ĐÃ RƠI RA' : 'THE STICK HAS FALLEN'}</span>
-                    <Sparkles className="w-3 h-3 text-[#B23B28]" />
+                  {/* Classical Cloud Fretwork Band */}
+                  <div className="absolute top-[26px] left-0 right-0 h-[9px] opacity-80 z-10">
+                    <svg className="w-full h-full" viewBox="0 0 100 10" preserveAspectRatio="none">
+                      <path
+                        d="M0 5 H10 V0 H20 V5 H30 V0 H40 V5 H50 V0 H60 V5 H70 V0 H80 V5 H90 V0 H100"
+                        fill="none"
+                        stroke="#F3D78A"
+                        strokeWidth="1.3"
+                      />
+                    </svg>
                   </div>
 
-                  {/* Main Primary Hexagram Title */}
-                  <div className="font-serif italic text-2xl sm:text-3xl font-bold text-[#7C2A1C] whitespace-nowrap tracking-tight text-center">
-                    {language === 'vi' ? `Quẻ Số ${drawnQue}` : `Hexagram #${drawnQue}`}
+                  {/* Center Traditional Taiji & Bagua Medallion (Mặt Nguyệt Bát Quái Cổ) */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-13 h-13 rounded-full border-2 border-[#F3D78A]/90 flex items-center justify-center bg-gradient-to-br from-[#3D140D] to-[#1A0604] shadow-[0_2px_10px_rgba(0,0,0,0.6),inset_0_1px_3px_rgba(243,215,138,0.4)] z-10">
+                    <svg className="w-9 h-9" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="16.5" fill="none" stroke="#F3D78A" strokeWidth="1.2" strokeDasharray="2.5 1.5" />
+                      <circle cx="18" cy="18" r="14" fill="#200A06" />
+                      <path d="M18 4 A 14 14 0 0 0 18 32 A 7 7 0 0 1 18 18 A 7 7 0 0 0 18 4" fill="#F3D78A" opacity="0.92" />
+                      <circle cx="18" cy="11" r="2.2" fill="#200A06" />
+                      <circle cx="18" cy="25" r="2.2" fill="#F3D78A" />
+                    </svg>
                   </div>
 
-                  {/* Quẻ Chủ Name */}
-                  <div className="font-serif font-bold text-sm sm:text-base text-[#2E2415] text-center mt-0.5 mb-1.5">
-                    {language === 'vi' ? drawnMeta?.vietnameseName : `Hexagram ${drawnQue} (${drawnMeta?.chinese})`}
+                  {/* Lower Greek Key / Fretwork Band */}
+                  <div className="absolute bottom-[32px] left-0 right-0 h-[9px] opacity-80 z-10">
+                    <svg className="w-full h-full" viewBox="0 0 100 10" preserveAspectRatio="none">
+                      <path
+                        d="M0 5 H10 V10 H20 V5 H30 V10 H40 V5 H50 V10 H60 V5 H70 V10 H80 V5 H90 V10 H100"
+                        fill="none"
+                        stroke="#F3D78A"
+                        strokeWidth="1.3"
+                      />
+                    </svg>
                   </div>
 
-                  {/* The Authentic 3-Step Transformation Plaque (Quẻ Chủ -> Hào Động -> Quẻ Biến) */}
-                  <div className="w-full bg-[#EFE4CB]/85 border border-[#AD8A2E]/35 rounded-xs p-2 my-1 text-xs font-sans">
-                    <div className="flex items-center justify-between text-[#6E5C3E] font-medium border-b border-[#AD8A2E]/20 pb-1 mb-1">
-                      <span className="text-[#7C2A1C] font-bold">
-                        {language === 'vi' ? '① Quẻ Chủ (Gốc)' : '① Primary Que'}
-                      </span>
-                      <span className="text-[#2E2415] font-semibold">#{drawnQue}</span>
+                  {/* Lower Antique Brass Hoop */}
+                  <div className="absolute bottom-[18px] left-0 right-0 h-[8px] bg-gradient-to-b from-[#F3D78A] via-[#C99C3B] to-[#7A5B18] border-y border-[#381E0B] shadow-sm z-10 flex items-center justify-around px-2">
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
+                    <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
+                  </div>
+
+                  {/* Heavy Carved Dark Rosewood Base Ring */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[14px] bg-gradient-to-b from-[#38180E] via-[#200A06] to-[#0E0301] border-t border-[#F3D78A]/40" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 4. THE FALLEN XĂM (THẺ XĂM RƠI RA TRƯỚC HỘP TRÊN BÀN) & I CHING PLAQUE (z-index: 40) */}
+            <AnimatePresence>
+              {phase === 'fallen' && drawnQue !== null && drawnHao !== null && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5, y: -20, rotate: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: -105, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                  className="absolute z-40 flex flex-col items-center w-[94%] max-w-[350px]"
+                >
+                  {/* The Physical Wooden Stick That Has Fallen Out in Front of the Box */}
+                  <motion.div
+                    initial={{ y: -30, rotate: -25, opacity: 0 }}
+                    animate={{ y: 0, rotate: -8, opacity: 1 }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 16 }}
+                    className="w-[200px] h-[14px] bg-gradient-to-r from-[#B23B28] via-[#E8D4A2] to-[#BFA878] rounded-full border border-[#4A3B22] shadow-[0_8px_18px_rgba(0,0,0,0.45)] mb-2 flex items-center justify-between px-3 relative"
+                  >
+                    <div className="w-5 h-full bg-[#9C2C1E] -ml-3 rounded-l-full flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599]" />
+                    </div>
+                    <span className="font-serif italic font-bold text-[0.72rem] text-[#4A3B22] tracking-wider">
+                      {language === 'vi' ? `THẺ XĂM QUẺ #${drawnQue} · HÀO ${drawnHao}` : `STICK #${drawnQue} · LINE ${drawnHao}`}
+                    </span>
+                    <div className="w-2 h-2 rounded-full bg-[#B23B28]/40" />
+                  </motion.div>
+
+                  {/* Traditional Wooden Plaque with Cinnabar Header and Gold Foil Inlay */}
+                  <div className="relative w-full flex flex-col items-center bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F1DFC0] border-2 border-[#B23B28] p-3.5 rounded-xs shadow-[0_18px_40px_rgba(178,59,40,0.4),0_6px_16px_rgba(0,0,0,0.18)]">
+                    {/* Auspicious Badge Header */}
+                    <div className="flex items-center gap-1.5 text-[0.68rem] tracking-[0.2em] uppercase font-sans text-[#AD8A2E] font-extrabold mb-1">
+                      <Sparkles className="w-3 h-3 text-[#B23B28]" />
+                      <span>{language === 'vi' ? 'THẺ XĂM ĐÃ RƠI RA KHỎI ỐNG' : 'THE STICK HAS FALLEN OUT'}</span>
+                      <Sparkles className="w-3 h-3 text-[#B23B28]" />
                     </div>
 
-                    <div className="flex items-center justify-between text-[#6E5C3E] font-medium border-b border-[#AD8A2E]/20 pb-1 mb-1">
-                      <span className="text-[#B23B28] font-bold flex items-center gap-1">
-                        <span>⚡</span>
-                        {language === 'vi' ? `② Hào Động Số ${drawnHao}` : `② Active Line ${drawnHao}`}
-                      </span>
-                      <span className="text-[#B23B28] font-bold">
-                        {transformed?.wasSolid ? '⚊ Dương ➔ ⚋ Âm' : '⚋ Âm ➔ ⚊ Dương'}
-                      </span>
+                    {/* Main Primary Hexagram Title */}
+                    <div className="font-serif italic text-2xl sm:text-3xl font-bold text-[#7C2A1C] whitespace-nowrap tracking-tight text-center">
+                      {language === 'vi' ? `Quẻ Số ${drawnQue}` : `Hexagram #${drawnQue}`}
                     </div>
 
-                    {transformed && (
-                      <div className="flex items-center justify-between text-[#6E5C3E] font-medium pt-0.5">
-                        <span className="text-[#2E7D32] font-bold">
-                          {language === 'vi' ? '③ Biến Thành Quẻ' : '③ Resulting Que'}
+                    {/* Quẻ Chủ Name */}
+                    <div className="font-serif font-bold text-sm sm:text-base text-[#2E2415] text-center mt-0.5 mb-1.5">
+                      {language === 'vi' ? drawnMeta?.vietnameseName : `Hexagram ${drawnQue} (${drawnMeta?.chinese})`}
+                    </div>
+
+                    {/* The Authentic 3-Step Transformation Plaque (Quẻ Chủ -> Hào Động -> Quẻ Biến) */}
+                    <div className="w-full bg-[#EFE4CB]/85 border border-[#AD8A2E]/35 rounded-xs p-2 my-1 text-xs font-sans">
+                      <div className="flex items-center justify-between text-[#6E5C3E] font-medium border-b border-[#AD8A2E]/20 pb-1 mb-1">
+                        <span className="text-[#7C2A1C] font-bold">
+                          {language === 'vi' ? '① Quẻ Chủ (Gốc)' : '① Primary Que'}
                         </span>
-                        <span className="text-[#1B5E20] font-bold">
-                          #{transformed.number} {language === 'vi' ? transformed.meta.vietnameseName.split(' ')[0] + ' ' + transformed.meta.vietnameseName.split(' ')[1] : `Hex ${transformed.number}`}
+                        <span className="text-[#2E2415] font-semibold">#{drawnQue}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[#6E5C3E] font-medium border-b border-[#AD8A2E]/20 pb-1 mb-1">
+                        <span className="text-[#B23B28] font-bold flex items-center gap-1">
+                          <span>⚡</span>
+                          {language === 'vi' ? `② Hào Động Số ${drawnHao}` : `② Active Line ${drawnHao}`}
+                        </span>
+                        <span className="text-[#B23B28] font-bold">
+                          {transformed?.wasSolid ? '⚊ Dương ➔ ⚋ Âm' : '⚋ Âm ➔ ⚊ Dương'}
                         </span>
                       </div>
-                    )}
+
+                      {transformed && (
+                        <div className="flex items-center justify-between text-[#6E5C3E] font-medium pt-0.5">
+                          <span className="text-[#2E7D32] font-bold">
+                            {language === 'vi' ? '③ Biến Thành Quẻ' : '③ Resulting Que'}
+                          </span>
+                          <span className="text-[#1B5E20] font-bold">
+                            #{transformed.number} {language === 'vi' ? transformed.meta.vietnameseName.split(' ')[0] + ' ' + transformed.meta.vietnameseName.split(' ')[1] : `Hex ${transformed.number}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom Golden Corner Accents */}
+                    <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#B23B28]" />
+                    <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[#B23B28]" />
                   </div>
-
-                  {/* Bottom Golden Corner Accents */}
-                  <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#B23B28]" />
-                  <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[#B23B28]" />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Bamboo Sticks Inside Cylinder */}
-          <div className="absolute top-[28px] left-1/2 -translate-x-1/2 flex justify-center z-10 pointer-events-none">
-            {sticks.map((stick) => (
-              <motion.div
-                key={stick.id}
-                animate={{
-                  y: stick.offsetY,
-                  x: stick.offsetX,
-                  rotate: stick.rotation,
-                  scale: stick.isWinner && phase === 'fallen' ? 1.2 : 1,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: phase === 'shaking' ? 400 : 240,
-                  damping: 15,
-                }}
-                style={{ height: `${stick.height}px` }}
-                className={`w-[7px] mx-[1px] rounded-t-sm rounded-b-xs border-[0.5px] border-[#4A3B22]/40 relative shadow-sm ${
-                  stick.isWinner && phase === 'fallen'
-                    ? 'bg-gradient-to-b from-[#C8402C] via-[#E9CE84] to-[#C9B98F] shadow-[0_0_18px_rgba(200,64,44,0.85)]'
-                    : 'bg-gradient-to-b from-[#EFE5CE] via-[#DECBA0] to-[#BFA878]'
-                }`}
-              >
-                {/* Natural Bamboo Wood Grain Texture */}
-                <div
-                  className="absolute inset-0 opacity-25"
-                  style={{
-                    backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(70,50,20,0.3) 50%, transparent 100%)',
-                  }}
-                />
-
-                {/* Dipped Traditional Cinnabar Red Cap */}
-                <div
-                  style={{ height: `${stick.cinnabarRatio || 30}%` }}
-                  className={`w-full rounded-t-sm shadow-inner transition-colors duration-300 ${
-                    stick.isWinner && phase === 'fallen'
-                      ? 'bg-gradient-to-b from-[#D32F2F] to-[#8E0000]'
-                      : 'bg-gradient-to-b from-[#B23B28] to-[#7C2A1C]'
-                  }`}
-                />
-              </motion.div>
-            ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-
-          {/* Silk Altar Mat Underneath Tube */}
-          <div className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[160px] h-[18px] bg-gradient-to-r from-[#7C2A1C]/20 via-[#B23B28]/40 to-[#7C2A1C]/20 rounded-full blur-[2px] pointer-events-none z-0" />
-
-          {/* AUTHENTIC VIETNAMESE BAMBOO & ROSEWOOD FORTUNE TUBE (ỐNG XĂM CỔ TRUYỀN) */}
-          <motion.div
-            animate={
-              phase === 'shaking'
-                ? {
-                    rotate: [0, -12, 11, -9, 10, -7, 0],
-                    x: [0, -8, 8, -6, 7, -4, 0],
-                    y: [0, -5, 4, -6, 4, -2, 0],
-                  }
-                : { rotate: 0, x: 0, y: 0 }
-            }
-            transition={
-              phase === 'shaking'
-                ? { repeat: Infinity, duration: 0.28, ease: 'easeInOut' }
-                : { duration: 0.3 }
-            }
-            className="relative w-[112px] h-[178px] z-20 overflow-visible"
-          >
-            {/* Hanging Traditional Red Silk Tassel / Cát Tường Knot on Left */}
-            <div className="absolute top-[48px] -left-[14px] pointer-events-none z-30 flex flex-col items-center">
-              {/* Chinese / Vietnamese Knot */}
-              <div className="w-3.5 h-3.5 bg-[#B23B28] rotate-45 border border-[#FFE599]/80 shadow-sm" />
-              {/* Gold bead */}
-              <div className="w-2 h-2 rounded-full bg-[#E5C368] -mt-0.5 shadow-sm" />
-              {/* Silk Red Tassel */}
-              <div className="w-1.5 h-12 bg-gradient-to-b from-[#B23B28] via-[#C8402C] to-[#7C2A1C] rounded-b-full shadow-md" />
-            </div>
-
-            {/* Cylinder Outer Body with Polished Aged Bamboo & Lacquer Sheen */}
-            <div
-              className="relative w-full h-full rounded-t-[14px] rounded-b-[18px] shadow-[0_20px_35px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,230,150,0.22)] overflow-hidden border border-[#2D1B0D]"
-              style={{
-                background: `
-                  linear-gradient(108deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 25%, transparent 40%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0.8) 100%),
-                  repeating-linear-gradient(90deg, rgba(45,25,10,0.18) 0px, rgba(45,25,10,0.18) 1px, transparent 1px, transparent 8px),
-                  linear-gradient(180deg, #B83A26 0%, #8C2518 45%, #56140B 85%, #2B0803 100%)
-                `,
-              }}
-            >
-              {/* Top Rim Deep Opening Inset */}
-              <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-b from-[#180A04] via-[#38160B] to-transparent z-10" />
-
-              {/* Upper Antique Brass Hoop */}
-              <div className="absolute top-[16px] left-0 right-0 h-[8px] bg-gradient-to-b from-[#F3D78A] via-[#C99C3B] to-[#7A5B18] border-y border-[#381E0B] shadow-sm z-10 flex items-center justify-around px-2">
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-              </div>
-
-              {/* Classical Cloud Fretwork Band */}
-              <div className="absolute top-[28px] left-0 right-0 h-[10px] opacity-80 z-10">
-                <svg className="w-full h-full" viewBox="0 0 100 10" preserveAspectRatio="none">
-                  <path
-                    d="M0 5 H10 V0 H20 V5 H30 V0 H40 V5 H50 V0 H60 V5 H70 V0 H80 V5 H90 V0 H100"
-                    fill="none"
-                    stroke="#F3D78A"
-                    strokeWidth="1.3"
-                  />
-                </svg>
-              </div>
-
-              {/* Center Traditional Taiji & Bagua Medallion (Mặt Nguyệt Bát Quái Cổ) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-13 h-13 rounded-full border-2 border-[#F3D78A]/90 flex items-center justify-center bg-gradient-to-br from-[#3D140D] to-[#1A0604] shadow-[0_2px_10px_rgba(0,0,0,0.6),inset_0_1px_3px_rgba(243,215,138,0.4)] z-10">
-                <svg className="w-9 h-9" viewBox="0 0 36 36">
-                  {/* Outer circle */}
-                  <circle cx="18" cy="18" r="16.5" fill="none" stroke="#F3D78A" strokeWidth="1.2" strokeDasharray="2.5 1.5" />
-                  {/* Yin-Yang swirl */}
-                  <circle cx="18" cy="18" r="14" fill="#200A06" />
-                  <path d="M18 4 A 14 14 0 0 0 18 32 A 7 7 0 0 1 18 18 A 7 7 0 0 0 18 4" fill="#F3D78A" opacity="0.92" />
-                  <circle cx="18" cy="11" r="2.2" fill="#200A06" />
-                  <circle cx="18" cy="25" r="2.2" fill="#F3D78A" />
-                </svg>
-              </div>
-
-              {/* Lower Greek Key / Fretwork Band */}
-              <div className="absolute bottom-[34px] left-0 right-0 h-[10px] opacity-80 z-10">
-                <svg className="w-full h-full" viewBox="0 0 100 10" preserveAspectRatio="none">
-                  <path
-                    d="M0 5 H10 V10 H20 V5 H30 V10 H40 V5 H50 V10 H60 V5 H70 V10 H80 V5 H90 V10 H100"
-                    fill="none"
-                    stroke="#F3D78A"
-                    strokeWidth="1.3"
-                  />
-                </svg>
-              </div>
-
-              {/* Lower Antique Brass Hoop */}
-              <div className="absolute bottom-[20px] left-0 right-0 h-[8px] bg-gradient-to-b from-[#F3D78A] via-[#C99C3B] to-[#7A5B18] border-y border-[#381E0B] shadow-sm z-10 flex items-center justify-around px-2">
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-                <div className="w-1 h-1 rounded-full bg-[#381E0B]/60" />
-              </div>
-
-              {/* Heavy Carved Dark Rosewood Base Ring */}
-              <div className="absolute bottom-0 left-0 right-0 h-[14px] bg-gradient-to-b from-[#38180E] via-[#200A06] to-[#0E0301] border-t border-[#F3D78A]/40" />
-            </div>
-          </motion.div>
-        </div>
 
         {/* Guidance Prompt & Shake Status */}
         <div className="text-center font-serif italic text-xs sm:text-sm text-[#6E5C3E] min-h-[1.5rem] mt-3 mb-1">
