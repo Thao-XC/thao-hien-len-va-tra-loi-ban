@@ -1,0 +1,6 @@
+{
+  "name": "Sạp Bói Thảo",
+  "description": "Gieo quẻ xăm Kinh Dịch cổ truyền tại Sạp Bói Thảo với 64 quẻ, hào biến và luận giải thấu đáo từ Thảo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
