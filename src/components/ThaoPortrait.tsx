@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { Sparkles, Wand2 } from 'lucide-react';
 
 interface ThaoPortraitProps {
   className?: string;
@@ -8,236 +9,292 @@ interface ThaoPortraitProps {
 }
 
 export const ThaoPortrait: React.FC<ThaoPortraitProps> = ({
-  className = 'w-36 sm:w-40 h-auto',
-  isSpeaking = false,
+  className = 'w-48 sm:w-56 h-auto',
+  isSpeaking = true,
   showAura = true,
 }) => {
+  const [imageError, setImageError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // 8 Trigrams (Bát Quái) for Cardcaptor Sakura style magical runes
+  const TRIGRAMS = ['☰ Càn', '☱ Đoài', '☲ Ly', '☳ Chấn', '☴ Tốn', '☵ Khảm', '☶ Cấn', '☷ Khôn'];
+
   return (
-    <div className="flex justify-center my-1 relative overflow-visible">
-      {/* Mystical Golden & Cinnabar Aura Radiance behind Lady Thao */}
+    <div
+      className="flex flex-col items-center justify-center my-2 relative overflow-visible select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* =========================================================================
+          1. CARDCAPTOR SAKURA X VIETNAMESE FOLKLORE ROTATING BAGUA MAGIC CIRCLE
+         ========================================================================= */}
       {showAura && (
-        <div
-          className={`absolute inset-0 m-auto w-36 h-36 rounded-full bg-gradient-to-tr from-[#E9CE84]/40 via-[#B23B28]/25 to-[#E9CE84]/50 blur-2xl pointer-events-none transition-all duration-700 ${
-            isSpeaking ? 'animate-aura-glow scale-125' : 'opacity-70 scale-105'
-          }`}
-        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 pointer-events-none z-0 flex items-center justify-center">
+          {/* Outer Radiant Magical Aura Bloom */}
+          <div
+            className={`absolute inset-0 m-auto w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-tr from-[#E9CE84]/60 via-[#B23B28]/45 to-[#FFDF85]/70 blur-3xl transition-all duration-700 ${
+              isSpeaking || isHovered ? 'animate-pulse scale-125 opacity-95' : 'opacity-75 scale-100'
+            }`}
+          />
+
+          {/* Rotating Cardcaptor Sakura Style Sun/Moon Magic Circle */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 32, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-0 flex items-center justify-center opacity-75"
+          >
+            <svg className="w-full h-full text-[#E9CE84]" viewBox="0 0 300 300" fill="none">
+              {/* Outer Golden Band with Stars and Runes */}
+              <circle cx="150" cy="150" r="140" stroke="#E9CE84" strokeWidth="2.5" opacity="0.8" />
+              <circle cx="150" cy="150" r="132" stroke="#B23B28" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.7" />
+              <circle cx="150" cy="150" r="120" stroke="#E9CE84" strokeWidth="1.2" opacity="0.6" />
+
+              {/* 12 Celestial Rays & Stars */}
+              {[...Array(12)].map((_, i) => (
+                <g key={i} transform={`rotate(${i * 30} 150 150)`}>
+                  <line x1="150" y1="10" x2="150" y2="24" stroke="#E9CE84" strokeWidth="1.8" />
+                  <circle cx="150" cy="27" r="2" fill="#B23B28" />
+                </g>
+              ))}
+
+              {/* Double Interlocking Squares (Cardcaptor Sakura Star of David / Octagram Motif) */}
+              <rect
+                x="65"
+                y="65"
+                width="170"
+                height="170"
+                stroke="#E9CE84"
+                strokeWidth="1.5"
+                fill="none"
+                opacity="0.6"
+              />
+              <rect
+                x="65"
+                y="65"
+                width="170"
+                height="170"
+                stroke="#B23B28"
+                strokeWidth="1.5"
+                fill="none"
+                transform="rotate(45 150 150)"
+                opacity="0.6"
+              />
+
+              {/* Inner Sacred Sun & Moon Orbit */}
+              <circle cx="150" cy="150" r="85" stroke="#E9CE84" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" />
+            </svg>
+          </motion.div>
+
+          {/* Counter-Rotating Inner Bagua Trigrams Ring */}
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-4 flex items-center justify-center opacity-85"
+          >
+            <svg className="w-full h-full text-[#AD8A2E]" viewBox="0 0 260 260" fill="none">
+              <circle cx="130" cy="130" r="105" stroke="#AD8A2E" strokeWidth="1.2" opacity="0.5" />
+              {TRIGRAMS.map((tri, i) => {
+                const angle = (i * 45 * Math.PI) / 180;
+                const x = 130 + 105 * Math.cos(angle);
+                const y = 130 + 105 * Math.sin(angle);
+                return (
+                  <text
+                    key={i}
+                    x={x}
+                    y={y}
+                    fill="#7C2A1C"
+                    fontSize="11"
+                    fontFamily="serif"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                  >
+                    {tri.split(' ')[0]}
+                  </text>
+                );
+              })}
+            </svg>
+          </motion.div>
+        </div>
       )}
 
-      {/* Atmospheric Parting Clouds (Mây Tiên Cổ Điển) Layer 1 - Left Floating Cloud */}
+      {/* =========================================================================
+          2. FLOATING CARDCAPTOR SAKURA X I-CHING TALISMAN CARDS (Thẻ Bài Bát Quái)
+         ========================================================================= */}
+      {/* Left Floating I-Ching Card (Càn - Heaven Card) */}
       <motion.div
-        initial={{ x: -60, opacity: 0, scale: 0.7 }}
-        animate={{ x: 0, opacity: 0.55, scale: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
-        className="absolute -left-6 top-8 pointer-events-none z-0"
+        animate={{
+          y: [-8, 6, -8],
+          rotate: [-6, -2, -6],
+        }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+        className="hidden sm:block absolute -left-10 top-12 z-20 pointer-events-none"
       >
-        <svg className="w-24 h-16 text-[#AD8A2E] opacity-60" viewBox="0 0 120 70" fill="none" stroke="currentColor">
+        <div className="w-12 h-20 rounded-xs bg-gradient-to-b from-[#FFFDF7] to-[#FAF0D7] border-2 border-[#E9CE84] shadow-[0_6px_16px_rgba(178,59,40,0.3)] p-1 flex flex-col items-center justify-between">
+          <div className="text-[0.6rem] font-serif font-bold text-[#B23B28]">☰ CÀN</div>
+          <div className="w-6 h-6 rounded-full border border-[#AD8A2E] flex items-center justify-center bg-[#2D4D3D]/10">
+            <span className="text-[0.7rem] text-[#2D4D3D]">☯</span>
+          </div>
+          <div className="text-[0.5rem] font-sans font-semibold text-[#7C2A1C] uppercase tracking-tighter">THE LIGHT</div>
+        </div>
+      </motion.div>
+
+      {/* Right Floating I-Ching Card (Khôn - Earth Card) */}
+      <motion.div
+        animate={{
+          y: [6, -8, 6],
+          rotate: [6, 2, 6],
+        }}
+        transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+        className="hidden sm:block absolute -right-10 top-16 z-20 pointer-events-none"
+      >
+        <div className="w-12 h-20 rounded-xs bg-gradient-to-b from-[#FFFDF7] to-[#FAF0D7] border-2 border-[#E9CE84] shadow-[0_6px_16px_rgba(178,59,40,0.3)] p-1 flex flex-col items-center justify-between">
+          <div className="text-[0.6rem] font-serif font-bold text-[#B23B28]">☷ KHÔN</div>
+          <div className="w-6 h-6 rounded-full border border-[#AD8A2E] flex items-center justify-center bg-[#B23B28]/10">
+            <span className="text-[0.7rem] text-[#B23B28]">🌸</span>
+          </div>
+          <div className="text-[0.5rem] font-sans font-semibold text-[#7C2A1C] uppercase tracking-tighter">THE EARTH</div>
+        </div>
+      </motion.div>
+
+      {/* =========================================================================
+          3. VIETNAMESE FOLKLORE AUSPICIOUS CLOUDS (Mây Ngũ Sắc Đông Hồ)
+         ========================================================================= */}
+      {/* Left Auspicious Cloud */}
+      <motion.div
+        animate={{
+          x: [-4, 4, -4],
+          y: [0, -4, 0],
+        }}
+        transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute -left-6 sm:-left-12 top-6 pointer-events-none z-20"
+      >
+        <svg className="w-28 sm:w-36 h-20 text-[#AD8A2E] drop-shadow-md" viewBox="0 0 160 90" fill="none" stroke="currentColor">
           <path
-            d="M10 50 C 10 35, 25 25, 40 30 C 45 15, 65 15, 75 25 C 90 20, 105 32, 100 48 C 95 60, 75 62, 60 58 C 45 62, 20 62, 10 50 Z"
-            strokeWidth="1.2"
-            fill="#FBF6E8"
-            fillOpacity="0.45"
+            d="M10 60 C 10 40, 30 30, 50 35 C 60 15, 90 15, 105 28 C 125 20, 145 35, 140 55 C 135 70, 105 72, 85 68 C 65 72, 30 72, 10 60 Z"
+            strokeWidth="1.8"
+            fill="#FFFDF7"
+            fillOpacity="0.9"
           />
-          <path d="M40 30 C 50 35, 55 45, 50 55" strokeWidth="0.8" />
-          <path d="M75 25 C 78 35, 75 45, 65 52" strokeWidth="0.8" />
+          <path d="M50 35 C 65 42, 70 55, 65 65" strokeWidth="1.2" stroke="#AD8A2E" />
+          <path d="M105 28 C 110 40, 105 52, 95 60" strokeWidth="1.2" stroke="#AD8A2E" />
+          <circle cx="50" cy="50" r="2.5" fill="#B23B28" />
+          <circle cx="95" cy="48" r="2.5" fill="#E9CE84" />
         </svg>
       </motion.div>
 
-      {/* Atmospheric Parting Clouds Layer 2 - Right Floating Cloud */}
+      {/* Right Auspicious Cloud */}
       <motion.div
-        initial={{ x: 60, opacity: 0, scale: 0.7 }}
-        animate={{ x: 0, opacity: 0.55, scale: 1 }}
-        transition={{ duration: 1.2, delay: 0.1, ease: 'easeOut' }}
-        className="absolute -right-6 top-10 pointer-events-none z-0"
+        animate={{
+          x: [4, -4, 4],
+          y: [-3, 3, -3],
+        }}
+        transition={{ duration: 5.6, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+        className="absolute -right-6 sm:-right-12 top-10 pointer-events-none z-20"
       >
-        <svg className="w-24 h-16 text-[#AD8A2E] opacity-60" viewBox="0 0 120 70" fill="none" stroke="currentColor">
+        <svg className="w-28 sm:w-36 h-20 text-[#AD8A2E] drop-shadow-md" viewBox="0 0 160 90" fill="none" stroke="currentColor">
           <path
-            d="M10 50 C 10 35, 25 25, 40 30 C 45 15, 65 15, 75 25 C 90 20, 105 32, 100 48 C 95 60, 75 62, 60 58 C 45 62, 20 62, 10 50 Z"
-            strokeWidth="1.2"
-            fill="#FBF6E8"
-            fillOpacity="0.45"
+            d="M10 60 C 10 40, 30 30, 50 35 C 60 15, 90 15, 105 28 C 125 20, 145 35, 140 55 C 135 70, 105 72, 85 68 C 65 72, 30 72, 10 60 Z"
+            strokeWidth="1.8"
+            fill="#FFFDF7"
+            fillOpacity="0.9"
           />
-          <path d="M40 30 C 50 35, 55 45, 50 55" strokeWidth="0.8" />
+          <path d="M50 35 C 65 42, 70 55, 65 65" strokeWidth="1.2" stroke="#AD8A2E" />
+          <circle cx="75" cy="50" r="2.5" fill="#B23B28" />
         </svg>
       </motion.div>
 
-      {/* Swirling Mystical Smoke Ribbons at Base */}
+      {/* =========================================================================
+          4. DRIFTING SAKURA / LOTUS PETALS & STARDUST PARTICLES (Cardcaptor Sakura)
+         ========================================================================= */}
+      <div className="absolute inset-0 pointer-events-none z-25 overflow-hidden">
+        {/* Petal 1 */}
+        <motion.div
+          animate={{
+            y: [-15, 120],
+            x: [-10, 20],
+            rotate: [0, 180],
+            opacity: [0, 0.9, 0],
+          }}
+          transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute left-6 top-0 w-3 h-4 rounded-full bg-gradient-to-br from-[#FFB7C5] to-[#E86F88] transform rotate-45"
+        />
+        {/* Petal 2 */}
+        <motion.div
+          animate={{
+            y: [-10, 130],
+            x: [15, -15],
+            rotate: [45, 240],
+            opacity: [0, 0.85, 0],
+          }}
+          transition={{ duration: 5.1, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+          className="absolute right-8 top-0 w-2.5 h-3.5 rounded-full bg-gradient-to-br from-[#FFDF85] to-[#FF9EAA] transform rotate-12"
+        />
+        {/* Sparkling Star */}
+        <motion.div
+          animate={{
+            scale: [0.5, 1.3, 0.5],
+            opacity: [0.3, 1, 0.3],
+            rotate: [0, 90, 180],
+          }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute right-4 top-14 text-[#E9CE84]"
+        >
+          <Sparkles className="w-4 h-4 fill-[#E9CE84]" />
+        </motion.div>
+      </div>
+
+      {/* =========================================================================
+          5. MAIN ANIME CARDCAPTOR SAKURA LADY THAO PORTRAIT IN ÁO DÀI WITH I-CHING NAILS
+         ========================================================================= */}
       <motion.div
-        initial={{ opacity: 0, scaleY: 0 }}
-        animate={{ opacity: 0.4, scaleY: 1 }}
-        transition={{ duration: 1.5, delay: 0.2 }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-48 h-10 pointer-events-none z-20"
+        initial={{ opacity: 0, scale: 0.88, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        whileHover={{ scale: 1.03 }}
+        className={`relative z-10 ${className}`}
       >
-        <svg className="w-full h-full text-[#AD8A2E]" viewBox="0 0 200 40" fill="none" stroke="currentColor">
-          <path d="M10 35 Q 50 15, 100 35 T 190 35" strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
-          <path d="M30 38 Q 75 22, 120 38 T 170 38" strokeWidth="0.8" opacity="0.4" />
-        </svg>
+        {/* Ornate Gold & Cinnabar Magical Girl Frame */}
+        <div className="relative p-1 rounded-2xl bg-gradient-to-b from-[#E9CE84] via-[#B23B28] to-[#7C2A1C] shadow-[0_14px_36px_rgba(46,36,21,0.35)]">
+          {/* Inner Golden Border */}
+          <div className="relative rounded-[14px] overflow-hidden border-2 border-[#FFFDF7] bg-[#2D4D3D] aspect-square">
+            {!imageError ? (
+              <img
+                src="/lady_thao_anime.jpg"
+                alt="Lady Thao (Cô Thảo Bói Quẻ) - Cardcaptor Sakura x Traditional Vietnamese Folklore"
+                referrerPolicy="no-referrer"
+                onError={() => setImageError(true)}
+                className="w-full h-full object-cover transform hover:scale-108 transition-transform duration-700"
+              />
+            ) : (
+              /* Fallback High-Quality Art Vector */
+              <div className="w-full h-full flex items-center justify-center bg-[#2D4D3D]">
+                <img
+                  src="/lady_thao_young.jpg"
+                  alt="Lady Thao"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Subtle Vignette & Warm Magical Glow */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1610]/45 via-transparent to-transparent pointer-events-none" />
+
+            {/* Cardcaptor Sakura x I-Ching Nail Art Badge */}
+            <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full bg-[#1C1610]/85 backdrop-blur-xs border border-[#E9CE84] text-[#E9CE84] text-[0.62rem] font-sans font-bold flex items-center gap-1 shadow-md">
+              <span className="text-[#FF9EAA]">🌸</span>
+              <span>Cô Thảo · ☯ Móng Bát Quái</span>
+            </div>
+          </div>
+
+          {/* 4 Golden Corner Ornaments */}
+          <div className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 border-t-2 border-l-2 border-[#E9CE84]" />
+          <div className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 border-t-2 border-r-2 border-[#E9CE84]" />
+          <div className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 border-b-2 border-l-2 border-[#E9CE84]" />
+          <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 border-b-2 border-r-2 border-[#E9CE84]" />
+        </div>
       </motion.div>
-
-      {/* Main Vector SVG Portrait of Lady Thao */}
-      <svg
-        className={`filter drop-shadow-[0_12px_24px_rgba(46,36,21,0.28)] relative z-10 transition-transform duration-500 ${className} ${
-          isSpeaking ? 'animate-float-slow' : ''
-        }`}
-        viewBox="0 0 160 190"
-        aria-label="Lady Thao Fortune Teller Portrait"
-      >
-        {/* Soft ground shadow base */}
-        <ellipse cx="80" cy="155" rx="58" ry="12" fill="#2A241C" opacity="0.08" />
-
-        {/* Traditional Auspicious Halo Arc */}
-        <circle
-          cx="80"
-          cy="75"
-          r="68"
-          fill="none"
-          stroke="#E9CE84"
-          strokeWidth="0.9"
-          strokeDasharray="3 3"
-          opacity="0.6"
-        />
-
-        {/* Vietnamese Silk Robe / Áo Dài Tơ Tằm Cổ Truyền (Deep Emerald Jade with Cinnabar Under-layer) */}
-        <path
-          d="M32 96 C 30 130, 34 160, 40 186 L120 186 C 126 160, 130 130, 128 96 Z"
-          fill="#2D4D3D"
-        />
-        <path
-          d="M32 96 C 30 130, 34 160, 40 186 L120 186 C 126 160, 130 130, 128 96 Z"
-          fill="none"
-          stroke="#1F1A14"
-          strokeWidth="1.2"
-        />
-
-        {/* Inner Silk Lapel (Traditional Lotus Pink / Cinnabar) */}
-        <path
-          d="M62 90 L80 125 L98 90 Z"
-          fill="#9C2C1E"
-          stroke="#1F1A14"
-          strokeWidth="0.8"
-        />
-
-        {/* Golden Silk Cloud & Lotus Embroidery on Robe */}
-        <path
-          d="M56 110 C 54 135, 56 160, 58 186"
-          fill="none"
-          stroke="#E9CE84"
-          strokeWidth="1"
-          opacity="0.85"
-        />
-        <path
-          d="M104 110 C 106 135, 104 160, 102 186"
-          fill="none"
-          stroke="#E9CE84"
-          strokeWidth="1"
-          opacity="0.85"
-        />
-        {/* Subtle Lotus Petal Embroidery Motif */}
-        <path
-          d="M74 140 C 77 134, 83 134, 86 140 C 80 144, 76 142, 74 140 Z"
-          fill="none"
-          stroke="#E9CE84"
-          strokeWidth="0.8"
-          opacity="0.75"
-        />
-
-        {/* High Mandarin Collar & Imperial Jade Pendant */}
-        <path
-          d="M58 82 C 56 90, 58 98, 62 102 L98 102 C 102 98, 104 90, 102 82 Z"
-          fill="#2D4D3D"
-          stroke="#1F1A14"
-          strokeWidth="1.1"
-        />
-        <path
-          d="M64 82 C 66 90, 70 96, 80 98 C 90 96, 94 90, 96 82"
-          fill="none"
-          stroke="#E9CE84"
-          strokeWidth="1"
-        />
-        {/* Imperial Jade Medallion */}
-        <circle cx="80" cy="91" r="4.5" fill="#4B785E" stroke="#E9CE84" strokeWidth="1" />
-        <circle cx="80" cy="91" r="1.6" fill="#E9CE84" />
-
-        {/* Slender Neck & Graceful Face Contour */}
-        <path d="M60 46 C 58 62, 60 76, 66 86 L94 86 C 100 76, 102 62, 100 46 Z" fill="#EAC9A4" />
-
-        {/* Long Silk Hair Flowing Back */}
-        <path
-          d="M46 40 C 44 60, 48 78, 54 92 C 44 90, 36 78, 36 60 C 36 46, 40 34, 46 24 Z"
-          fill="#1C1610"
-        />
-        <path
-          d="M114 40 C 116 60, 112 78, 106 92 C 116 90, 124 78, 124 60 C 124 46, 120 34, 114 24 Z"
-          fill="#1C1610"
-        />
-
-        {/* Hair Top, Traditional Vietnamese Chignon Bun & Silk Crown */}
-        <path
-          d="M50 20 C 58 10, 70 4, 80 4 C 90 4, 102 10, 110 20 C 112 28, 110 36, 106 42 C 100 30, 90 22, 80 22 C 70 22, 60 30, 54 42 C 50 36, 48 28, 50 20 Z"
-          fill="#1C1610"
-        />
-        <ellipse cx="80" cy="12" rx="14" ry="9" fill="#1C1610" />
-
-        {/* Golden Lotus Hairpin (Trâm Cài Hoa Sen) */}
-        <path d="M92 8 C 98 6, 105 7, 108 13" fill="none" stroke="#E9CE84" strokeWidth="1.3" />
-        {/* Lotus Blossom on Pin */}
-        <circle cx="108" cy="13" r="2.2" fill="#B4574A" />
-        <circle cx="108" cy="13" r="0.9" fill="#E9CE84" />
-
-        {/* Willow-leaf Eyebrows (Lông Mày Lá Liễu) */}
-        <path
-          d="M53 57 C 56 54, 61 54, 63 56"
-          fill="none"
-          stroke="#2A241C"
-          strokeWidth="1.1"
-          strokeLinecap="round"
-        />
-        <path
-          d="M97 56 C 99 54, 104 54, 107 57"
-          fill="none"
-          stroke="#2A241C"
-          strokeWidth="1.1"
-          strokeLinecap="round"
-        />
-
-        {/* Almond Eyes with Gentle Insight & Warmth */}
-        <path
-          d="M55 63 C 58 60, 63 60, 66 63 C 63 66, 58 66, 55 63 Z"
-          fill="#FFFFFF"
-          stroke="#2A241C"
-          strokeWidth="0.9"
-        />
-        <circle cx="61" cy="63" r="2" fill="#241B14" />
-        <circle cx="60" cy="62" r="0.7" fill="#FFFFFF" />
-
-        <path
-          d="M94 63 C 97 60, 102 60, 105 63 C 102 66, 97 66, 94 63 Z"
-          fill="#FFFFFF"
-          stroke="#2A241C"
-          strokeWidth="0.9"
-        />
-        <circle cx="99" cy="63" r="2" fill="#241B14" />
-        <circle cx="98" cy="62" r="0.7" fill="#FFFFFF" />
-
-        {/* Soft Peach Cheeks (Má Ửng Đào) */}
-        <ellipse cx="57" cy="71" rx="5.5" ry="3.5" fill="#B4574A" opacity="0.28" />
-        <ellipse cx="103" cy="71" rx="5.5" ry="3.5" fill="#B4574A" opacity="0.28" />
-
-        {/* Graceful Nose & Serene Smile */}
-        <path
-          d="M78 67 C 79 70, 79 72, 78 74"
-          fill="none"
-          stroke="#2A241C"
-          strokeWidth="0.8"
-          strokeLinecap="round"
-        />
-        <path
-          d="M73 78 C 76 80.5, 84 80.5, 87 78"
-          fill="none"
-          stroke="#8C2B20"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-      </svg>
     </div>
   );
 };

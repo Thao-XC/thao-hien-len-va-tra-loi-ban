@@ -6,7 +6,7 @@ interface LadyThaoAvatarProps {
   showBorder?: boolean;
 }
 
-export const LADY_THAO_ICON_URL = '/thao_icon.jpg';
+export const LADY_THAO_ICON_URL = '/lady_thao_anime.jpg';
 
 export const LadyThaoAvatar: React.FC<LadyThaoAvatarProps> = ({
   className = '',
@@ -18,16 +18,16 @@ export const LadyThaoAvatar: React.FC<LadyThaoAvatarProps> = ({
   return (
     <div
       className={`relative rounded-full overflow-hidden flex-shrink-0 bg-[#2D4D3D] ${
-        showBorder ? 'border-2 border-[#E9CE84] shadow-md' : ''
+        showBorder ? 'border-2 border-[#E9CE84] shadow-md ring-2 ring-[#B23B28]/50' : ''
       } ${sizeClassName} ${className}`}
     >
       {!imageError ? (
         <img
           src={LADY_THAO_ICON_URL}
-          alt="Lady Thao Fortune Teller (Cô Thảo Bói Quẻ)"
+          alt="Magical Lady Thao (Cô Thảo Bói Quẻ - Cardcaptor Sakura x Folk Art)"
           referrerPolicy="no-referrer"
           onError={() => setImageError(true)}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transform scale-105"
         />
       ) : (
         /* Traditional Vietnamese Folk Art (Tranh Dân Gian Hàng Trống / Đông Hồ) Fallback Vector */

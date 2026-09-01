@@ -2,11 +2,15 @@ import React from 'react';
 
 interface ParchmentFrameProps {
   children: React.ReactNode;
+  maxWidthClassName?: string;
 }
 
-export const ParchmentFrame: React.FC<ParchmentFrameProps> = ({ children }) => {
+export const ParchmentFrame: React.FC<ParchmentFrameProps> = ({
+  children,
+  maxWidthClassName = 'max-w-xl',
+}) => {
   return (
-    <div className="relative w-full max-w-[450px] mx-auto my-2 sm:my-5">
+    <div className={`relative w-full ${maxWidthClassName} mx-auto my-2 sm:my-4 transition-all duration-500`}>
       {/* Top Scroll Wood Roller Bar with Cinnabar & Gold Caps */}
       <div className="relative h-4 bg-gradient-to-b from-[#B23B28] via-[#9C2C1E] to-[#6E1C12] rounded-xs shadow-md z-20 flex items-center justify-between px-1">
         {/* Left Cap */}
