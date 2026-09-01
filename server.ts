@@ -101,9 +101,13 @@ function generateRichFallbackInterpretation(
 app.post('/api/interpret', async (req, res) => {
   const { que, hao, question, history, language } = req.body;
 
-  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
 
   const streamFallback = async () => {
     const fallbackText = generateRichFallbackInterpretation(
@@ -115,11 +119,14 @@ app.post('/api/interpret', async (req, res) => {
     );
     const words = fallbackText.split(' ');
     for (const word of words) {
+      if (res.writableEnded) break;
       res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
-      await new Promise((r) => setTimeout(r, 25));
+      await new Promise((r) => setTimeout(r, 20));
     }
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    if (!res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    }
   };
 
   try {
@@ -175,27 +182,38 @@ app.post('/api/interpret', async (req, res) => {
       contentsArray = [{ role: 'user', parts: [{ text: openingPrompt }] }];
     }
 
-    // Call Gemini with a 5-second timeout race to guarantee instantaneous response
-    const geminiPromise = ai.models.generateContentStream({
-      model: 'gemini-3.7-flash',
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        temperature: 0.65,
-      },
-      contents: contentsArray,
-    });
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('AI response timed out')), 5000)
-    );
-
-    const responseStream: any = await Promise.race([geminiPromise, timeoutPromise]);
-
+    // Try models in order to prevent quota exhaustion outages
+    const CANDIDATE_MODELS = ['gemini-2.5-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
     let streamedAny = false;
-    for await (const chunk of responseStream) {
-      if (chunk.text) {
-        streamedAny = true;
-        res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+
+    for (const modelName of CANDIDATE_MODELS) {
+      if (streamedAny) break;
+      try {
+        const geminiPromise = ai.models.generateContentStream({
+          model: modelName,
+          config: {
+            systemInstruction: SYSTEM_PROMPT,
+            temperature: 0.65,
+          },
+          contents: contentsArray,
+        });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('AI response timed out')), 6000)
+        );
+
+        const responseStream: any = await Promise.race([geminiPromise, timeoutPromise]);
+
+        for await (const chunk of responseStream) {
+          if (chunk.text && !res.writableEnded) {
+            streamedAny = true;
+            res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+          }
+        }
+        if (streamedAny) break;
+      } catch (modelErr: any) {
+        console.warn(`Model ${modelName} failed or quota exceeded:`, modelErr?.message || modelErr);
+        // Continue loop to try next candidate model
       }
     }
 
@@ -204,15 +222,21 @@ app.post('/api/interpret', async (req, res) => {
       return;
     }
 
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    if (!res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    }
   } catch (err: any) {
     console.error('Interpret API error or timeout, falling back smoothly to authentic I Ching interpretation:', err);
     try {
-      await streamFallback();
+      if (!res.writableEnded) {
+        await streamFallback();
+      }
     } catch (fallbackErr) {
-      res.write(`data: ${JSON.stringify({ error: 'Quẻ đang được chiêm nghiệm. Xin bạn thử lại.' })}\n\n`);
-      res.end();
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ error: 'Quẻ đang được chiêm nghiệm. Xin bạn thử lại.' })}\n\n`);
+        res.end();
+      }
     }
   }
 });

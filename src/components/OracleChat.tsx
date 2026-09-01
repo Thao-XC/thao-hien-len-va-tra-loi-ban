@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Hexagram } from '../types';
 import { Send, RefreshCw, Copy, Check, MessageSquare, Sparkles } from 'lucide-react';
 import { playChime } from '../utils/audio';
+import { generateRichFallbackInterpretation } from '../utils/fallbackInterpreter';
 
 interface OracleChatProps {
   que: number;
@@ -81,18 +82,22 @@ export const OracleChat: React.FC<OracleChatProps> = ({
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullText = '';
+      let buffer = '';
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        const raw = decoder.decode(value, { stream: true });
-        const lines = raw.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        // Keep the last incomplete fragment in the buffer
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data: ')) {
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(trimmed.slice(6));
               if (data.text) {
                 fullText += data.text;
                 setCurrentStreamText(fullText);
@@ -108,6 +113,17 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         }
       }
 
+      // Process any remaining bytes in buffer
+      if (buffer.trim().startsWith('data: ')) {
+        try {
+          const data = JSON.parse(buffer.trim().slice(6));
+          if (data.text) {
+            fullText += data.text;
+            setCurrentStreamText(fullText);
+          }
+        } catch {}
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -121,19 +137,48 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         playChime(0.25);
       }
     } catch (err: any) {
-      console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          text:
-            language === 'vi'
-              ? 'Tạm thời chưa thể kết nối với Thảo. Bạn hãy kiểm tra lại hoặc thử lại sau giây lát.'
-              : "Couldn't reach Thao the fortune teller just now. Please try again in a moment.",
-          timestamp: Date.now(),
-        },
-      ]);
-      setCurrentStreamText('');
+      console.warn('API route unavailable (e.g. static Vercel build / offline), using client-side authentic I Ching engine:', err);
+      try {
+        const fallbackText = generateRichFallbackInterpretation(
+          queNum,
+          haoNum,
+          questionText,
+          language,
+          history
+        );
+        const words = fallbackText.split(' ');
+        let accumulated = '';
+        for (const word of words) {
+          accumulated += word + ' ';
+          setCurrentStreamText(accumulated);
+          await new Promise((r) => setTimeout(r, 22));
+        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text: accumulated.trim(),
+            timestamp: Date.now(),
+          },
+        ]);
+        setCurrentStreamText('');
+        if (soundEnabled) {
+          playChime(0.25);
+        }
+      } catch (fallbackErr) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text:
+              language === 'vi'
+                ? 'Thảo đang định tâm chiêm nghiệm quẻ xăm. Bạn hãy thử đặt lại câu hỏi.'
+                : 'Thao is settling into meditation. Please ask your question once more.',
+            timestamp: Date.now(),
+          },
+        ]);
+        setCurrentStreamText('');
+      }
     } finally {
       setIsStreaming(false);
     }
