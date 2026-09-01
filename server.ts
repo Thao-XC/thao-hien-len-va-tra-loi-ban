@@ -4,6 +4,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import hexagramsData from './src/hexagrams.json' with { type: 'json' };
 import { HEXAGRAM_DATA, getTransformedHexagram } from './src/utils/hexagramPatterns.ts';
+import { generateRichFallbackInterpretation } from './src/utils/fallbackInterpreter.ts';
 
 const app = express();
 const PORT = 3000;
@@ -11,19 +12,19 @@ const PORT = 3000;
 app.use(express.json());
 
 const SYSTEM_PROMPT =
-  "You are Thao, a wise, warm, delightfully friendly, and perceptive fortune teller who runs Sạp Bói Thảo (Thao's Fortune Stall), " +
-  "reading the I Ching (Kinh Dịch) through traditional Vietnamese bamboo fortune sticks (thẻ xăm). " +
-  "You carry a warm, compassionate folk-fairy charm (reminiscent of 'Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn').\n\n" +
-  "AUTHENTIC I CHING METHODOLOGY (QUẺ CHỦ → HÀO ĐỘNG → QUẺ BIẾN):\n" +
-  "1. Quẻ Chủ (Primary Hexagram): Represents the present situation, foundational dynamics, and root energy.\n" +
-  "2. Hào Động (Changing Line): The critical inflection point, the root cause of change, and precise action advice.\n" +
-  "3. Quẻ Biến (Transformed Hexagram): The resulting situation, future trajectory, and outcome when following or defying the line's guidance.\n\n" +
-  "YOUR ABSOLUTE TOP PRIORITY IS STRICT FIDELITY TO CLASSICAL I CHING TEXTS, OBJECTIVITY, AND CONCISENESS.\n" +
-  "- You are provided with the exact classical Judgment (Thoán Từ) and Line Text (Hào Từ) for Quẻ Chủ, as well as the Judgment of Quẻ Biến.\n" +
-  "- Ground your interpretation rigorously on these exact texts, not generic horoscope fluff.\n" +
-  "- If the omen is challenging, cautionary, or unfavorable, explain it honestly with tact and clarity — do not artificially sugarcoat or force positive spin.\n" +
-  "- Keep your initial reading concise (under 140 words) and follow-up answers under 100 words.\n" +
-  "- Speak warmly and directly like a wise, compassionate elder or close confidante (xưng Thảo, gọi bạn / bạn hữu). No rigid bullet points or robotic lists. If asked in Vietnamese, reply in natural, evocative, graceful Vietnamese.";
+  "You are Lady Thao (Cô Thảo Bói Quẻ), an extraordinarily perceptive, warm, and wise Vietnamese I Ching fortune teller and divination master who runs Sạp Bói Thảo. " +
+  "You combine the deep wisdom of ancient I Ching (Kinh Dịch) with a delightful, compassionate anime-folklore charm (reminiscent of '🌸 Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn').\n\n" +
+  "YOUR PRIME DIRECTIVE: PROVIDE DEEPLY TAILORED, HIGHLY RELEVANT, AND ACTIONABLE ANSWERS TO THE USER'S SPECIFIC QUESTION.\n" +
+  "- Never give generic horoscope platitudes. Directly address the user's exact dilemma (e.g. career choices, job promotion, love/crush/marriage, finances, investments, life crossroads, health, relationships).\n" +
+  "- Ground every insight in the authentic I Ching Triad:\n" +
+  "  1. Quẻ Chủ (Primary Hexagram): Explains the seeker's current real-world state and root energy.\n" +
+  "  2. Hào Động (Changing Line): The exact turning point and specific DOs and DON'Ts for their question.\n" +
+  "  3. Quẻ Biến (Transformed Hexagram): The resulting outcome and future trajectory if they heed the advice.\n\n" +
+  "TONE & STYLE GUIDELINES:\n" +
+  "- Speak warmly and naturally as Cô Thảo (xưng Thảo, gọi bạn / bạn hữu). Be empathetic yet honest and objective.\n" +
+  "- When responding in Vietnamese, use rich, elegant, evocative, and clear Vietnamese with clear formatting.\n" +
+  "- Structure your response cleanly with brief headers so it is easy to read.\n" +
+  "- Keep the initial reading rich and insightful (~180-250 words) and follow-up answers clear and focused (~100-150 words).";
 
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
@@ -45,57 +46,6 @@ app.get('/api/health', (req, res) => {
 app.get('/api/hexagrams', (req, res) => {
   res.json(hexagramsData);
 });
-
-function generateRichFallbackInterpretation(
-  que: number,
-  hao: number,
-  question: string,
-  language: 'en' | 'vi',
-  history?: any[]
-): string {
-  const hexMap = hexagramsData as Record<string, any>;
-  const primaryHex = hexMap[String(que)];
-  const primaryMeta = HEXAGRAM_DATA[que] || HEXAGRAM_DATA[1];
-  const transformed = getTransformedHexagram(Number(que) || 1, Number(hao) || 1);
-  const transformedHex = hexMap[String(transformed.number)] || primaryHex;
-  const transformedMeta = transformed.meta;
-
-  const primaryJudgment = primaryHex?.wilhelm_judgment?.text || 'Thuận theo đạo trung chính, giữ tâm kiên định ắt vạn sự hanh thông.';
-  const primaryLineText = primaryHex?.wilhelm_lines?.[String(hao)]?.text || 'Hành sự cẩn trọng, quan sát thời thế trước khi dốc toàn lực.';
-  const transformedJudgment = transformedHex?.wilhelm_judgment?.text || 'Tương lai rộng mở khi bước qua biến cố chuyển hóa.';
-
-  // If this is a follow-up question
-  if (history && history.length > 1) {
-    if (language === 'vi') {
-      return `Thảo hiểu băn khoăn của bạn! Với câu hỏi này, quẻ gốc #${que} (${primaryMeta.vietnameseName}) đang chuyển dịch mạnh mẽ tại Hào ${hao} để tiến tới quẻ #${transformed.number} (${transformedMeta.vietnameseName}).\n\n` +
-        `Lời khuyên mấu chốt: "${primaryLineText}". Bạn chớ nên nóng vội hay cưỡng cầu điều chưa chín muồi. Hãy tập trung củng cố nội lực (${primaryMeta.element}), giữ sự chân thành và khiêm nhường thì mọi sự sẽ dần thuận buồm xuôi gió.`;
-    } else {
-      return `Lady Thao hears your heart! For your follow-up, Primary Hexagram #${que} (${primaryHex?.english || 'The Oracle'}) shifting at Line ${hao} toward Hexagram #${transformed.number} (${transformedHex?.english || 'The Future'}) advises:\n\n` +
-        `"${primaryLineText}". Do not rush or force premature outcomes. Nurture your inner composure and act with sincerity to navigate toward clarity.`;
-    }
-  }
-
-  // Initial interpretation
-  if (language === 'vi') {
-    return `🌸 Chào bạn, hãy an lòng. Thảo đã gieo được quẻ xăm linh ứng cho bạn:\n\n` +
-      `📜 Quẻ Chủ: #${que} - ${primaryMeta.vietnameseName} (${primaryMeta.upperTrigram} trên ${primaryMeta.lowerTrigram}, ngũ hành ${primaryMeta.element}).\n` +
-      `Thoán Từ dạy rằng: "${primaryJudgment}". Đây là nền tảng hiện tại của sự việc.\n\n` +
-      `⚡ Hào Động: Hào ${hao} (${transformed.wasSolid ? 'Hào Dương' : 'Hào Âm'} biến đổi).\n` +
-      `Lời Hào mách nước: "${primaryLineText}". Đây chính là điểm then chốt nhất mà bạn cần lưu tâm.\n\n` +
-      `✨ Quẻ Biến: #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedHex?.english || ''}).\n` +
-      `Thoán Từ Quẻ Biến: "${transformedJudgment}".\n\n` +
-      `🔮 Lời Thảo nhắn gửi về câu hỏi "${question || 'vận trình'}": Hãy lắng nghe lời răn của Hào ${hao}, giữ tâm trung chính, thuận theo lẽ tự nhiên thì điềm hung cũng hóa cát, tiền đồ sẽ hanh thông sáng rõ.`;
-  } else {
-    return `🌸 Welcome, dear traveler. Lady Thao has cast the sacred bamboo stick for you:\n\n` +
-      `📜 Primary Hexagram: #${que} - ${primaryHex?.english || 'The Creative'} (Upper: ${primaryMeta.upperTrigram}, Lower: ${primaryMeta.lowerTrigram}, Element: ${primaryMeta.element}).\n` +
-      `Judgment: "${primaryJudgment}". This reflects your present root condition.\n\n` +
-      `⚡ Changing Line: Line ${hao} (${transformed.wasSolid ? 'Solid Line' : 'Broken Line'} transforming).\n` +
-      `Line Oracle: "${primaryLineText}". This is the precise turning point.\n\n` +
-      `✨ Transformed Hexagram: #${transformed.number} - ${transformedHex?.english || 'The Result'}.\n` +
-      `Resulting Judgment: "${transformedJudgment}".\n\n` +
-      `🔮 Lady Thao's Insight for "${question || 'your question'}": Pay close attention to Line ${hao}. By aligning action with virtue and patience, challenges will transform into fruitful outcomes.`;
-  }
-}
 
 // Interpretation streaming endpoint
 app.post('/api/interpret', async (req, res) => {
@@ -157,29 +107,53 @@ app.post('/api/interpret', async (req, res) => {
 
     let contentsArray: any[] = [];
 
+    const contextPreamble =
+      `[AUTHENTIC I CHING HEXAGRAM DRAWING CONTEXT]\n` +
+      `- Quẻ Chủ (Primary Hexagram): #${que} - ${primaryMeta.vietnameseName} (${primaryHex?.english})\n` +
+      `  * Trigrams: Thượng ${primaryMeta.upperTrigram} / Hạ ${primaryMeta.lowerTrigram}, Ngũ Hành: ${primaryMeta.element}\n` +
+      `  * Thoán Từ (Judgment): "${primaryJudgment}"\n` +
+      `- Hào Động (Changing Line): Hào ${hao} (${transformed.wasSolid ? 'Dương ⚊' : 'Âm ⚋'} biến ${transformed.nowSolid ? 'Dương ⚊' : 'Âm ⚋'})\n` +
+      `  * Lời Hào (Line Text): "${primaryLineText}"\n` +
+      `- Quẻ Biến (Transformed Result Hexagram): #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedHex?.english})\n` +
+      `  * Thoán Từ Quẻ Biến (Resulting Judgment): "${transformedJudgment}"\n\n`;
+
     if (history && Array.isArray(history) && history.length > 0) {
-      contentsArray = history.map((m: any) => ({
-        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-        parts: [{ text: m.text }],
-      }));
+      // For conversational history, include system context as first turn
+      contentsArray = [
+        {
+          role: 'user',
+          parts: [{ text: `${contextPreamble}The user previously cast this hexagram. Below is our ongoing conversation.` }],
+        },
+        {
+          role: 'model',
+          parts: [{ text: 'Thảo đã hiểu rõ hoàn cảnh và quẻ xăm của bạn. Mời bạn tiếp tục hỏi.' }],
+        },
+        ...history.map((m: any) => ({
+          role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+          parts: [{ text: m.text }],
+        })),
+      ];
     } else {
-      const langInstruction = language === 'vi' 
-        ? 'Hãy luận giải bằng tiếng Việt thật tinh tế, thấu đáo, chuẩn Kinh Dịch, xưng Thảo và gọi người hỏi là bạn.'
-        : 'Please interpret in English warmly, concisely, and grounded in classical I Ching wisdom.';
+      const userQuestion = question || (language === 'vi' ? 'Xin Thảo luận giải vận trình và hướng đi cho tôi.' : 'Please interpret my path and give guidance.');
 
-      const openingPrompt =
-        `[DRAWING DATA FROM TRADITIONAL I CHING STICKS]\n` +
-        `- Quẻ Chủ (Primary Hexagram): #${que} - ${primaryMeta.vietnameseName} (${primaryHex?.english})\n` +
-        `  * Thượng quái: ${primaryMeta.upperTrigram}, Hạ quái: ${primaryMeta.lowerTrigram}, Ngũ hành: ${primaryMeta.element}\n` +
-        `  * Thoán Từ (Judgment): "${primaryJudgment}"\n` +
-        `- Hào Động (Changing Line): Hào ${hao} (${transformed.wasSolid ? 'Dương ⚊' : 'Âm ⚋'} biến ${transformed.nowSolid ? 'Dương ⚊' : 'Âm ⚋'})\n` +
-        `  * Lời Hào (Line Text): "${primaryLineText}"\n` +
-        `- Quẻ Biến (Transformed Result Hexagram): #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedHex?.english})\n` +
-        `  * Thoán Từ Quẻ Biến: "${transformedJudgment}"\n\n` +
-        `User's question: "${question || 'What guidance does this hold for my current circumstance?'}"\n\n` +
-        `${langInstruction}`;
+      const promptInstruction = language === 'vi'
+        ? `${contextPreamble}` +
+          `CÂU HỎI CỦA NGƯỜI XIN QUẺ: "${userQuestion}"\n\n` +
+          `YÊU CẦU CỦA CÔ THẢO:\n` +
+          `1. Mở đầu bằng lời chào thân tình và trực tiếp giải đáp câu hỏi "${userQuestion}" (không vòng vo).\n` +
+          `2. Trình bày rõ ràng 3 phần gắn liền với câu hỏi cụ thể:\n` +
+          `   - 📜 Hiện Trạng (Quẻ Chủ #${que} - ${primaryMeta.vietnameseName}): Đánh giá tình thế hiện tại của câu hỏi theo Thoán Từ.\n` +
+          `   - ⚡ Điểm Then Chốt & Lời Khuyên Hành Động (Hào Động ${hao}): Chỉ rõ điều NÊN LÀM và KHÔNG NÊN LÀM dựa trên Lời Hào.\n` +
+          `   - ✨ Xu Hướng Tương Lai (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}): Dự báo kết quả cụ thể cho câu hỏi.\n` +
+          `3. Lời đúc kết ngắn gọn, truyền cảm hứng và sự an tâm từ Thảo.`
+        : `${contextPreamble}` +
+          `SEEKER'S SPECIFIC QUESTION: "${userQuestion}"\n\n` +
+          `INSTRUCTIONS FOR LADY THAO:\n` +
+          `1. Begin with a warm greeting and directly answer their question "${userQuestion}".\n` +
+          `2. Clearly explain how the Primary Hexagram, Changing Line #${hao}, and Transformed Hexagram #${transformed.number} directly apply with specific action advice.\n` +
+          `3. End with Lady Thao's comforting and empowering wisdom.`;
 
-      contentsArray = [{ role: 'user', parts: [{ text: openingPrompt }] }];
+      contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
     }
 
     // Try models in order to prevent quota exhaustion outages
@@ -193,7 +167,7 @@ app.post('/api/interpret', async (req, res) => {
           model: modelName,
           config: {
             systemInstruction: SYSTEM_PROMPT,
-            temperature: 0.65,
+            temperature: 0.6,
           },
           contents: contentsArray,
         });

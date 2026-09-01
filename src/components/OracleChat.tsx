@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Hexagram } from '../types';
-import { Send, RefreshCw, Copy, Check, MessageSquare, Sparkles } from 'lucide-react';
+import { Send, Copy, Check, Sparkles } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { generateRichFallbackInterpretation } from '../utils/fallbackInterpreter';
 
@@ -28,29 +28,39 @@ export const OracleChat: React.FC<OracleChatProps> = ({
   const [currentStreamText, setCurrentStreamText] = useState<string>('');
   const [followUpInput, setFollowUpInput] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasInitializedRef = useRef<boolean>(false);
 
-  // Auto-scroll to bottom of conversation
+  // Scroll smoothly only when a complete new message is added or user interacts (NOT on every token)
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
+
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, currentStreamText]);
+    scrollToBottom();
+  }, [messages.length]);
 
   // Initial reading trigger
   useEffect(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
 
-    // Add user's question first
+    const userQuestion =
+      initialQuestion.trim() ||
+      (language === 'vi'
+        ? 'Xin Thảo luận giải vận trình và lời khuyên cho tôi.'
+        : 'Please interpret this hexagram and give me guidance.');
+
     const initialUserMsg: ChatMessage = {
       role: 'user',
-      text: initialQuestion || (language === 'vi' ? 'Xin Thảo luận giải vận trình cho tôi.' : 'Please interpret this draw for my path.'),
+      text: userQuestion,
       timestamp: Date.now(),
     };
     setMessages([initialUserMsg]);
 
-    // Stream initial interpretation from Thao
-    streamInterpretation(que, hao, initialUserMsg.text, []);
+    streamInterpretation(que, hao, userQuestion, []);
   }, [que, hao, initialQuestion, language]);
 
   const streamInterpretation = async (
@@ -76,7 +86,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
       });
 
       if (!response.ok || !response.body) {
-        throw new Error('Could not reach the fortune teller');
+        throw new Error('Could not reach backend stream');
       }
 
       const reader = response.body.getReader();
@@ -90,7 +100,6 @@ export const OracleChat: React.FC<OracleChatProps> = ({
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        // Keep the last incomplete fragment in the buffer
         buffer = lines.pop() || '';
 
         for (const line of lines) {
@@ -107,13 +116,12 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                 setCurrentStreamText(fullText);
               }
             } catch {
-              // Ignore partial JSON
+              // Ignore partial chunk
             }
           }
         }
       }
 
-      // Process any remaining bytes in buffer
       if (buffer.trim().startsWith('data: ')) {
         try {
           const data = JSON.parse(buffer.trim().slice(6));
@@ -128,7 +136,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         ...prev,
         {
           role: 'assistant',
-          text: fullText || (language === 'vi' ? 'Thao chưa nhận được thông điệp rõ ràng. Bạn hãy thử lại.' : 'The interpretation is still settling. Please try asking again.'),
+          text: fullText || (language === 'vi' ? 'Thảo đang định tâm chiêm nghiệm quẻ.' : 'The reading is settling.'),
           timestamp: Date.now(),
         },
       ]);
@@ -137,7 +145,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         playChime(0.25);
       }
     } catch (err: any) {
-      console.warn('API route unavailable (e.g. static Vercel build / offline), using client-side authentic I Ching engine:', err);
+      console.warn('API route fallback triggered:', err);
       try {
         const fallbackText = generateRichFallbackInterpretation(
           queNum,
@@ -151,7 +159,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         for (const word of words) {
           accumulated += word + ' ';
           setCurrentStreamText(accumulated);
-          await new Promise((r) => setTimeout(r, 22));
+          await new Promise((r) => setTimeout(r, 16));
         }
         setMessages((prev) => [
           ...prev,
@@ -172,8 +180,8 @@ export const OracleChat: React.FC<OracleChatProps> = ({
             role: 'assistant',
             text:
               language === 'vi'
-                ? 'Thảo đang định tâm chiêm nghiệm quẻ xăm. Bạn hãy thử đặt lại câu hỏi.'
-                : 'Thao is settling into meditation. Please ask your question once more.',
+                ? 'Thảo đang kết nối huyền cơ. Bạn hãy thử đặt lại câu hỏi.'
+                : 'Lady Thao is attuning to the oracle. Please ask once more.',
             timestamp: Date.now(),
           },
         ]);
@@ -199,7 +207,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
 
   const handleCopyFortune = () => {
     const lastAssistantMsg = [...messages].reverse().find((m) => m.role === 'assistant');
-    const textToCopy = `🔮 Thao's Fortune Telling Shop\n📜 Que ${que} (${hexagram.english}) - Hao ${hao}\n💬 Question: ${initialQuestion}\n\n✨ Interpretation:\n${
+    const textToCopy = `🔮 Sạp Bói Cô Thảo\n📜 Quẻ #${que} (${hexagram.english}) - Hào Động ${hao}\n💬 Câu hỏi: ${initialQuestion}\n\n✨ Lời luận giải:\n${
       lastAssistantMsg?.text || currentStreamText
     }`;
     navigator.clipboard.writeText(textToCopy);
@@ -209,13 +217,16 @@ export const OracleChat: React.FC<OracleChatProps> = ({
 
   const suggestionChips =
     language === 'vi'
-      ? ['Tôi nên chú ý điều gì nhất?', 'Làm sao để chuẩn bị trước thay đổi?', 'Về công việc và tài lộc thế nào?']
-      : ['What should I be most cautious of?', 'How can I best prepare for changes?', 'What about career and finances?'];
+      ? ['Tôi nên làm gì lúc này để đón lành tránh dữ?', 'Về công việc và tiền bạc sắp tới thế nào?', 'Có điều gì Thảo khuyên nên tránh không?']
+      : ['What is the most critical action to take now?', 'What about career and finances?', 'What pitfalls should I avoid?'];
 
   return (
-    <div className="w-full flex flex-col space-y-4">
-      {/* Chat Thread */}
-      <div className="space-y-3.5 pt-1">
+    <div className="w-full flex flex-col space-y-3">
+      {/* Scrollable Conversation Container */}
+      <div
+        ref={messagesContainerRef}
+        className="w-full max-h-[480px] overflow-y-auto space-y-3 pr-1 select-text scroll-smooth"
+      >
         {messages.map((msg, index) => {
           const isUser = msg.role === 'user';
           return (
@@ -229,15 +240,15 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                   isUser ? 'text-[#AD8A2E]' : 'text-[#7C2A1C]'
                 }`}
               >
-                {isUser ? (language === 'vi' ? 'Bạn (You)' : 'You') : "Thảo (Fortune Teller)"}
+                {isUser ? (language === 'vi' ? 'Bạn hỏi (You)' : 'Your Question') : '🌸 Cô Thảo Luận Giải'}
               </div>
 
               {/* Message Bubble */}
               <div
-                className={`p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[92%] sm:max-w-[88%] font-serif shadow-xs ${
+                className={`p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[96%] sm:max-w-[92%] font-serif shadow-xs ${
                   isUser
-                    ? 'bg-gradient-to-b from-[#B23B28] to-[#9C2C1E] text-[#F7F0E1] border border-[#7C2A1C] rounded-tr-none'
-                    : 'bg-white/80 border border-[#AD8A2E]/35 text-[#2E2415] rounded-tl-none shadow-[0_3px_12px_rgba(46,36,21,0.06)]'
+                    ? 'bg-gradient-to-b from-[#B23B28] to-[#8C2214] text-[#FFFDF7] border border-[#6E1C12] rounded-tr-none'
+                    : 'bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)]'
                 }`}
               >
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -250,20 +261,18 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         {isStreaming && (
           <div className="flex flex-col items-start">
             <div className="text-[0.7rem] font-sans font-semibold uppercase tracking-wider mb-1 px-1 text-[#7C2A1C] flex items-center gap-1.5">
-              <span>Thảo (Fortune Teller)</span>
-              <Sparkles className="w-3 h-3 text-[#AD8A2E] animate-spin" />
+              <span>🌸 Cô Thảo Đang Luận Giải...</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#AD8A2E] animate-spin" />
             </div>
 
-            <div className="p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[92%] sm:max-w-[88%] font-serif bg-white/80 border border-[#AD8A2E]/35 text-[#2E2415] rounded-tl-none shadow-[0_3px_12px_rgba(46,36,21,0.06)]">
+            <div className="p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[96%] sm:max-w-[92%] font-serif bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)]">
               <span className="whitespace-pre-wrap">
-                {currentStreamText || (language === 'vi' ? 'Thảo đang đọc quẻ...' : 'Thao is contemplating your hexagram...')}
+                {currentStreamText || (language === 'vi' ? 'Thảo đang định tâm đọc quẻ cho bạn...' : 'Lady Thao is contemplating your oracle...')}
               </span>
               <span className="inline-block w-1.5 h-4 bg-[#7C2A1C] ml-1 animate-pulse align-middle" />
             </div>
           </div>
         )}
-
-        <div ref={chatBottomRef} />
       </div>
 
       {/* Suggested Follow-up Prompts */}
@@ -276,9 +285,9 @@ export const OracleChat: React.FC<OracleChatProps> = ({
               onClick={() => {
                 setFollowUpInput(chip);
               }}
-              className="text-xs font-sans px-2.5 py-1 rounded-full bg-[#EFE4CB]/70 hover:bg-[#EFE4CB] text-[#6E5C3E] border border-[#AD8A2E]/30 transition-colors"
+              className="text-xs font-sans px-2.5 py-1 rounded-full bg-[#EFE4CB]/80 hover:bg-[#EFE4CB] hover:text-[#7C2A1C] text-[#6E5C3E] border border-[#AD8A2E]/40 transition-colors cursor-pointer active:scale-98"
             >
-              {chip}
+              • {chip}
             </button>
           ))}
         </div>
@@ -294,29 +303,29 @@ export const OracleChat: React.FC<OracleChatProps> = ({
             onChange={(e) => setFollowUpInput(e.target.value)}
             placeholder={
               language === 'vi'
-                ? 'Hỏi tiếp Thảo về quẻ này...'
-                : 'Ask Thao a follow-up question...'
+                ? 'Hỏi tiếp Cô Thảo về công việc, tình duyên, cách hành sự...'
+                : 'Ask Lady Thao a follow-up question...'
             }
-            className="flex-1 px-3.5 py-2.5 bg-white/70 border border-[#AD8A2E]/40 rounded-xs text-sm font-serif text-[#2E2415] placeholder:text-[#6E5C3E]/60 focus:outline-none focus:border-[#B23B28] focus:ring-1 focus:ring-[#B23B28]"
+            className="flex-1 px-3.5 py-2.5 bg-white border border-[#AD8A2E]/50 rounded-xs text-sm font-serif text-[#2E2415] placeholder:text-[#6E5C3E]/60 focus:outline-none focus:border-[#B23B28] focus:ring-1 focus:ring-[#B23B28] shadow-2xs"
           />
           <button
             type="submit"
             id="send-followup-button"
             disabled={!followUpInput.trim()}
-            className="px-4 py-2.5 bg-[#B23B28] hover:bg-[#7C2A1C] text-[#F7F0E1] rounded-xs font-sans text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm"
+            className="px-4 py-2.5 bg-[#B23B28] hover:bg-[#7C2A1C] text-[#FFFDF7] rounded-xs font-sans text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{language === 'vi' ? 'Gửi' : 'Ask'}</span>
+            <span className="hidden sm:inline">{language === 'vi' ? 'Hỏi Thảo' : 'Ask'}</span>
           </button>
         </form>
       )}
 
-      {/* Action Footer: Copy & Draw Another */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#AD8A2E]/25">
+      {/* Action Footer: Copy Reading & Draw Another Que */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#AD8A2E]/30">
         <button
           type="button"
           onClick={handleCopyFortune}
-          className="px-3 py-1.5 rounded-xs text-xs font-sans font-medium text-[#6E5C3E] hover:text-[#2E2415] border border-[#AD8A2E]/30 hover:bg-[#AD8A2E]/10 transition-colors flex items-center gap-1.5 cursor-pointer"
+          className="px-3 py-1.5 rounded-xs text-xs font-sans font-medium text-[#6E5C3E] hover:text-[#2E2415] border border-[#AD8A2E]/40 hover:bg-[#AD8A2E]/10 transition-colors flex items-center gap-1.5 cursor-pointer"
         >
           {copied ? (
             <>
@@ -334,10 +343,9 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         <button
           type="button"
           onClick={onReset}
-          className="px-4 py-1.5 rounded-xs text-xs font-sans font-semibold bg-[#2E2415] hover:bg-[#4A3B24] text-[#F7F0E1] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xs text-xs font-sans font-semibold bg-[#7C2A1C] hover:bg-[#B23B28] text-[#FFFDF7] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>{language === 'vi' ? 'Gieo Quẻ Mới' : 'Draw Another Que'}</span>
+          <span>{language === 'vi' ? 'Gieo Quẻ Mới ➔' : 'Draw Another Que ➔'}</span>
         </button>
       </div>
     </div>

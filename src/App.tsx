@@ -7,6 +7,7 @@ import { StickTube } from './components/StickTube';
 import { HexagramVisualizer } from './components/HexagramVisualizer';
 import { OracleChat } from './components/OracleChat';
 import { HexagramCodexModal } from './components/HexagramCodexModal';
+import { BatQuaiIcon } from './components/BatQuaiIcon';
 import { HexagramDataset, Hexagram } from './types';
 import localHexagrams from './hexagrams.json' with { type: 'json' };
 import { Volume2, VolumeX, Globe, BookOpen, Sparkles, ArrowLeft, RefreshCw, Flame } from 'lucide-react';
@@ -132,10 +133,11 @@ export default function App() {
 
       {/* Top App Bar (GitHub link removed as requested, clean layout) */}
       <header className={`w-full ${isThaoAppeared ? 'max-w-3xl' : 'max-w-xl'} flex items-center justify-between py-2 px-1 mb-1 z-30 relative transition-all duration-500`}>
-        {/* Sạp Bói Brand Badge */}
+        {/* Sạp Bói Brand Badge with Rotating Bát Quái Magic Circle */}
         <div className="flex items-center gap-2">
+          <BatQuaiIcon size={32} animate={true} className="border border-[#E9CE84] shadow-xs" />
           <div className="w-8 h-8 rounded-full border border-[#AD8A2E] overflow-hidden shadow-xs ring-2 ring-[#B23B28]/40">
-            <img src="/lady_thao_anime.jpg" alt="Lady Thao" className="w-full h-full object-cover" />
+            <img src="/lady_thao_ghibli.jpg" alt="Lady Thao" className="w-full h-full object-cover" />
           </div>
           <span className="font-serif italic font-bold text-base sm:text-lg text-[#7C2A1C] tracking-tight flex items-center gap-1.5">
             <span>Sạp Bói Cô Thảo</span>
@@ -306,25 +308,15 @@ export default function App() {
         {/* =========================================================================
             SCREEN 2: LADY THAO APPEARS WITH FOLKLORE CLOUD EFFECTS & DECIPHERS
            ========================================================================= */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {isThaoAppeared && fallenQue !== null && fallenHao !== null && currentHexagram && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="space-y-4 relative"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="space-y-3.5 relative overflow-hidden"
             >
-              {/* MAGICAL CLOUD ENTRANCE OVERLAY (Mây Ngũ Sắc Giáng Trần) */}
-              <motion.div
-                initial={{ opacity: 0.9, scale: 1.2 }}
-                animate={{ opacity: 0, scale: 2.2 }}
-                transition={{ duration: 1.8, ease: 'easeOut' }}
-                className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center overflow-hidden"
-              >
-                <div className="w-80 h-80 rounded-full bg-gradient-to-tr from-[#E9CE84]/70 via-[#FFFDF7]/95 to-[#B23B28]/40 blur-3xl" />
-              </motion.div>
-
               {/* Navigation Bar Back to Sạp Bói & Reset */}
               <div className="flex items-center justify-between pb-2 border-b border-[#AD8A2E]/30">
                 <button
@@ -336,70 +328,71 @@ export default function App() {
                   <span>{language === 'vi' ? 'Về Sạp Bói / Gieo quẻ khác' : 'Return to Sạp Bói / Draw again'}</span>
                 </button>
 
-                <div className="text-[0.7rem] sm:text-xs font-sans uppercase tracking-widest text-[#AD8A2E] font-bold flex items-center gap-1.5">
+                <div className="text-[0.7rem] sm:text-xs font-sans uppercase tracking-widest text-[#7C2A1C] font-bold flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
                   <span>{language === 'vi' ? 'CÔ THẢO GIẢI QUẺ' : 'LADY THAO DECIPHERING'}</span>
                 </div>
               </div>
 
               {/* TOP CONSULTATION SECTION: LADY THAO PORTRAIT + WELCOMING DIALOGUE */}
-              <div className="bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F5E8D0] p-4 sm:p-5 rounded-xs border border-[#AD8A2E]/40 shadow-xs relative">
+              <div className="bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F5E8D0] p-3.5 sm:p-4 rounded-xs border border-[#AD8A2E]/40 shadow-xs relative">
                 {/* Corner Accents */}
                 <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-[#B23B28]" />
                 <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-[#B23B28]" />
 
-                <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+                <div className="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-5">
                   {/* Young Pretty Lady Thao Portrait with Folklore Cloud Halo & I-Ching Nails */}
                   <div className="flex-shrink-0">
-                    <ThaoPortrait isSpeaking={true} showAura={true} className="w-40 sm:w-48 h-auto" />
+                    <ThaoPortrait isSpeaking={true} showAura={true} className="w-36 sm:w-44 h-auto" />
                   </div>
 
                   {/* Welcoming Speech Card from Lady Thao */}
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25, duration: 0.5 }}
-                    className="flex-1 text-left relative p-4 bg-white/90 border border-[#AD8A2E]/40 rounded-xs shadow-[0_4px_16px_rgba(46,36,21,0.06)]"
+                    transition={{ delay: 0.15, duration: 0.4 }}
+                    className="flex-1 text-left relative p-3.5 bg-white/95 border border-[#AD8A2E]/40 rounded-xs shadow-[0_2px_8px_rgba(46,36,21,0.06)]"
                   >
                     {/* Speaking speech bubble arrow */}
-                    <div className="hidden md:block absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-b border-l border-[#AD8A2E]/40 rotate-45" />
+                    <div className="hidden sm:block absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-b border-l border-[#AD8A2E]/40 rotate-45" />
 
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="font-sans font-bold text-xs uppercase tracking-wider text-[#7C2A1C]">
-                        {language === 'vi' ? 'Lời chào từ Cô Thảo' : 'Lady Thao’s Greeting'}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="font-sans font-bold text-xs uppercase tracking-wider text-[#7C2A1C] flex items-center gap-1">
+                        <span>🌸</span>
+                        <span>{language === 'vi' ? 'Cô Thảo Thuận Lòng Giải Quẻ' : 'Lady Thao’s Divination'}</span>
                       </span>
                     </div>
 
-                    <p className="font-serif italic text-sm sm:text-base text-[#2E2415] leading-relaxed">
+                    <p className="font-serif text-sm sm:text-base text-[#2E2415] leading-relaxed">
                       {language === 'vi' ? (
                         <>
                           <span className="font-bold text-[#7C2A1C]">"Thảo chào bạn! </span>
                           {question.trim() ? (
                             <>
-                              Có phải bạn đang trăn trở về chuyện:{' '}
-                              <span className="font-semibold text-[#B23B28]">"{question}"</span>?{' '}
+                              Về băn khoăn:{' '}
+                              <span className="font-semibold text-[#B23B28]">"{question}"</span>,{' '}
                             </>
                           ) : null}
-                          Đừng quá âu lo, thẻ xăm Kinh Dịch đã hiện rõ huyền cơ:{' '}
+                          thẻ xăm Kinh Dịch linh ứng chỉ ra{' '}
                           <span className="font-semibold text-[#7C2A1C]">
                             Quẻ #{fallenQue} ({currentMeta?.vietnameseName}) · Hào Động {fallenHao}
                           </span>
-                          . Hãy cùng Thảo xem xét chi tiết quẻ và nghe luận giải sau đây..."
+                          . Hãy xem biến chuyển quẻ và lắng nghe lời luận giải chi tiết bên dưới."
                         </>
                       ) : (
                         <>
-                          <span className="font-bold text-[#7C2A1C]">"Greetings, dear seeker! </span>
+                          <span className="font-bold text-[#7C2A1C]">"Greetings, seeker! </span>
                           {question.trim() ? (
                             <>
-                              You came asking:{' '}
-                              <span className="font-semibold text-[#B23B28]">"{question}"</span>.{' '}
+                              Regarding your question:{' '}
+                              <span className="font-semibold text-[#B23B28]">"{question}"</span>,{' '}
                             </>
                           ) : null}
-                          Cast aside your worries; the sacred stick has unveiled:{' '}
+                          the sacred oracle has revealed{' '}
                           <span className="font-semibold text-[#7C2A1C]">
                             Hexagram #{fallenQue} ({currentHexagram.english}) · Line {fallenHao}
                           </span>
-                          . Let us examine the divine transformation..."
+                          . Let us observe the hexagram transition and receive your reading below."
                         </>
                       )}
                     </p>
@@ -416,7 +409,7 @@ export default function App() {
               />
 
               {/* Live Oracle AI Dialogue Streaming with Lady Thao */}
-              <div className="bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F5E8D0] p-4 sm:p-5 rounded-xs border border-[#AD8A2E]/40 shadow-xs">
+              <div className="bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F5E8D0] p-3.5 sm:p-4 rounded-xs border border-[#AD8A2E]/40 shadow-xs">
                 <OracleChat
                   que={fallenQue}
                   hao={fallenHao}

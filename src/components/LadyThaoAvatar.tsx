@@ -6,7 +6,7 @@ interface LadyThaoAvatarProps {
   showBorder?: boolean;
 }
 
-export const LADY_THAO_ICON_URL = '/lady_thao_anime.jpg';
+export const LADY_THAO_ICON_URL = '/lady_thao_ghibli.jpg';
 
 export const LadyThaoAvatar: React.FC<LadyThaoAvatarProps> = ({
   className = '',
@@ -24,10 +24,10 @@ export const LadyThaoAvatar: React.FC<LadyThaoAvatarProps> = ({
       {!imageError ? (
         <img
           src={LADY_THAO_ICON_URL}
-          alt="Magical Lady Thao (Cô Thảo Bói Quẻ - Cardcaptor Sakura x Folk Art)"
+          alt="Lady Thao (Cô Thảo Bói Quẻ - Studio Ghibli x Vietnamese Folk Art)"
           referrerPolicy="no-referrer"
           onError={() => setImageError(true)}
-          className="w-full h-full object-cover transform scale-105"
+          className="w-full h-full object-cover"
         />
       ) : (
         /* Traditional Vietnamese Folk Art (Tranh Dân Gian Hàng Trống / Đông Hồ) Fallback Vector */
