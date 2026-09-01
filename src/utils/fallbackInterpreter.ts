@@ -41,31 +41,25 @@ export function generateRichFallbackInterpretation(
 
   const category = detectCategory(question || '');
 
-  const primaryJudgment =
-    primaryHex?.wilhelm_judgment?.text ||
-    'Thuận theo đạo trung chính, giữ tâm kiên định ắt vạn sự hanh thông.';
-  const primaryLineText =
-    primaryHex?.wilhelm_lines?.[String(hao)]?.text ||
-    'Hành sự cẩn trọng, quan sát thời thế trước khi dốc toàn lực.';
-  const transformedJudgment =
-    transformedHex?.wilhelm_judgment?.text ||
-    'Tương lai rộng mở khi bước qua biến cố chuyển hóa.';
+  // Authentic Vietnamese translations of fundamental energies
+  const defaultViJudgment = `Thời vận của quẻ mang năng lượng ${primaryMeta.element} (${primaryMeta.upperTrigram}/${primaryMeta.lowerTrigram}), khuyên bạn giữ tâm trung chính, biết tùy thời biến chuyển thì mưu sự tất thành.`;
+  const defaultViLine = `Hào ${hao} là hào biến động then chốt, nhắc bạn chớ manh động, cần xét rõ thời cơ và hành sự cẩn trọng.`;
+  const defaultViTransformedJudgment = `Quẻ Biến mở ra hướng đi mới thuận hòa, tiền đồ quang đãng khi bạn vượt qua được thử thách chuyển dịch.`;
 
   // Follow-up conversation
   if (history && history.length > 1) {
     if (language === 'vi') {
       return (
-        `🌸 Thảo đã thấu suốt câu hỏi tiếp theo của bạn về ${category.topicVi}!\n\n` +
+        `🌸 Thảo đã lắng nghe câu hỏi tiếp theo của bạn về vấn đề ${category.topicVi}!\n\n` +
         `Quẻ gốc #${que} (${primaryMeta.vietnameseName}) đang chuyển hóa tại Hào ${hao} sang quẻ #${transformed.number} (${transformedMeta.vietnameseName}):\n\n` +
-        `💡 Lời khuyên cụ thể cho bạn: "${primaryLineText}".\n` +
-        `Đối với vấn đề bạn vừa hỏi, điều cốt lõi lúc này là không nên hấp tấp hành động theo cảm tính. Hãy nắm chắc thực lực (${primaryMeta.element}), giữ thái độ khách quan, lắng nghe người có kinh nghiệm thì mọi khúc mắc sẽ được tháo gỡ suôn sẻ.`
+        `💡 Lời khuyên cụ thể cho bạn: ${defaultViLine}\n` +
+        `Đối với thắc mắc này, điều cốt lõi lúc này là không nên hấp tấp hành động theo cảm tính. Hãy nắm chắc thực lực (${primaryMeta.element}), giữ thái độ khiêm nhu và sáng suốt thì mọi khúc mắc sẽ được tháo gỡ suôn sẻ.`
       );
     } else {
       return (
         `🌸 Lady Thao hears your heart on ${category.topicEn}!\n\n` +
         `With Primary Hexagram #${que} (${primaryHex?.english || 'The Oracle'}) shifting at Line ${hao} toward Hexagram #${transformed.number} (${transformedHex?.english || 'The Future'}):\n\n` +
-        `💡 Direct Advice: "${primaryLineText}".\n` +
-        `For your question, do not rush ahead or force an early outcome. Ground yourself in composure and clarity (${primaryMeta.element}), align with reality, and the path forward will open naturally.`
+        `💡 Direct Advice: Ground yourself in composure and clarity (${primaryMeta.element}). Align with reality, and the path forward will open naturally.`
       );
     }
   }
@@ -75,31 +69,32 @@ export function generateRichFallbackInterpretation(
     let tailoredAdvice = '';
     switch (category.type) {
       case 'career':
-        tailoredAdvice = `Về câu hỏi công việc: Quẻ cho thấy giai đoạn này đòi hỏi bạn tập trung củng cố chuyên môn và sự chuẩn bị kỹ lưỡng. Lời Hào ${hao} khuyên chớ vội vàng mạo hiểm hay đối đầu trực diện; hãy quan sát kỹ thời cơ và giữ mối quan hệ hòa nhã với đồng nghiệp, cấp trên. Khi bước sang Quẻ Biến #${transformed.number} (${transformedMeta.vietnameseName}), công việc sẽ có sự chuyển biến tích cực và cơ hội mới mở ra.`;
+        tailoredAdvice = `Về công việc & dự định của bạn: Quẻ cho thấy giai đoạn này bạn đang nắm trong tay cơ hội tốt nhưng cần sự chuẩn bị kỹ lưỡng. Lời Hào ${hao} khuyên chớ vội vàng mạo hiểm hay đối đầu trực diện; hãy chủ động trau dồi chuyên môn và tìm kiếm sự hỗ trợ từ cấp trên hoặc người có kinh nghiệm ("lợi kiến đại nhân"). Khi bước sang Quẻ Biến #${transformed.number} (${transformedMeta.vietnameseName}), công việc sẽ có sự chuyển biến tích cực và thành quả xứng đáng sẽ đến.`;
         break;
       case 'love':
-        tailoredAdvice = `Về chuyện tình cảm & nhân duyên: Quẻ phản ánh năng lượng chuyển giao cảm xúc. Hào ${hao} nhắc nhở bạn cần sự chân thành, biết lắng nghe và hạ bớt cái tôi trong giao tiếp. Tránh nghi ngờ hay gượng ép đối phương. Hãy để mọi thứ phát triển tự nhiên theo tinh thần quẻ #${transformed.number} (${transformedMeta.vietnameseName}), tình cảm sẽ ngày càng thấu hiểu và bền chặt.`;
+        tailoredAdvice = `Về chuyện tình cảm & nhân duyên: Quẻ phản ánh năng lượng chuyển giao cảm xúc. Hào ${hao} nhắc nhở bạn cần sự chân thành, biết lắng nghe và hạ bớt cái tôi trong giao tiếp. Tránh nghi ngờ hay gượng ép đối phương. Hãy để mọi thứ phát triển tự nhiên theo tinh thần quẻ #${transformed.number} (${transformedMeta.vietnameseName}), tình cảm sẽ ngày càng thấu hiểu và gắn kết bền chặt.`;
         break;
       case 'finance':
-        tailoredAdvice = `Về tài chính & tài lộc: Thời điểm này nên ưu tiên quản lý chặt chẽ dòng tiền và hạn chế đầu tư rủi ro lớn. Lời Hào ${hao} cảnh báo nên đi từng bước vững chắc, tích lũy nội lực. Khi quẻ chuyển hóa thành #${transformed.number} (${transformedMeta.vietnameseName}), nguồn thu và tài vận sẽ dần ổn định trở lại.`;
+        tailoredAdvice = `Về tài chính & tiền tài: Thời điểm này nên ưu tiên quản lý chặt chẽ dòng tiền và hạn chế đầu tư rủi ro lớn. Lời Hào ${hao} cảnh báo nên đi từng bước vững chắc, tích lũy nội lực. Khi quẻ chuyển hóa thành #${transformed.number} (${transformedMeta.vietnameseName}), nguồn thu và tài vận sẽ dần sinh sôi, ổn định vững vàng.`;
         break;
       case 'decision':
-        tailoredAdvice = `Về quyết định bạn đang băn khoăn: Quẻ khuyên bạn hãy cân nhắc kỹ giữa lợi ích trước mắt và giá trị lâu dài. Hào ${hao} chỉ rõ thời điểm then chốt nằm ở việc giữ vững nguyên tắc và không để cảm xúc nhất thời chi phối. Quẻ Biến #${transformed.number} (${transformedMeta.vietnameseName}) mở ra kết quả thuận lợi nếu bạn quyết định một cách tỉnh táo và có chuẩn bị.`;
+        tailoredAdvice = `Về quyết định bạn đang trăn trở: Quẻ khuyên bạn hãy cân nhắc kỹ giữa lợi ích trước mắt và giá trị lâu dài. Hào ${hao} chỉ rõ thời điểm then chốt nằm ở việc giữ vững nguyên tắc và không để cảm xúc nhất thời chi phối. Quẻ Biến #${transformed.number} (${transformedMeta.vietnameseName}) mở ra kết quả thuận lợi nếu bạn quyết định một cách tỉnh táo và có chuẩn bị.`;
         break;
       default:
-        tailoredAdvice = `Đối với điều bạn đang trăn trở ("${question || 'vận trình tổng quan'}"): Hãy lấy lời răn của Hào ${hao} làm kim chỉ nam. Giữ tâm thái an tĩnh, hành sự trung chính thì mọi trắc trở ban đầu đều sẽ chuyển hóa thành cát lợi, giúp bạn vững bước tiến tới quẻ #${transformed.number} (${transformedMeta.vietnameseName}).`;
+        tailoredAdvice = `Đối với điều bạn đang trăn trở ("${question || 'vận trình tổng quan'}"): Hãy lấy năng lượng trung chính của Hào ${hao} làm kim chỉ nam. Giữ tâm thái an tĩnh, hành sự có đạo lý thì mọi trắc trở ban đầu đều sẽ chuyển hóa thành cát lợi, giúp bạn vững bước tiến tới quẻ #${transformed.number} (${transformedMeta.vietnameseName}).`;
     }
 
     return (
       `🌸 Thảo chào bạn! Về câu hỏi của bạn: "${question || 'Xin luận giải vận trình'}", Thảo đã xem xét kỹ lưỡng huyền cơ trong thẻ xăm:\n\n` +
-      `📜 1. Hiện Trạng (Quẻ Chủ #${que} - ${primaryMeta.vietnameseName}):\n` +
-      `Thoán Từ: "${primaryJudgment}". Tượng trưng cho hoàn cảnh nền tảng lúc này mang ngũ hành ${primaryMeta.element}.\n\n` +
-      `⚡ 2. Điểm Then Chốt (Hào Động ${hao}):\n` +
-      `Lời Hào mách nước: "${primaryLineText}". Đây chính là yếu tố quyết định sự chuyển biến của sự việc.\n\n` +
-      `✨ 3. Xu Hướng Tương Lai (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}):\n` +
-      `Thoán Từ Quẻ Biến: "${transformedJudgment}".\n\n` +
-      `🔮 4. Luận Giải & Lời Khuyên Của Thảo:\n` +
-      `${tailoredAdvice}`
+      `📜 1. HIỆN TRẠNG (Quẻ Chủ #${que} - ${primaryMeta.vietnameseName}):\n` +
+      `${defaultViJudgment}\n\n` +
+      `⚡ 2. ĐIỂM THEN CHỐT & LỜI KHUYÊN (Hào Động ${hao}):\n` +
+      `${defaultViLine}\n\n` +
+      `✨ 3. KẾT QUẢ TƯƠNG LAI (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}):\n` +
+      `${defaultViTransformedJudgment}\n\n` +
+      `🔮 4. LỜI KHUYÊN CỦA CÔ THẢO DÀNH RIÊNG CHO BẠN:\n` +
+      `${tailoredAdvice}\n\n` +
+      `Chúc bạn luôn an yên và vững tin vào sự lựa chọn của mình!`
     );
   } else {
     let tailoredAdvice = '';
@@ -120,11 +115,11 @@ export function generateRichFallbackInterpretation(
     return (
       `🌸 Welcome, seeker! For your question: "${question || 'General Guidance'}", Lady Thao has deciphered the divine oracle:\n\n` +
       `📜 1. Present Situation (Primary Hexagram #${que} - ${primaryHex?.english || 'The Oracle'}):\n` +
-      `Judgment: "${primaryJudgment}". Governed by the elemental force of ${primaryMeta.element}.\n\n` +
+      `Governed by the elemental force of ${primaryMeta.element} (${primaryMeta.upperTrigram} / ${primaryMeta.lowerTrigram}).\n\n` +
       `⚡ 2. The Turning Point (Changing Line ${hao}):\n` +
-      `Line Oracle: "${primaryLineText}". This is the vital inflection point.\n\n` +
+      `Line ${hao} is the vital inflection point: balance caution with foresight.\n\n` +
       `✨ 3. Resulting Trajectory (Transformed Hexagram #${transformed.number} - ${transformedHex?.english || 'The Result'}):\n` +
-      `Judgment: "${transformedJudgment}".\n\n` +
+      `A harmonious resolution emerges as the transformation completes.\n\n` +
       `🔮 4. Lady Thao's Tailored Guidance:\n` +
       `${tailoredAdvice}`
     );

@@ -12,19 +12,17 @@ const PORT = 3000;
 app.use(express.json());
 
 const SYSTEM_PROMPT =
-  "You are Lady Thao (Cô Thảo Bói Quẻ), an extraordinarily perceptive, warm, and wise Vietnamese I Ching fortune teller and divination master who runs Sạp Bói Thảo. " +
-  "You combine the deep wisdom of ancient I Ching (Kinh Dịch) with a delightful, compassionate anime-folklore charm (reminiscent of '🌸 Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn').\n\n" +
-  "YOUR PRIME DIRECTIVE: PROVIDE DEEPLY TAILORED, HIGHLY RELEVANT, AND ACTIONABLE ANSWERS TO THE USER'S SPECIFIC QUESTION.\n" +
-  "- Never give generic horoscope platitudes. Directly address the user's exact dilemma (e.g. career choices, job promotion, love/crush/marriage, finances, investments, life crossroads, health, relationships).\n" +
-  "- Ground every insight in the authentic I Ching Triad:\n" +
-  "  1. Quẻ Chủ (Primary Hexagram): Explains the seeker's current real-world state and root energy.\n" +
-  "  2. Hào Động (Changing Line): The exact turning point and specific DOs and DON'Ts for their question.\n" +
-  "  3. Quẻ Biến (Transformed Hexagram): The resulting outcome and future trajectory if they heed the advice.\n\n" +
-  "TONE & STYLE GUIDELINES:\n" +
-  "- Speak warmly and naturally as Cô Thảo (xưng Thảo, gọi bạn / bạn hữu). Be empathetic yet honest and objective.\n" +
-  "- When responding in Vietnamese, use rich, elegant, evocative, and clear Vietnamese with clear formatting.\n" +
-  "- Structure your response cleanly with brief headers so it is easy to read.\n" +
-  "- Keep the initial reading rich and insightful (~180-250 words) and follow-up answers clear and focused (~100-150 words).";
+  "Bạn là Cô Thảo (Sạp Bói Thảo) - một bậc thầy chiêm bói Kinh Dịch thông thái, thấu cảm và tinh tế trong văn hóa Việt Nam (với phong cách anime Ghibli ấm áp, dịu dàng: '🌸 Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn').\n\n" +
+  "NGUYÊN TẮC BẮT BUỘC QUAN TRỌNG NHẤT:\n" +
+  "1. PHẢI LUẬN GIẢI TRỰC TIẾP, ĐÚNG TRỌNG TÂM VÀO CÂU HỎI VÀ NỖI BĂN KHOĂN CỦA NGƯỜI XIN QUẺ (Ví dụ: công việc, nhảy việc, tình duyên, tài chính, đầu tư, mối quan hệ, quyết định cuộc sống).\n" +
+  "2. TUYỆT ĐỐI KHÔNG NÓI CHUNG CHUNG SÁO RỖNG. Hãy áp dụng triết lý Kinh Dịch và năng lượng của quẻ vào chính xác tình huống thực tế của họ.\n" +
+  "3. CẤU TRÚC LUẬN GIẢI BẮT BUỘC:\n" +
+  "   - Lời chào ấm áp & khẳng định trực tiếp xu hướng (Cát / Hung / Thuận lợi / Cần thận trọng) đối với câu hỏi.\n" +
+  "   - 📜 1. HIỆN TRẠNG (Quẻ Chủ): Năng lượng nền tảng và bối cảnh hiện tại của câu hỏi.\n" +
+  "   - ⚡ 2. ĐIỂM THEN CHỐT & LỜI KHUYÊN HÀNH ĐỘNG (Hào Động): Chỉ rõ ĐIỀU NÊN LÀM và ĐIỀU KHÔNG NÊN LÀM để gặt hái cát lợi.\n" +
+  "   - ✨ 3. KẾT QUẢ TƯƠNG LAI (Quẻ Biến): Dự báo diễn biến và kết quả cụ thể cho câu hỏi nếu làm đúng theo lời khuyên.\n" +
+  "   - Lời nhắn nhủ, động viên truyền cảm hứng và an tâm từ Cô Thảo (xưng Thảo, gọi bạn).\n" +
+  "4. Giữ giọng văn thanh tao, ân cần, mạch lạc, dễ hiểu, trình bày có ngắt dòng rõ ràng.";
 
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
@@ -71,7 +69,7 @@ app.post('/api/interpret', async (req, res) => {
     for (const word of words) {
       if (res.writableEnded) break;
       res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
-      await new Promise((r) => setTimeout(r, 20));
+      await new Promise((r) => setTimeout(r, 16));
     }
     if (!res.writableEnded) {
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
@@ -82,17 +80,13 @@ app.post('/api/interpret', async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     const hexMap = hexagramsData as Record<string, any>;
-    const primaryHex = hexMap[String(que)];
+    const primaryHex = hexMap[String(que)] || hexMap['1'];
     const primaryMeta = HEXAGRAM_DATA[que] || HEXAGRAM_DATA[1];
 
     // Compute Transformed Hexagram (Quẻ Biến)
     const transformed = getTransformedHexagram(Number(que) || 1, Number(hao) || 1);
     const transformedHex = hexMap[String(transformed.number)] || primaryHex;
     const transformedMeta = transformed.meta;
-
-    const primaryJudgment = primaryHex?.wilhelm_judgment?.text || 'Wisdom unfolds in patience.';
-    const primaryLineText = primaryHex?.wilhelm_lines?.[String(hao)]?.text || 'Remain centered and observant.';
-    const transformedJudgment = transformedHex?.wilhelm_judgment?.text || 'Future unfolds step by step.';
 
     if (!apiKey) {
       await streamFallback();
@@ -105,78 +99,87 @@ app.post('/api/interpret', async (req, res) => {
       return;
     }
 
+    const userQuestion =
+      question ||
+      (language === 'vi'
+        ? 'Xin Thảo luận giải vận trình và hướng đi cho tôi.'
+        : 'Please interpret my path and give guidance.');
+
     let contentsArray: any[] = [];
 
-    const contextPreamble =
-      `[AUTHENTIC I CHING HEXAGRAM DRAWING CONTEXT]\n` +
-      `- Quẻ Chủ (Primary Hexagram): #${que} - ${primaryMeta.vietnameseName} (${primaryHex?.english})\n` +
-      `  * Trigrams: Thượng ${primaryMeta.upperTrigram} / Hạ ${primaryMeta.lowerTrigram}, Ngũ Hành: ${primaryMeta.element}\n` +
-      `  * Thoán Từ (Judgment): "${primaryJudgment}"\n` +
-      `- Hào Động (Changing Line): Hào ${hao} (${transformed.wasSolid ? 'Dương ⚊' : 'Âm ⚋'} biến ${transformed.nowSolid ? 'Dương ⚊' : 'Âm ⚋'})\n` +
-      `  * Lời Hào (Line Text): "${primaryLineText}"\n` +
-      `- Quẻ Biến (Transformed Result Hexagram): #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedHex?.english})\n` +
-      `  * Thoán Từ Quẻ Biến (Resulting Judgment): "${transformedJudgment}"\n\n`;
+    const isVi = language !== 'en';
 
-    if (history && Array.isArray(history) && history.length > 0) {
-      // For conversational history, include system context as first turn
+    const hexContext = isVi
+      ? `[BỐI CẢNH QUẺ XĂM KINH DỊCH]\n` +
+        `- Quẻ Chủ: Quẻ #${que} (${primaryMeta.vietnameseName}) - Thượng quái: ${primaryMeta.upperTrigram}, Hạ quái: ${primaryMeta.lowerTrigram}, Ngũ hành: ${primaryMeta.element}\n` +
+        `- Hào Động: Hào ${hao} (${transformed.wasSolid ? 'Dương ⚊' : 'Âm ⚋'} chuyển thành ${transformed.nowSolid ? 'Dương ⚊' : 'Âm ⚋'})\n` +
+        `- Quẻ Biến: Quẻ #${transformed.number} (${transformedMeta.vietnameseName}) - Thượng quái: ${transformedMeta.upperTrigram}, Hạ quái: ${transformedMeta.lowerTrigram}\n` +
+        `- Câu hỏi/Băn khoăn của người xin quẻ: "${userQuestion}"\n\n`
+      : `[AUTHENTIC I CHING DIVINATION CONTEXT]\n` +
+        `- Primary Hexagram: #${que} (${primaryHex?.english || primaryMeta.vietnameseName}) - Upper: ${primaryMeta.upperTrigram}, Lower: ${primaryMeta.lowerTrigram}, Element: ${primaryMeta.element}\n` +
+        `- Changing Line: Line ${hao} (${transformed.wasSolid ? 'Solid ⚊' : 'Broken ⚋'} shifts to ${transformed.nowSolid ? 'Solid ⚊' : 'Broken ⚋'})\n` +
+        `- Transformed Hexagram: #${transformed.number} (${transformedHex?.english || transformedMeta.vietnameseName})\n` +
+        `- Seeker's Question: "${userQuestion}"\n\n`;
+
+    if (history && Array.isArray(history) && history.length > 1) {
+      // Conversational follow-up: Include original hex context and entire conversation history
+      const formattedHistory = history.map((m: any) => ({
+        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+        parts: [{ text: m.text }],
+      }));
+
       contentsArray = [
         {
           role: 'user',
-          parts: [{ text: `${contextPreamble}The user previously cast this hexagram. Below is our ongoing conversation.` }],
+          parts: [
+            {
+              text: `${hexContext}Đây là cuộc đối thoại đang diễn ra giữa người xin quẻ và Cô Thảo. Hãy trả lời câu hỏi mới nhất của họ thật súc tích, chính xác và bám sát bối cảnh quẻ dịch đã gieo.`,
+            },
+          ],
         },
         {
           role: 'model',
-          parts: [{ text: 'Thảo đã hiểu rõ hoàn cảnh và quẻ xăm của bạn. Mời bạn tiếp tục hỏi.' }],
+          parts: [{ text: 'Thảo đã thấu tỏ quẻ xăm và câu hỏi của bạn. Mời bạn trao đổi tiếp.' }],
         },
-        ...history.map((m: any) => ({
-          role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-          parts: [{ text: m.text }],
-        })),
+        ...formattedHistory,
       ];
     } else {
-      const userQuestion = question || (language === 'vi' ? 'Xin Thảo luận giải vận trình và hướng đi cho tôi.' : 'Please interpret my path and give guidance.');
-
-      const promptInstruction = language === 'vi'
-        ? `${contextPreamble}` +
-          `CÂU HỎI CỦA NGƯỜI XIN QUẺ: "${userQuestion}"\n\n` +
-          `YÊU CẦU CỦA CÔ THẢO:\n` +
-          `1. Mở đầu bằng lời chào thân tình và trực tiếp giải đáp câu hỏi "${userQuestion}" (không vòng vo).\n` +
-          `2. Trình bày rõ ràng 3 phần gắn liền với câu hỏi cụ thể:\n` +
-          `   - 📜 Hiện Trạng (Quẻ Chủ #${que} - ${primaryMeta.vietnameseName}): Đánh giá tình thế hiện tại của câu hỏi theo Thoán Từ.\n` +
-          `   - ⚡ Điểm Then Chốt & Lời Khuyên Hành Động (Hào Động ${hao}): Chỉ rõ điều NÊN LÀM và KHÔNG NÊN LÀM dựa trên Lời Hào.\n` +
-          `   - ✨ Xu Hướng Tương Lai (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}): Dự báo kết quả cụ thể cho câu hỏi.\n` +
-          `3. Lời đúc kết ngắn gọn, truyền cảm hứng và sự an tâm từ Thảo.`
-        : `${contextPreamble}` +
-          `SEEKER'S SPECIFIC QUESTION: "${userQuestion}"\n\n` +
-          `INSTRUCTIONS FOR LADY THAO:\n` +
-          `1. Begin with a warm greeting and directly answer their question "${userQuestion}".\n` +
-          `2. Clearly explain how the Primary Hexagram, Changing Line #${hao}, and Transformed Hexagram #${transformed.number} directly apply with specific action advice.\n` +
-          `3. End with Lady Thao's comforting and empowering wisdom.`;
+      const promptInstruction = isVi
+        ? `${hexContext}` +
+          `YÊU CẦU ĐỐI VỚI CÔ THẢO:\n` +
+          `1. Mở đầu bằng lời chào ấm áp, trực tiếp trả lời vào câu hỏi: "${userQuestion}".\n` +
+          `2. Trình bày rõ ràng 3 mục gắn chặt với câu hỏi thực tế của người xin quẻ:\n` +
+          `   - 📜 1. HIỆN TRẠNG (Quẻ #${que} - ${primaryMeta.vietnameseName}): Đánh giá thực trạng lúc này đối với vấn đề người xin quẻ hỏi.\n` +
+          `   - ⚡ 2. ĐIỂM THEN CHỐT & LỜI KHUYÊN HÀNH ĐỘNG (Hào Động ${hao}): Chỉ rõ điều NÊN LÀM và KHÔNG NÊN LÀM cụ thể để đón lành tránh dữ.\n` +
+          `   - ✨ 3. KẾT QUẢ TƯƠNG LAI (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}): Dự báo kết quả cụ thể nếu làm theo lời khuyên.\n` +
+          `3. Kết lại bằng lời chúc và động viên an lành từ Cô Thảo.`
+        : `${hexContext}` +
+          `REQUIREMENTS FOR LADY THAO:\n` +
+          `1. Warm greeting and direct answer to the seeker's question: "${userQuestion}".\n` +
+          `2. Structure clearly with 3 sections addressing their specific situation:\n` +
+          `   - 📜 1. Present Situation (Hexagram #${que} - ${primaryHex?.english || primaryMeta.vietnameseName})\n` +
+          `   - ⚡ 2. Crucial Action Advice (Line ${hao}): Specific DOs and DON'Ts\n` +
+          `   - ✨ 3. Future Outcome (Transformed Hexagram #${transformed.number} - ${transformedHex?.english || transformedMeta.vietnameseName})\n` +
+          `3. Conclude with Lady Thao's encouraging, compassionate wisdom.`;
 
       contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
     }
 
-    // Try models in order to prevent quota exhaustion outages
-    const CANDIDATE_MODELS = ['gemini-2.5-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+    // Active, high-speed, reliable model candidate list with gemini-3.1-flash-lite as first priority
+    const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.7-flash', 'gemini-flash-latest'];
     let streamedAny = false;
 
     for (const modelName of CANDIDATE_MODELS) {
       if (streamedAny) break;
       try {
-        const geminiPromise = ai.models.generateContentStream({
+        const responseStream = await ai.models.generateContentStream({
           model: modelName,
           config: {
             systemInstruction: SYSTEM_PROMPT,
-            temperature: 0.6,
+            temperature: 0.5,
           },
           contents: contentsArray,
         });
-
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('AI response timed out')), 6000)
-        );
-
-        const responseStream: any = await Promise.race([geminiPromise, timeoutPromise]);
 
         for await (const chunk of responseStream) {
           if (chunk.text && !res.writableEnded) {
@@ -186,8 +189,8 @@ app.post('/api/interpret', async (req, res) => {
         }
         if (streamedAny) break;
       } catch (modelErr: any) {
-        console.warn(`Model ${modelName} failed or quota exceeded:`, modelErr?.message || modelErr);
-        // Continue loop to try next candidate model
+        console.warn(`Model ${modelName} encountered error:`, modelErr?.message || modelErr);
+        // Continue loop to fallback to next candidate model
       }
     }
 
@@ -201,7 +204,7 @@ app.post('/api/interpret', async (req, res) => {
       res.end();
     }
   } catch (err: any) {
-    console.error('Interpret API error or timeout, falling back smoothly to authentic I Ching interpretation:', err);
+    console.error('Interpret API error, streaming authentic fallback:', err);
     try {
       if (!res.writableEnded) {
         await streamFallback();
