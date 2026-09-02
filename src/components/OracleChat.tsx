@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Markdown from 'react-markdown';
 import { ChatMessage, Hexagram } from '../types';
 import { Send, Copy, Check, Sparkles } from 'lucide-react';
 import { playChime } from '../utils/audio';
@@ -248,10 +249,16 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                 className={`p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[96%] sm:max-w-[92%] font-serif shadow-xs ${
                   isUser
                     ? 'bg-gradient-to-b from-[#B23B28] to-[#8C2214] text-[#FFFDF7] border border-[#6E1C12] rounded-tr-none'
-                    : 'bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)]'
+                    : 'bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)] prose prose-sm sm:prose-base max-w-none prose-p:my-1.5 prose-strong:text-[#7C2A1C] prose-headings:text-[#7C2A1C] prose-li:my-0.5'
                 }`}
               >
-                <div className="whitespace-pre-wrap">{msg.text}</div>
+                {isUser ? (
+                  <div className="whitespace-pre-wrap">{msg.text}</div>
+                ) : (
+                  <div className="space-y-1.5 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-0.5">
+                    <Markdown>{msg.text}</Markdown>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -266,9 +273,13 @@ export const OracleChat: React.FC<OracleChatProps> = ({
             </div>
 
             <div className="p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[96%] sm:max-w-[92%] font-serif bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)]">
-              <span className="whitespace-pre-wrap">
-                {currentStreamText || (language === 'vi' ? 'Thảo đang định tâm đọc quẻ cho bạn...' : 'Lady Thao is contemplating your oracle...')}
-              </span>
+              {currentStreamText ? (
+                <div className="space-y-1.5 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-0.5 inline">
+                  <Markdown>{currentStreamText}</Markdown>
+                </div>
+              ) : (
+                <span>{language === 'vi' ? 'Thảo đang định tâm đọc quẻ cho bạn...' : 'Lady Thao is contemplating your oracle...'}</span>
+              )}
               <span className="inline-block w-1.5 h-4 bg-[#7C2A1C] ml-1 animate-pulse align-middle" />
             </div>
           </div>

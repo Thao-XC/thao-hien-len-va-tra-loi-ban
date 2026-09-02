@@ -8,9 +8,10 @@ import { HexagramVisualizer } from './components/HexagramVisualizer';
 import { OracleChat } from './components/OracleChat';
 import { HexagramCodexModal } from './components/HexagramCodexModal';
 import { BatQuaiIcon } from './components/BatQuaiIcon';
+import { TraditionalCurtain } from './components/TraditionalCurtain';
 import { HexagramDataset, Hexagram } from './types';
 import localHexagrams from './hexagrams.json' with { type: 'json' };
-import { Volume2, VolumeX, Globe, BookOpen, Sparkles, ArrowLeft, RefreshCw, Flame } from 'lucide-react';
+import { Volume2, VolumeX, Globe, BookOpen, Sparkles, ArrowLeft, RefreshCw, Flame, DoorOpen } from 'lucide-react';
 import { HEXAGRAM_DATA } from './utils/hexagramPatterns';
 import { playGong } from './utils/audio';
 
@@ -23,12 +24,16 @@ export default function App() {
   // 1/ User asks question in Lady Thao's Temple Sạp Bói
   // 2/ Shake the wooden sticks box
   // 3/ The xăm falls out and shows the wooden stick
-  // 4/ Lady Thao appears with folklore clouds and delivers AI interpretation
+  // 4/ Traditional Curtain opens -> Lady Thao appears with folklore clouds and delivers AI interpretation
   const [question, setQuestion] = useState<string>('');
   const [fallenQue, setFallenQue] = useState<number | null>(null);
   const [fallenHao, setFallenHao] = useState<number | null>(null);
   const [isThaoAppeared, setIsThaoAppeared] = useState<boolean>(false);
   const [isCodexOpen, setIsCodexOpen] = useState<boolean>(false);
+
+  // Traditional Curtain Window Opening Effect State
+  const [showCurtain, setShowCurtain] = useState<boolean>(false);
+  const [curtainOpen, setCurtainOpen] = useState<boolean>(false);
 
   // Load backend dataset if available
   useEffect(() => {
@@ -44,20 +49,30 @@ export default function App() {
       });
   }, []);
 
+  const triggerCurtainReveal = () => {
+    setShowCurtain(true);
+    setCurtainOpen(false);
+    if (soundEnabled) {
+      playGong(0.45);
+    }
+    // Trigger opening animation smoothly after slight beat
+    setTimeout(() => {
+      setCurtainOpen(true);
+    }, 120);
+  };
+
   // Step 3 callback: The stick has fallen out of the box
   const handleStickFallen = (que: number, hao: number) => {
     setFallenQue(que);
     setFallenHao(hao);
   };
 
-  // Step 4 callback: User clicks "Ask Thao / Hỏi Thảo" -> Lady Thao appears with cloud & aura effects!
+  // Step 4 callback: User clicks "Ask Thao / Hỏi Thảo" -> Traditional curtain opens & Lady Thao appears!
   const handleAskThao = (que: number, hao: number) => {
     setFallenQue(que);
     setFallenHao(hao);
     setIsThaoAppeared(true);
-    if (soundEnabled) {
-      playGong(0.4);
-    }
+    triggerCurtainReveal();
   };
 
   const handleReset = () => {
@@ -65,6 +80,8 @@ export default function App() {
     setFallenHao(null);
     setIsThaoAppeared(false);
     setQuestion('');
+    setShowCurtain(false);
+    setCurtainOpen(false);
   };
 
   const handleSelectFromCodex = (que: number) => {
@@ -75,6 +92,7 @@ export default function App() {
     if (!question) {
       setQuestion(language === 'vi' ? 'Ý nghĩa tổng quan quẻ này là gì?' : 'What is the general guidance of this hexagram?');
     }
+    triggerCurtainReveal();
   };
 
   const sampleQuestions = language === 'vi'
@@ -328,9 +346,21 @@ export default function App() {
                   <span>{language === 'vi' ? 'Về Sạp Bói / Gieo quẻ khác' : 'Return to Sạp Bói / Draw again'}</span>
                 </button>
 
-                <div className="text-[0.7rem] sm:text-xs font-sans uppercase tracking-widest text-[#7C2A1C] font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
-                  <span>{language === 'vi' ? 'CÔ THẢO GIẢI QUẺ' : 'LADY THAO DECIPHERING'}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={triggerCurtainReveal}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-[#B23B28]/10 hover:bg-[#B23B28]/20 border border-[#B23B28]/30 text-xs font-serif text-[#7C2A1C] transition-colors cursor-pointer"
+                    title={language === 'vi' ? 'Xem lại hiệu ứng khai mành cung đình' : 'Replay imperial curtain opening'}
+                  >
+                    <DoorOpen className="w-3.5 h-3.5 text-[#B23B28]" />
+                    <span className="hidden sm:inline">{language === 'vi' ? 'Khai mành lại' : 'Reopen curtains'}</span>
+                  </button>
+
+                  <div className="text-[0.7rem] sm:text-xs font-sans uppercase tracking-widest text-[#7C2A1C] font-bold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
+                    <span>{language === 'vi' ? 'CÔ THẢO GIẢI QUẺ' : 'LADY THAO DECIPHERING'}</span>
+                  </div>
                 </div>
               </div>
 
@@ -442,6 +472,15 @@ export default function App() {
         language={language}
         onSelectHexagram={handleSelectFromCodex}
       />
+
+      {/* Traditional Palace Window Curtain Opening Effect */}
+      {showCurtain && (
+        <TraditionalCurtain
+          isOpen={curtainOpen}
+          onOpened={() => setShowCurtain(false)}
+          language={language}
+        />
+      )}
     </div>
   );
 }

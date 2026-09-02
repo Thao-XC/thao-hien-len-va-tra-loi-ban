@@ -40,6 +40,22 @@ export const StickTube: React.FC<StickTubeProps> = ({
   const [motionPermNeeded, setMotionPermNeeded] = useState<boolean>(false);
   const [shakeDetectedFeedback, setShakeDetectedFeedback] = useState<boolean>(false);
 
+  // Cryptographically robust random generator for 64 Hexagrams & 6 Lines
+  const generateCryptographicStick = () => {
+    let q = 1;
+    let h = 1;
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const buf = new Uint32Array(2);
+      window.crypto.getRandomValues(buf);
+      q = (buf[0] % 64) + 1;
+      h = (buf[1] % 6) + 1;
+    } else {
+      q = Math.floor(Math.random() * 64) + 1;
+      h = Math.floor(Math.random() * 6) + 1;
+    }
+    return { que: q, hao: h };
+  };
+
   // Authentic tightly-clustered bundle of wooden fortune sticks inside the cylinder mouth
   const initialSticks: StickState[] = [
     { id: 1, height: 135, rotation: -3.5, offsetX: -22, offsetY: 0, cinnabarRatio: 100 },
@@ -136,8 +152,8 @@ export const StickTube: React.FC<StickTubeProps> = ({
   const startShakeSequence = () => {
     if (phase === 'shaking' || phase === 'ejecting' || disabled) return;
 
-    const que = Math.floor(Math.random() * 64) + 1;
-    const hao = Math.floor(Math.random() * 6) + 1;
+    const { que, hao } = generateCryptographicStick();
+    const winningStickIndex = Math.floor(Math.random() * 11) + 1; // Randomly choose which stick emerges from the bundle
     setDrawnQue(que);
     setDrawnHao(hao);
     setPhase('shaking');
@@ -161,7 +177,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
       // The designated fortune stick slides upwards out of the interior bundle
       setSticks((prev) =>
         prev.map((s) =>
-          s.id === 7
+          s.id === winningStickIndex
             ? { ...s, offsetY: -85, isWinner: true }
             : { ...s, offsetY: s.offsetY + (Math.random() * 4 - 2) }
         )
@@ -182,8 +198,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
     if (drawnQue !== null && drawnHao !== null) {
       onAskThao(drawnQue, drawnHao);
     } else {
-      const que = Math.floor(Math.random() * 64) + 1;
-      const hao = Math.floor(Math.random() * 6) + 1;
+      const { que, hao } = generateCryptographicStick();
       setDrawnQue(que);
       setDrawnHao(hao);
       onAskThao(que, hao);
