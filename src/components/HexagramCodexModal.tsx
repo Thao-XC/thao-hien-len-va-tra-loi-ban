@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HexagramDataset } from '../types';
 import { HEXAGRAM_DATA, getHexagramLines } from '../utils/hexagramPatterns';
+import { VIETNAMESE_HEXAGRAMS } from '../data/vietnameseHexagrams';
 import { LadyThaoAvatar } from './LadyThaoAvatar';
 import {
   Search,
@@ -25,7 +26,7 @@ interface HexagramCodexModalProps {
   isOpen: boolean;
   onClose: () => void;
   dataset: HexagramDataset;
-  language: 'en' | 'vi';
+  language?: 'vi';
   onSelectHexagram: (que: number) => void;
   initialTab?: 'instructions' | 'install' | 'codex';
 }
@@ -34,7 +35,6 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
   isOpen,
   onClose,
   dataset,
-  language,
   onSelectHexagram,
   initialTab = 'instructions',
 }) => {
@@ -79,11 +79,12 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
   const filteredNumbers = hexagramNumbers.filter((num) => {
     const raw = dataset[String(num)];
     const meta = HEXAGRAM_DATA[num];
+    const viet = VIETNAMESE_HEXAGRAMS[num];
     const term = searchTerm.toLowerCase();
 
     return (
       String(num).includes(term) ||
-      (raw && raw.english.toLowerCase().includes(term)) ||
+      (viet && viet.name.toLowerCase().includes(term)) ||
       (meta && meta.vietnameseName.toLowerCase().includes(term)) ||
       (meta && meta.chinese.includes(term)) ||
       (meta && meta.upperTrigram.toLowerCase().includes(term)) ||
@@ -93,6 +94,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
 
   const activeHex = dataset[String(selectedNum)];
   const activeMeta = HEXAGRAM_DATA[selectedNum];
+  const activeViet = VIETNAMESE_HEXAGRAMS[selectedNum] || VIETNAMESE_HEXAGRAMS[1];
   const activeLines = getHexagramLines(selectedNum);
 
   return (
@@ -104,10 +106,10 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
             <LadyThaoAvatar sizeClassName="w-8 h-8" />
             <div>
               <h2 className="font-serif font-bold text-base sm:text-lg text-[#7C2A1C] tracking-tight leading-tight">
-                {language === 'vi' ? 'Thao Fortune Teller' : 'Thao Fortune Teller'}
+                Sạp Bói Cô Thảo
               </h2>
               <p className="font-sans text-[0.68rem] text-[#6E5C3E] uppercase tracking-wider">
-                {language === 'vi' ? 'Bảo Điển & Cài Đặt Ứng Dụng' : 'Sacred Codex & Installation Guide'}
+                Kinh Dịch Cổ Truyền 64 Quẻ & Hướng Dẫn
               </p>
             </div>
           </div>
@@ -116,13 +118,13 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-xs hover:bg-[#B23B28]/10 text-[#6E5C3E] hover:text-[#B23B28] transition-colors cursor-pointer"
-            aria-label="Close Modal"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Tabs (Instructions vs Install App vs 64 Hexagrams) */}
+        {/* Navigation Tabs */}
         <div className="flex border-b border-[#AD8A2E]/30 bg-[#E8DCBF]/60 px-3 sm:px-5 gap-1 sm:gap-2 pt-2 overflow-x-auto">
           <button
             type="button"
@@ -134,7 +136,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
             }`}
           >
             <HelpCircle className="w-3.5 h-3.5 text-[#B23B28]" />
-            <span>{language === 'vi' ? '📜 Hướng Dẫn' : '📜 How to Consult'}</span>
+            <span>📜 Hướng Dẫn Xin Quẻ</span>
           </button>
 
           <button
@@ -147,7 +149,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
             }`}
           >
             <Download className="w-3.5 h-3.5 text-[#B23B28]" />
-            <span>{language === 'vi' ? '📲 Cài Đặt Ứng Dụng' : '📲 Install App'}</span>
+            <span>📲 Cài Đặt Ứng Dụng</span>
           </button>
 
           <button
@@ -159,413 +161,131 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
                 : 'border-transparent text-[#6E5C3E] hover:text-[#2E2415]'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-[#B23B28]" />
-            <span>{language === 'vi' ? '📖 64 Quẻ Toàn Thư' : '📖 64 Hexagrams'}</span>
+            <BookOpen className="w-3.5 h-3.5 text-[#B23B28]" />
+            <span>📖 Tra Cứu 64 Quẻ</span>
           </button>
         </div>
 
-        {/* TAB 1: INSTRUCTIONS & ORACLE WISDOM */}
+        {/* TAB 1: INSTRUCTIONS */}
         {activeTab === 'instructions' && (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-[#FAF3E4]/70">
-            {/* Intro Welcome Card */}
-            <div className="bg-gradient-to-r from-[#FFFDF9] via-[#FAF1DE] to-[#FFFDF9] border border-[#AD8A2E]/40 p-4 rounded-xs shadow-xs text-center relative overflow-hidden">
-              <div className="font-serif italic font-bold text-lg sm:text-xl text-[#7C2A1C] mb-1">
-                {language === 'vi'
-                  ? '🌸 "Tâm thành tất ứng — Vạn sự tùy duyên"'
-                  : '🌸 "Sincerity connects with the Cosmos"'}
-              </div>
-              <p className="font-serif italic text-xs sm:text-sm text-[#4A3B22] max-w-xl mx-auto leading-relaxed">
-                {language === 'vi'
-                  ? 'Thao Fortune Teller kết hợp tinh hoa bói xăm dân gian Việt Nam với 64 Quẻ Kinh Dịch cổ truyền theo bản dịch chuẩn Wilhelm-Baynes, giúp bạn thấu suốt hiện tại và tìm ra định hướng sáng suốt.'
-                  : 'Thao Fortune Teller blends traditional Vietnamese temple fortune sticks with the 64 classical I Ching hexagrams (Wilhelm-Baynes translation) to illuminate your present circumstance and future trajectory.'}
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[70vh] space-y-4">
+            <div className="border-l-2 border-[#B23B28] pl-3 py-1 bg-[#EFE4CB]/50">
+              <h3 className="font-serif font-bold text-base sm:text-lg text-[#7C2A1C]">
+                Đạo Khai Quẻ & Nghi Thức Tâm Thành
+              </h3>
+              <p className="font-serif italic text-xs sm:text-sm text-[#4A3B22] mt-0.5">
+                "Tâm thành tất ứng · Vạn sự tùy duyên · Thấu suốt âm dương"
               </p>
             </div>
 
-            {/* 4 Steps Journey Cards */}
-            <div className="space-y-2.5">
-              <h3 className="font-sans uppercase text-xs font-bold text-[#7C2A1C] tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
-                <span>
-                  {language === 'vi'
-                    ? 'Quy Trình 4 Bước Gieo Quẻ Cùng Thảo'
-                    : 'The 4-Stage Consultation Journey'}
-                </span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Step 1 */}
-                <div className="bg-white/80 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#B23B28] text-white flex items-center justify-center text-xs font-bold font-sans">
-                      1
-                    </span>
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      {language === 'vi' ? 'Tâm Niệm Câu Hỏi' : 'Formulate Your Inquiry'}
-                    </span>
-                  </div>
-                  <p className="font-serif italic text-xs text-[#5C4B33] leading-relaxed pl-7">
-                    {language === 'vi'
-                      ? 'Tĩnh tâm suy ngẫm điều bạn băn khoăn (công việc, tài lộc, tình duyên...). Thảo sẽ ân cần lắng nghe bạn.'
-                      : 'Center your thoughts on what troubles you (career, love, decision). Lady Thao welcomes you with warm compassion.'}
-                  </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white/80 p-3.5 rounded-xs border border-[#AD8A2E]/30 shadow-2xs space-y-1.5">
+                <div className="w-7 h-7 rounded-full bg-[#B23B28] text-[#FFFDF9] font-sans font-bold text-xs flex items-center justify-center">
+                  1
                 </div>
+                <h4 className="font-serif font-bold text-sm text-[#7C2A1C]">Nhập Câu Hỏi</h4>
+                <p className="font-serif text-xs text-[#4A3B22] leading-relaxed">
+                  Nhập rõ điều bạn băn khoăn (công việc, tài lộc, tình cảm, hay một quyết định cụ thể).
+                </p>
+              </div>
 
-                {/* Step 2 */}
-                <div className="bg-white/80 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#B23B28] text-white flex items-center justify-center text-xs font-bold font-sans">
-                      2
-                    </span>
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      {language === 'vi' ? 'Lắc Ống Xăm Tre' : 'Shake the Bamboo Tube'}
-                    </span>
-                  </div>
-                  <p className="font-serif italic text-xs text-[#5C4B33] leading-relaxed pl-7">
-                    {language === 'vi'
-                      ? 'Cầm điện thoại lắc nhẹ (hoặc nhấn nút "Lắc Ống Xăm") để các thẻ xăm xáo trộn tự nhiên.'
-                      : 'Shake your smartphone gently (or click the Shake Tube button) to clatter the authentic bamboo sticks.'}
-                  </p>
+              <div className="bg-white/80 p-3.5 rounded-xs border border-[#AD8A2E]/30 shadow-2xs space-y-1.5">
+                <div className="w-7 h-7 rounded-full bg-[#B23B28] text-[#FFFDF9] font-sans font-bold text-xs flex items-center justify-center">
+                  2
                 </div>
+                <h4 className="font-serif font-bold text-sm text-[#7C2A1C]">Lắc Ống Xăm</h4>
+                <p className="font-serif text-xs text-[#4A3B22] leading-relaxed">
+                  Bấm nút Lắc Ống Xăm hoặc lắc chiếc điện thoại của bạn để rút ra một thẻ xăm ngẫu nhiên chuẩn xác.
+                </p>
+              </div>
 
-                {/* Step 3 */}
-                <div className="bg-white/80 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#B23B28] text-white flex items-center justify-center text-xs font-bold font-sans">
-                      3
-                    </span>
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      {language === 'vi' ? 'Thẻ Xăm Xuất Hiện' : 'Stick Falls Out'}
-                    </span>
-                  </div>
-                  <p className="font-serif italic text-xs text-[#5C4B33] leading-relaxed pl-7">
-                    {language === 'vi'
-                      ? 'Một thẻ xăm linh nghiệm nhô lên và rơi ra, biểu thị Quẻ Chủ (1-64) và Hào Động (1-6).'
-                      : 'The chosen fortune stick rises and drops, revealing your Primary Hexagram (1-64) and Changing Line (1-6).'}
-                  </p>
+              <div className="bg-white/80 p-3.5 rounded-xs border border-[#AD8A2E]/30 shadow-2xs space-y-1.5">
+                <div className="w-7 h-7 rounded-full bg-[#B23B28] text-[#FFFDF9] font-sans font-bold text-xs flex items-center justify-center">
+                  3
                 </div>
-
-                {/* Step 4 */}
-                <div className="bg-white/80 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#B23B28] text-white flex items-center justify-center text-xs font-bold font-sans">
-                      4
-                    </span>
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      {language === 'vi' ? 'Thảo Luận Giải Tam Biến' : 'Lady Thao Deciphers'}
-                    </span>
-                  </div>
-                  <p className="font-serif italic text-xs text-[#5C4B33] leading-relaxed pl-7">
-                    {language === 'vi'
-                      ? 'Thảo hiện diện để giải nghĩa trọn vẹn: Quẻ Chủ ➔ Hào Động ➔ Quẻ Biến tương lai.'
-                      : 'Lady Thao appears through the mist to interpret the full triad: Primary ➔ Changing Line ➔ Transformed Future.'}
-                  </p>
-                </div>
+                <h4 className="font-serif font-bold text-sm text-[#7C2A1C]">Khai Mành Luận Giải</h4>
+                <p className="font-serif text-xs text-[#4A3B22] leading-relaxed">
+                  Diện kiến Cô Thảo, lắng nghe phân tích Quẻ Chủ, Hào Động, Quẻ Biến và trò chuyện trực tiếp để thấu suốt hướng đi.
+                </p>
               </div>
             </div>
 
-            {/* Authentic I Ching Methodology Explainer */}
-            <div className="bg-[#EFE4CB]/70 border border-[#AD8A2E]/35 p-3.5 rounded-xs space-y-2">
-              <h4 className="font-sans font-bold text-xs uppercase text-[#7C2A1C] tracking-wide flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-[#B23B28]" />
-                <span>
-                  {language === 'vi'
-                    ? 'Ý Nghĩa Tam Biến Kinh Dịch (Quẻ Chủ ➔ Hào Động ➔ Quẻ Biến)'
-                    : 'Understanding the I Ching Triad'}
-                </span>
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-serif italic text-[#4A3B22]">
-                <div className="bg-white/60 p-2.5 rounded-xs border border-[#AD8A2E]/20">
-                  <div className="font-sans font-bold text-[#7C2A1C] mb-0.5">① Quẻ Chủ (Gốc)</div>
-                  <div>
-                    {language === 'vi'
-                      ? 'Phản ánh hoàn cảnh thực tại, nguồn gốc sự việc và năng lượng gốc.'
-                      : 'Reflects your current state, root situation, and foundational energy.'}
-                  </div>
-                </div>
-
-                <div className="bg-white/60 p-2.5 rounded-xs border border-[#B23B28]/20">
-                  <div className="font-sans font-bold text-[#B23B28] mb-0.5">② Hào Động (Biến)</div>
-                  <div>
-                    {language === 'vi'
-                      ? 'Điểm nút then chốt, chuyển hóa Âm sang Dương hoặc ngược lại, chỉ dẫn hành động.'
-                      : 'The critical turning point mutating Yin/Yang, providing specific action advice.'}
-                  </div>
-                </div>
-
-                <div className="bg-white/60 p-2.5 rounded-xs border border-[#2E7D32]/20">
-                  <div className="font-sans font-bold text-[#2E7D32] mb-0.5">③ Quẻ Biến (Quả)</div>
-                  <div>
-                    {language === 'vi'
-                      ? 'Xu thế phát triển và kết quả trong tương lai sau khi hành động đúng đạo.'
-                      : 'The resulting trajectory and future outcome after navigating the change.'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions CTA */}
-            <div className="pt-1 flex flex-wrap justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab('install')}
-                className="px-4 py-2 bg-[#EFE4CB] hover:bg-[#E2D4B5] border border-[#AD8A2E]/50 text-[#7C2A1C] font-sans font-bold text-xs uppercase tracking-wider rounded-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Download className="w-3.5 h-3.5 text-[#B23B28]" />
-                <span>{language === 'vi' ? 'Xem Cách Cài Ứng Dụng' : 'How to Install App'}</span>
-              </button>
-
+            <div className="pt-2 flex justify-center">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 bg-gradient-to-r from-[#B23B28] to-[#7C2A1C] hover:from-[#C8402C] hover:to-[#8E2F20] text-[#FFFDF9] font-sans font-bold text-xs uppercase tracking-wider rounded-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                className="px-6 py-2.5 bg-gradient-to-r from-[#B23B28] to-[#7C2A1C] hover:from-[#C8402C] hover:to-[#8E2F20] text-[#FFFDF9] font-sans font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
-                <span>{language === 'vi' ? 'Bắt Đầu Xin Quẻ' : 'Start Consultation'}</span>
+                <span>Bắt Đầu Xin Quẻ</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* TAB 2: APP INSTALLATION GUIDANCE */}
+        {/* TAB 2: INSTALL APP PWA */}
         {activeTab === 'install' && (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-[#FAF3E4]/70">
-            {/* App Branding Card */}
-            <div className="bg-gradient-to-r from-[#FFFDF9] via-[#FAF1DE] to-[#FFFDF9] border border-[#AD8A2E]/40 p-4 rounded-xs shadow-xs flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              <LadyThaoAvatar sizeClassName="w-20 h-20" />
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                  <h3 className="font-serif font-bold text-xl text-[#7C2A1C]">Thao Fortune Teller</h3>
-                  <span className="px-2 py-0.5 rounded-full bg-[#B23B28] text-white text-[0.65rem] font-sans font-bold uppercase tracking-wider">
-                    PWA App
-                  </span>
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[70vh] space-y-4">
+            <div className="bg-white/90 border border-[#AD8A2E]/40 p-4 rounded-xs shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 text-left">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#B23B28] to-[#7C2A1C] flex items-center justify-center text-[#FFE082] shadow-sm border border-[#FFE082]/40 flex-shrink-0">
+                  <Smartphone className="w-6 h-6" />
                 </div>
-                <p className="font-serif italic text-xs text-[#5C4B33] leading-relaxed mb-2">
-                  {language === 'vi'
-                    ? 'Cài đặt Thao Fortune Teller trực tiếp lên màn hình chính điện thoại hoặc máy tính để xin quẻ nhanh chóng, trải nghiệm toàn màn hình và lắc điện thoại gieo xăm mượt mà nhất.'
-                    : 'Install Thao Fortune Teller directly to your phone or desktop home screen for one-tap access, full-screen immersion, and smooth phone-shaking gestures.'}
-                </p>
-
-                {deferredPrompt && !isInstalled && (
-                  <button
-                    type="button"
-                    onClick={handleInstallClick}
-                    className="px-4 py-1.5 bg-[#B23B28] hover:bg-[#8E2F20] text-white text-xs font-sans font-bold rounded-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5 text-[#FFE599]" />
-                    <span>{language === 'vi' ? 'Cài Đặt Ngay (1 Chạm)' : 'Install Now (1-Tap)'}</span>
-                  </button>
-                )}
-
-                {isInstalled && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-green-700 font-sans font-bold">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    <span>{language === 'vi' ? 'Đã cài đặt trên thiết bị này' : 'Installed on this device'}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Platform Guides */}
-            <div className="space-y-4">
-              <h4 className="font-sans font-bold text-xs uppercase text-[#7C2A1C] tracking-wide flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
-                <span>
-                  {language === 'vi' ? 'Hướng Dẫn Cài Đặt Theo Từng Thiết Bị' : 'Step-by-Step Device Instructions'}
-                </span>
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* 1. iOS Safari */}
-                <div className="bg-white/85 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-2 flex flex-col">
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-[#AD8A2E]/20">
-                    <Smartphone className="w-4 h-4 text-[#B23B28]" />
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      iPhone / iPad (Safari)
-                    </span>
-                  </div>
-
-                  <ol className="text-xs font-serif text-[#4A3B22] space-y-2 flex-1 pl-1">
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">1.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Mở trang web trong trình duyệt Safari.'
-                          : 'Open this website in Safari.'}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">2.</span>
-                      <span>
-                        {language === 'vi' ? (
-                          <>
-                            Nhấn nút <strong className="text-[#7C2A1C]">Chia sẻ (Share)</strong> ở thanh dưới cùng (biểu tượng ô vuông mũi tên chỉ lên <Share className="w-3 h-3 inline text-[#B23B28]" />).
-                          </>
-                        ) : (
-                          <>
-                            Tap the <strong className="text-[#7C2A1C]">Share</strong> button at bottom toolbar (square with arrow up <Share className="w-3 h-3 inline text-[#B23B28]" />).
-                          </>
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">3.</span>
-                      <span>
-                        {language === 'vi' ? (
-                          <>
-                            Cuộn xuống và chọn <strong className="text-[#7C2A1C]">"Thêm vào Màn hình chính"</strong> (<PlusSquare className="w-3 h-3 inline text-[#B23B28]" /> Add to Home Screen).
-                          </>
-                        ) : (
-                          <>
-                            Scroll and tap <strong className="text-[#7C2A1C]">"Add to Home Screen"</strong> (<PlusSquare className="w-3 h-3 inline text-[#B23B28]" />).
-                          </>
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">4.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Nhấn "Thêm" ở góc trên bên phải để hoàn tất.'
-                          : 'Tap "Add" in top-right corner to finish.'}
-                      </span>
-                    </li>
-                  </ol>
-                </div>
-
-                {/* 2. Android Chrome */}
-                <div className="bg-white/85 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-2 flex flex-col">
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-[#AD8A2E]/20">
-                    <Smartphone className="w-4 h-4 text-[#B23B28]" />
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      Android (Chrome / Brave)
-                    </span>
-                  </div>
-
-                  <ol className="text-xs font-serif text-[#4A3B22] space-y-2 flex-1 pl-1">
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">1.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Mở trang web trong trình duyệt Google Chrome hoặc Brave.'
-                          : 'Open this website in Chrome or Brave.'}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">2.</span>
-                      <span>
-                        {language === 'vi' ? (
-                          <>
-                            Nhấn biểu tượng <strong className="text-[#7C2A1C]">ba chấm (⋮)</strong> ở góc trên bên phải màn hình.
-                          </>
-                        ) : (
-                          <>
-                            Tap the <strong className="text-[#7C2A1C]">three dots (⋮)</strong> menu at top right.
-                          </>
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">3.</span>
-                      <span>
-                        {language === 'vi' ? (
-                          <>
-                            Chọn <strong className="text-[#7C2A1C]">"Cài đặt ứng dụng"</strong> hoặc <strong className="text-[#7C2A1C]">"Thêm vào Màn hình chính"</strong>.
-                          </>
-                        ) : (
-                          <>
-                            Select <strong className="text-[#7C2A1C]">"Install app"</strong> or <strong className="text-[#7C2A1C]">"Add to Home screen"</strong>.
-                          </>
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">4.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Nhấn "Cài đặt" để biểu tượng Thao Fortune Teller xuất hiện trên máy.'
-                          : 'Confirm "Install" to place the app on your home screen.'}
-                      </span>
-                    </li>
-                  </ol>
-                </div>
-
-                {/* 3. Desktop / Laptop */}
-                <div className="bg-white/85 border border-[#AD8A2E]/30 p-3.5 rounded-xs shadow-2xs space-y-2 flex flex-col">
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-[#AD8A2E]/20">
-                    <Laptop className="w-4 h-4 text-[#B23B28]" />
-                    <span className="font-serif font-bold text-sm text-[#2E2415]">
-                      Máy Tính (Chrome / Edge)
-                    </span>
-                  </div>
-
-                  <ol className="text-xs font-serif text-[#4A3B22] space-y-2 flex-1 pl-1">
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">1.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Mở trang web trong Google Chrome, Microsoft Edge hoặc Safari.'
-                          : 'Open in Chrome, Edge, or desktop browser.'}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">2.</span>
-                      <span>
-                        {language === 'vi' ? (
-                          <>
-                            Nhìn vào <strong className="text-[#7C2A1C]">thanh địa chỉ URL</strong>, bấm biểu tượng <Download className="w-3 h-3 inline text-[#B23B28]" /> (Cài đặt ứng dụng).
-                          </>
-                        ) : (
-                          <>
-                            Look at the <strong className="text-[#7C2A1C]">URL address bar</strong>, click the <Download className="w-3 h-3 inline text-[#B23B28]" /> (Install) icon.
-                          </>
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="font-sans font-bold text-[#B23B28]">3.</span>
-                      <span>
-                        {language === 'vi'
-                          ? 'Nhấn "Cài đặt" để mở app độc lập như một phần mềm máy tính.'
-                          : 'Click "Install" to launch as a standalone desktop app.'}
-                      </span>
-                    </li>
-                  </ol>
+                <div>
+                  <h3 className="font-serif font-bold text-base text-[#7C2A1C]">
+                    Cài Đặt Sạp Bói Cô Thảo Lên Màn Hình Chính
+                  </h3>
+                  <p className="font-serif text-xs text-[#6E5C3E]">
+                    Mở 1 chạm nhanh chóng, dùng offline mượt mà không cần mở trình duyệt
+                  </p>
                 </div>
               </div>
+
+              {deferredPrompt && !isInstalled && (
+                <button
+                  type="button"
+                  onClick={handleInstallClick}
+                  className="px-5 py-2.5 bg-[#B23B28] hover:bg-[#7C2A1C] text-[#FFFDF9] font-sans font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition-all flex items-center gap-2 cursor-pointer flex-shrink-0"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Cài Đặt Ngay</span>
+                </button>
+              )}
+
+              {isInstalled && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-xs font-sans font-semibold border border-green-300">
+                  <CheckCircle2 className="w-4 h-4 text-green-700" />
+                  <span>Đã cài đặt</span>
+                </div>
+              )}
             </div>
 
-            {/* Benefits of Installing */}
-            <div className="bg-[#EFE4CB]/70 border border-[#AD8A2E]/35 p-3.5 rounded-xs space-y-2">
-              <h4 className="font-sans font-bold text-xs uppercase text-[#7C2A1C] tracking-wide">
-                {language === 'vi' ? '✨ Lợi Ích Khi Cài Đặt Thao Fortune Teller' : '✨ Benefits of Installing'}
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-serif italic text-[#4A3B22]">
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-green-700 flex-shrink-0" />
-                  <span>{language === 'vi' ? 'Mở 1 chạm nhanh chóng' : 'Fast 1-tap launch'}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* iOS Safari */}
+              <div className="bg-white/80 p-4 rounded-xs border border-[#AD8A2E]/30 space-y-2">
+                <div className="flex items-center gap-2 font-serif font-bold text-sm text-[#7C2A1C]">
+                  <Smartphone className="w-4 h-4 text-[#B23B28]" />
+                  <span>Dành cho iPhone / iPad (Safari)</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-green-700 flex-shrink-0" />
-                  <span>{language === 'vi' ? 'Trải nghiệm không viền thanh duyệt' : 'Immersive full-screen'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-green-700 flex-shrink-0" />
-                  <span>{language === 'vi' ? 'Lắc điện thoại gieo quẻ cực nhạy' : 'Responsive motion shake'}</span>
-                </div>
+                <ol className="text-xs font-serif text-[#4A3B22] space-y-1.5 pl-4 list-decimal">
+                  <li>Mở ứng dụng trên trình duyệt <strong className="text-[#7C2A1C]">Safari</strong>.</li>
+                  <li>Bấm vào biểu tượng <strong className="text-[#7C2A1C]">Chia sẻ (Share)</strong> ở thanh dưới cùng.</li>
+                  <li>Chọn <strong className="text-[#7C2A1C]">"Thêm vào Màn hình chính" (Add to Home Screen)</strong>.</li>
+                </ol>
               </div>
-            </div>
 
-            {/* CTA Back to Reading */}
-            <div className="pt-1 flex justify-center">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-2.5 bg-gradient-to-r from-[#B23B28] to-[#7C2A1C] hover:from-[#C8402C] hover:to-[#8E2F20] text-[#FFFDF9] font-sans font-bold text-xs uppercase tracking-wider rounded-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <span>{language === 'vi' ? 'Trở Lại Sạp Bói' : 'Return to Fortune Stall'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {/* Android Chrome */}
+              <div className="bg-white/80 p-4 rounded-xs border border-[#AD8A2E]/30 space-y-2">
+                <div className="flex items-center gap-2 font-serif font-bold text-sm text-[#7C2A1C]">
+                  <Smartphone className="w-4 h-4 text-[#B23B28]" />
+                  <span>Dành cho Android (Google Chrome)</span>
+                </div>
+                <ol className="text-xs font-serif text-[#4A3B22] space-y-1.5 pl-4 list-decimal">
+                  <li>Mở ứng dụng trong trình duyệt <strong className="text-[#7C2A1C]">Google Chrome</strong>.</li>
+                  <li>Bấm vào biểu tượng <strong className="text-[#7C2A1C]">3 dấu chấm (Menu)</strong> ở góc trên bên phải.</li>
+                  <li>Chọn <strong className="text-[#7C2A1C]">"Cài đặt ứng dụng"</strong> hoặc <strong className="text-[#7C2A1C]">"Thêm vào Màn hình chính"</strong>.</li>
+                </ol>
+              </div>
             </div>
           </div>
         )}
@@ -580,11 +300,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={
-                  language === 'vi'
-                    ? 'Tìm theo số quẻ, tên quẻ, quái (Càn, Khôn, Thái, Bĩ...)...'
-                    : 'Search hexagrams by number, name, or trigram...'
-                }
+                placeholder="Tìm theo số quẻ, tên quẻ (Càn, Khôn, Thái, Bĩ, Đỉnh...)..."
                 className="w-full bg-transparent text-sm font-sans focus:outline-none placeholder:text-[#6E5C3E]/60"
               />
             </div>
@@ -595,12 +311,12 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
               <div className="md:col-span-5 border-r border-[#AD8A2E]/30 p-3 overflow-y-auto max-h-[35vh] md:max-h-full space-y-1 bg-[#F7F0E1]/50">
                 {filteredNumbers.length === 0 ? (
                   <div className="text-center py-6 font-serif italic text-sm text-[#6E5C3E]">
-                    {language === 'vi' ? 'Không tìm thấy quẻ phù hợp' : 'No hexagram found'}
+                    Không tìm thấy quẻ phù hợp
                   </div>
                 ) : (
                   filteredNumbers.map((num) => {
-                    const hex = dataset[String(num)];
                     const meta = HEXAGRAM_DATA[num];
+                    const viet = VIETNAMESE_HEXAGRAMS[num];
                     const isSelected = num === selectedNum;
 
                     return (
@@ -619,7 +335,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
                             #{num}
                           </span>
                           <span className="font-serif font-medium truncate">
-                            {language === 'vi' && meta ? meta.vietnameseName : hex?.english}
+                            {viet?.name || meta?.vietnameseName}
                           </span>
                         </div>
                         {meta?.chinese && (
@@ -633,23 +349,23 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
 
               {/* Right: Selected Hexagram Detail */}
               <div className="md:col-span-7 p-4 sm:p-5 overflow-y-auto max-h-[50vh] md:max-h-full space-y-4 bg-white/40">
-                {activeHex && activeMeta ? (
+                {activeViet && activeMeta ? (
                   <>
                     <div className="flex items-start justify-between border-b border-[#AD8A2E]/30 pb-3">
                       <div>
                         <div className="text-xs font-sans uppercase tracking-widest text-[#B23B28] font-bold">
-                          {language === 'vi' ? `Quẻ Số ${selectedNum}` : `Hexagram #${selectedNum}`}
+                          Quẻ Số #{selectedNum}
                         </div>
                         <h3 className="font-serif font-bold text-xl text-[#2E2415]">
-                          {language === 'vi' ? activeMeta.vietnameseName : activeHex.english}
+                          {activeViet.name}
                         </h3>
                         <div className="text-xs text-[#6E5C3E] font-sans mt-0.5">
-                          {activeMeta.upperTrigram} &bull; {activeMeta.lowerTrigram} &bull; Hành {activeMeta.element}
+                          Tượng: {activeViet.symbol} &bull; Hành {activeViet.element}
                         </div>
                       </div>
 
                       <div className="text-3xl font-serif text-[#7C2A1C] px-3 py-1 bg-[#EFE4CB] border border-[#AD8A2E]/30 rounded-xs">
-                        {activeMeta.chinese}
+                        {activeViet.chinese}
                       </div>
                     </div>
 
@@ -671,34 +387,42 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Classical Judgment */}
+                    {/* Thoán Từ */}
                     <div className="bg-[#F7F0E1] border-l-2 border-[#B23B28] p-3 rounded-r-xs">
                       <div className="text-xs font-sans uppercase font-bold text-[#AD8A2E]">
-                        {language === 'vi' ? 'Phán Từ (Wilhelm Judgment)' : 'The Wilhelm Judgment'}
+                        Thoán Từ
                       </div>
                       <p className="font-serif italic text-sm text-[#2E2415] mt-1 leading-relaxed">
-                        "{activeHex.wilhelm_judgment?.text}"
+                        "{activeViet.thoanTu}"
                       </p>
                     </div>
 
-                    {/* 6 Lines Description Accordion / List */}
+                    {/* Ý Nghĩa & Tượng Truyện */}
+                    <div className="space-y-1 text-xs text-[#2E2415] bg-white/60 p-3 border border-[#AD8A2E]/20 rounded-xs">
+                      <div className="font-sans font-bold text-[#7C2A1C] uppercase">Ý Nghĩa Tổng Thể:</div>
+                      <p className="font-serif">{activeViet.meaning}</p>
+                      <div className="font-sans font-bold text-[#7C2A1C] uppercase pt-1">Tượng Truyện:</div>
+                      <p className="font-serif italic">{activeViet.tuongTruyen}</p>
+                    </div>
+
+                    {/* 6 Lines Description */}
                     <div className="space-y-2">
                       <div className="text-xs font-sans uppercase font-bold text-[#6E5C3E]">
-                        {language === 'vi' ? 'Ý Nghĩa 6 Hào' : 'The 6 Changing Lines'}
+                        Ý Nghĩa 6 Hào
                       </div>
                       <div className="space-y-1.5">
                         {[1, 2, 3, 4, 5, 6].map((lineNum) => {
-                          const lineInfo = activeHex.wilhelm_lines?.[String(lineNum)];
+                          const lineInfo = activeViet.haoTu[lineNum];
                           return (
                             <div
                               key={lineNum}
                               className="text-xs p-2.5 rounded-xs bg-white/60 border border-[#AD8A2E]/20"
                             >
                               <span className="font-sans font-bold text-[#B23B28] mr-2">
-                                {language === 'vi' ? `Hào ${lineNum}:` : `Line ${lineNum}:`}
+                                Hào {lineNum}:
                               </span>
                               <span className="font-serif italic text-[#2E2415]">
-                                {lineInfo?.text || 'Standard line progression.'}
+                                {lineInfo || 'Đang diễn tiến.'}
                               </span>
                             </div>
                           );
@@ -717,7 +441,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
                         className="w-full py-2 bg-[#7C2A1C] hover:bg-[#B23B28] text-[#F7F0E1] rounded-xs text-xs font-sans font-semibold tracking-wide transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Layers className="w-3.5 h-3.5" />
-                        <span>{language === 'vi' ? 'Xem luận giải quẻ này' : 'Consult this Hexagram'}</span>
+                        <span>Xem luận giải quẻ này</span>
                       </button>
                     </div>
                   </>
@@ -730,4 +454,3 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
     </div>
   );
 };
-

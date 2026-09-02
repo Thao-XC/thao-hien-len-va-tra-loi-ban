@@ -5,7 +5,7 @@ import { Sparkles } from 'lucide-react';
 interface TraditionalCurtainProps {
   isOpen: boolean;
   onOpened?: () => void;
-  language?: 'vi' | 'en';
+  language?: 'vi';
   title?: string;
   subtitle?: string;
 }
@@ -13,7 +13,6 @@ interface TraditionalCurtainProps {
 export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
   isOpen,
   onOpened,
-  language = 'vi',
   title,
   subtitle,
 }) => {
@@ -31,13 +30,13 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
     }
   }, [isOpen, onOpened]);
 
-  // If already opened and animation completed, we keep it unrendered or collapsed to avoid blocking pointer events
+  // If already opened and animation completed, we keep it unrendered to avoid blocking pointer events
   if (hasFinishedAnimation && isOpen) {
     return null;
   }
 
-  const defaultTitle = language === 'vi' ? 'DIỆN KIẾN CÔ THẢO' : 'ENTERING SANCTUARY';
-  const defaultSubtitle = language === 'vi' ? 'Khai Mành Giao Trì · Thấu Tỏ Quẻ Dịch' : 'Parting the Imperial Curtains of Fate';
+  const defaultTitle = 'DIỆN KIẾN CÔ THẢO';
+  const defaultSubtitle = 'Khai Mành Giao Trì · Thấu Tỏ Quẻ Dịch';
 
   return (
     <AnimatePresence>
@@ -59,7 +58,7 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
           >
             {/* Dark Rosewood / Lacquer Beam */}
             <div className="w-full h-10 sm:h-12 bg-gradient-to-r from-[#1C0D0A] via-[#3D1812] to-[#1C0D0A] border-b-2 border-[#D4AF37] flex items-center justify-between px-4 sm:px-8 relative">
-              {/* Gold Dragon / Floral Carving Accent Left */}
+              {/* Gold Floral Carving Accent Left */}
               <div className="flex items-center gap-1 opacity-70">
                 <div className="w-3 h-3 rotate-45 bg-[#D4AF37] border border-[#FFE599]" />
                 <div className="w-8 h-0.5 bg-[#D4AF37]" />
@@ -92,7 +91,7 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
               {Array.from({ length: 16 }).map((_, i) => (
                 <motion.div
                   key={i}
-                  animate={{ rotate: [0, (i % 2 === 0 ? 3 : -3), 0] }}
+                  animate={{ rotate: [0, i % 2 === 0 ? 3 : -3, 0] }}
                   transition={{ repeat: Infinity, duration: 2 + (i % 3) * 0.4, ease: 'easeInOut' }}
                   className="flex flex-col items-center"
                 >
@@ -118,7 +117,7 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
             >
               {/* Bamboo & Silk Texture Lines */}
               <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(0deg,#000_0px,#000_2px,transparent_2px,transparent_8px)]" />
-              
+
               {/* Auspicious Brocade Silk Damask Grid Overlay */}
               <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#FFE082_1px,transparent_1px)] [background-size:16px_16px]" />
 
@@ -145,7 +144,7 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
                 <p>Kinh Dịch thấu suốt."</p>
               </div>
 
-              <div className="relative z-10 text-[#FFE599]/40 text-[0.68rem] tracking-widest uppercase">
+              <div className="relative z-10 text-[#FFE599]/50 text-[0.68rem] tracking-widest uppercase">
                 SẠP BÓI CÔ THẢO
               </div>
             </motion.div>
@@ -188,12 +187,12 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
                 <p>Tâm an vạn sự tường." 🌸</p>
               </div>
 
-              <div className="relative z-10 text-[#FFE599]/40 text-[0.68rem] tracking-widest uppercase">
-                SACRED I-CHING ORACLE
+              <div className="relative z-10 text-[#FFE599]/50 text-[0.68rem] tracking-widest uppercase">
+                KINH DỊCH CỔ TRUYỀN
               </div>
             </motion.div>
 
-            {/* CENTER CEREMONIAL GOLDEN SEAL & CLOUD PARTICLES */}
+            {/* CENTER CEREMONIAL GOLDEN SEAL */}
             <motion.div
               initial={{ scale: 1, opacity: 1 }}
               animate={{
@@ -208,7 +207,7 @@ export const TraditionalCurtain: React.FC<TraditionalCurtainProps> = ({
                 <div className="w-full h-full rounded-full bg-[#3B0E09] border border-[#FFE082] flex flex-col items-center justify-center text-center p-1">
                   <Sparkles className="w-5 h-5 text-[#FFE082] animate-spin" />
                   <span className="text-[0.62rem] sm:text-[0.68rem] font-serif font-bold text-[#FFFDF0] tracking-widest mt-0.5">
-                    {language === 'vi' ? 'KHAI MÀNH' : 'UNVEIL'}
+                    KHAI MÀNH
                   </span>
                 </div>
               </div>

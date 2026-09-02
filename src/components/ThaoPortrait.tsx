@@ -13,8 +13,23 @@ export const ThaoPortrait: React.FC<ThaoPortraitProps> = ({
   isSpeaking = true,
   showAura = true,
 }) => {
-  const [imageError, setImageError] = useState(false);
+  const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+
+  const imageSources = [
+    '/lady_thao_ghibli.jpg',
+    '/lady_thao_young.jpg',
+    '/lady_thao_anime.jpg',
+    '/thao_icon.jpg',
+  ];
+
+  const handleImageError = () => {
+    if (currentSrcIndex < imageSources.length - 1) {
+      setCurrentSrcIndex((prev) => prev + 1);
+    } else {
+      setCurrentSrcIndex(-1);
+    }
+  };
 
   // 8 Trigrams (Bát Quái) for Cardcaptor Sakura style magical runes
   const TRIGRAMS = ['☰ Càn', '☱ Đoài', '☲ Ly', '☳ Chấn', '☴ Tốn', '☵ Khảm', '☶ Cấn', '☷ Khôn'];
@@ -190,19 +205,19 @@ export const ThaoPortrait: React.FC<ThaoPortraitProps> = ({
         <div className="relative p-1 rounded-2xl bg-gradient-to-b from-[#E9CE84] via-[#B23B28] to-[#7C2A1C] shadow-[0_8px_24px_rgba(46,36,21,0.22)]">
           {/* Inner Golden Border */}
           <div className="relative rounded-[14px] overflow-hidden border-2 border-[#FFFDF7] bg-[#2D4D3D] aspect-square">
-            {!imageError ? (
+            {currentSrcIndex >= 0 ? (
               <img
-                src="/lady_thao_ghibli.jpg"
-                alt="Lady Thao (Cô Thảo Bói Quẻ) - Studio Ghibli x Traditional Vietnamese Folk Painting"
+                src={imageSources[currentSrcIndex]}
+                alt="Cô Thảo (Lady Thao) - Studio Ghibli x Tranh Dân Gian Việt Nam"
                 referrerPolicy="no-referrer"
-                onError={() => setImageError(true)}
+                onError={handleImageError}
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-[#2D4D3D]">
                 <img
-                  src="/lady_thao_young.jpg"
-                  alt="Lady Thao"
+                  src="/lady_thao_ghibli.jpg"
+                  alt="Cô Thảo"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />

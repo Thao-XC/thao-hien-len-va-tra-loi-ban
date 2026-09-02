@@ -4,6 +4,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import hexagramsData from './src/hexagrams.json' with { type: 'json' };
 import { HEXAGRAM_DATA, getTransformedHexagram } from './src/utils/hexagramPatterns.ts';
+import { VIETNAMESE_HEXAGRAMS } from './src/data/vietnameseHexagrams.ts';
 import { generateRichFallbackInterpretation } from './src/utils/fallbackInterpreter.ts';
 
 const app = express();
@@ -13,18 +14,19 @@ app.use(express.json());
 
 const SYSTEM_PROMPT =
   "Bạn là Cô Thảo (Sạp Bói Thảo) - bậc thầy chiêm bói Kinh Dịch thông thái, thấu cảm và tinh tường văn hóa Việt Nam (với phong cách anime Ghibli ấm áp, chân thành: '🌸 Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn').\n\n" +
-  "QUY TẮC CỐT LÕI BẮT BUỘC:\n" +
-  "1. TƯƠNG QUAN CHẶT CHẼ VỚI THẺ XĂM ĐƯỢC GIEO: Bạn PHẢI đối chiếu chính xác tên quẻ, quái tượng (Thượng/Hạ quái), Ngũ hành, Thoán Từ, và đặc biệt là Lời Hào của Hào Động được truyền vào. Mọi luận giải phải bắt nguồn từ huyền cơ của chính thẻ xăm này.\n" +
-  "2. TRẢ LỜI TRỰC DIỆN, THỰC TẾ & ĐÚNG TRỌNG TÂM CÂU HỎI: Áp dụng trực tiếp ý nghĩa Kinh Dịch của quẻ xăm vào tình huống cụ thể người hỏi đang băn khoăn (công việc, chuyển việc, tình cảm, tài chính, đầu tư, học hành, quyết định quan trọng). Tuyệt đối không nói chung chung, không dùng văn mẫu tử vi sáo rỗng.\n" +
-  "3. CẤU TRÚC BẢN GIẢI BẮT BUỘC:\n" +
-  "   - 🎯 PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ: Khẳng định rõ ràng xu hướng cho câu hỏi (Cát / Đại Cát / Bình Hòa / Thận Trọng / Án Binh Bất Động) và câu trả lời trực tiếp cho việc họ đang hỏi.\n" +
-  "   - 📜 1. HIỆN TRẠNG & NGUYÊN DO (Quẻ Chủ & Thoán Từ): Đánh giá bối cảnh thực tại, thế trận và tâm thế của người hỏi dựa trên Ngũ Hành và Thoán Từ của Quẻ Chủ.\n" +
-  "   - ⚡ 2. ĐIỂM THEN CHỐT & CHIẾN LƯỢC HÀNH ĐỘNG (Hào Động & Lời Hào): Phân tích bước ngoặt từ Lời Hào Động và nêu rõ:\n" +
-  "     * ✔️ Việc NÊN LÀM: 2-3 hành động cụ thể, rõ ràng, thực tiễn có thể áp dụng ngay.\n" +
-  "     * ❌ Điều CẦN TRÁNH: 2-3 sai lầm, cạm bẫy hoặc hành vi nóng vội cần phòng ngừa.\n" +
-  "   - ✨ 3. KẾT QUẢ TƯƠNG LAI & THỜI ĐIỂM (Quẻ Biến & Thoán Từ Biến): Dự báo kết quả cụ thể nếu đi đúng hướng và thời điểm chuyển biến thuận lợi.\n" +
-  "   - 🧭 4. LỜI DẶN DÒ TÂM HUYẾT TỪ CÔ THẢO: Lời nhắn nhủ ấm áp, tiếp thêm bản lĩnh và sự an tâm (xưng Thảo, gọi bạn / bạn hữu).\n" +
-  "4. Giọng văn: Thanh tao, thấu hiểu, mạch lạc, dễ hiểu, dùng tiếng Việt chuẩn mực, xuống dòng rõ ràng giữa các mục.";
+  "NGUYÊN TẮC BẮT BUỘC:\n" +
+  "1. HOÀN TOÀN THUẦN TIẾNG VIỆT 100%: Tuyệt đối không dùng tiếng Anh, không pha trộn từ ngữ ngoại quốc trong bài luận giải.\n" +
+  "2. TƯƠNG QUAN CHẶT CHẼ VỚI QUẺ VÀ HÀO ĐƯỢC GIEO: Đối chiếu chính xác Quẻ Chủ, Quái Tượng, Ngũ Hành, Thoán Từ, Lời Tượng và Lời Hào của Hào Động được truyền vào.\n" +
+  "3. TRẢ LỜI TRỰC DIỆN, THỰC TẾ & ĐÚNG TRỌNG TÂM CÂU HỎI: Áp dụng trực tiếp triết lý Kinh Dịch vào hoàn cảnh cụ thể người hỏi đang băn khoăn (công việc, chuyển việc, tình cảm, tài chính, đầu tư, học hành, quyết định quan trọng). Tuyệt đối không nói chung chung hay dùng văn mẫu sáo rỗng.\n" +
+  "4. CẤU TRÚC BẢN GIẢI QUẺ BẮT BUỘC:\n" +
+  "   - 🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:** Khẳng định ngay 1 câu rõ ràng về câu hỏi (Cát / Đại Cát / Bình Hòa / Cần Thận Trọng / Án Binh Bất Động) và câu trả lời trực tiếp cho việc người hỏi đang trăn trở.\n" +
+  "   - 📜 **1. HIỆN TRẠNG & BỐI CẢNH (Quẻ Chủ & Thoán Từ):** Phân tích thế trận thực tại của người hỏi dựa trên Ngũ Hành và Thoán Từ của Quẻ Chủ.\n" +
+  "   - ⚡ **2. ĐIỂM THEN CHỐT & CHIẾN LƯỢC HÀNH ĐỘNG (Hào Động & Lời Hào):** Chỉ rõ bước ngoặt từ Lời Hào Động và nêu rõ:\n" +
+  "     * ✔️ Việc NÊN LÀM: 2-3 hành động cụ thể, thực tiễn, áp dụng ngay vào đời thực.\n" +
+  "     * ❌ Điều CẦN TRÁNH: 2-3 cạm bẫy, rủi ro hoặc thái độ nóng vội cần phòng ngừa.\n" +
+  "   - ✨ **3. KẾT QUẢ TƯƠNG LAI & THỜI CƠ (Quẻ Biến & Thoán Từ Quẻ Biến):** Dự báo kết quả cụ thể nếu đi đúng hướng và thời điểm chuyển biến thuận lợi.\n" +
+  "   - 🧭 **4. LỜI DẶN DÒ TÂM HUYẾT TỪ CÔ THẢO:** Lời nhắn nhủ ấm áp, tiếp thêm bản lĩnh và sự an tâm (xưng Thảo, gọi bạn / bạn hữu).\n" +
+  "5. Giọng văn: Thanh tao, thấu hiểu, mạch lạc, dễ hiểu, dùng tiếng Việt chuẩn mực, xuống dòng rõ ràng giữa các mục.";
 
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
@@ -81,13 +83,15 @@ app.post('/api/interpret', async (req, res) => {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    const hexMap = hexagramsData as Record<string, any>;
-    const primaryHex = hexMap[String(que)] || hexMap['1'];
-    const primaryMeta = HEXAGRAM_DATA[que] || HEXAGRAM_DATA[1];
+    const queNum = Number(que) || 1;
+    const haoNum = Number(hao) || 1;
+
+    const primaryViet = VIETNAMESE_HEXAGRAMS[queNum] || VIETNAMESE_HEXAGRAMS[1];
+    const primaryMeta = HEXAGRAM_DATA[queNum] || HEXAGRAM_DATA[1];
 
     // Compute Transformed Hexagram (Quẻ Biến)
-    const transformed = getTransformedHexagram(Number(que) || 1, Number(hao) || 1);
-    const transformedHex = hexMap[String(transformed.number)] || primaryHex;
+    const transformed = getTransformedHexagram(queNum, haoNum);
+    const transformedViet = VIETNAMESE_HEXAGRAMS[transformed.number] || VIETNAMESE_HEXAGRAMS[1];
     const transformedMeta = transformed.meta;
 
     if (!apiKey) {
@@ -101,40 +105,27 @@ app.post('/api/interpret', async (req, res) => {
       return;
     }
 
-    const userQuestion =
-      question ||
-      (language === 'vi'
-        ? 'Xin Thảo luận giải vận trình và hướng đi cho tôi.'
-        : 'Please interpret my path and give guidance.');
+    const userQuestion = question?.trim() || 'Xin Cô Thảo luận giải vận trình và hướng đi phía trước cho tôi.';
 
     let contentsArray: any[] = [];
 
-    const isVi = language !== 'en';
+    const primaryThoan = primaryViet.thoanTu;
+    const changingLineText = primaryViet.haoTu[haoNum] || primaryViet.haoTu[1];
+    const transformedThoan = transformedViet.thoanTu;
 
-    const primaryJudgment = primaryHex?.wilhelm_judgment?.text || '';
-    const changingLineText = primaryHex?.wilhelm_lines?.[String(hao)]?.text || '';
-    const transformedJudgment = transformedHex?.wilhelm_judgment?.text || '';
-
-    const hexContext = isVi
-      ? `[TƯ LIỆU KINH DỊCH CỔ TRUYỀN]\n` +
-        `• Quẻ Chủ: Quẻ số #${que} - ${primaryMeta.vietnameseName} (${primaryMeta.chinese})\n` +
-        `  - Cấu trúc: Thượng quái ${primaryMeta.upperTrigram} / Hạ quái ${primaryMeta.lowerTrigram} (Ngũ hành: ${primaryMeta.element})\n` +
-        `  - Thoán Từ cổ truyền: "${primaryJudgment}"\n` +
-        `• Hào Động: Hào số ${hao} (${transformed.wasSolid ? 'Dương ⚊ hào động chuyển thành Âm ⚋' : 'Âm ⚋ hào động chuyển thành Dương ⚊'})\n` +
-        `  - Lời Hào cổ truyền (Hào Từ): "${changingLineText}"\n` +
-        `• Quẻ Biến: Quẻ số #${transformed.number} - ${transformedMeta.vietnameseName} (${transformedMeta.chinese})\n` +
-        `  - Cấu trúc: Thượng quái ${transformedMeta.upperTrigram} / Hạ quái ${transformedMeta.lowerTrigram} (Ngũ hành: ${transformedMeta.element})\n` +
-        `  - Thoán Từ Quẻ Biến: "${transformedJudgment}"\n` +
-        `• Câu hỏi & Băn khoăn thực tế của người xin quẻ: "${userQuestion}"\n\n`
-      : `[AUTHENTIC I CHING DIVINATION CONTEXT]\n` +
-        `• Primary Hexagram: #${que} - ${primaryHex?.english || primaryMeta.vietnameseName} (${primaryMeta.chinese})\n` +
-        `  - Trigrams: Upper ${primaryMeta.upperTrigram} / Lower ${primaryMeta.lowerTrigram} (Element: ${primaryMeta.element})\n` +
-        `  - Judgment Text: "${primaryJudgment}"\n` +
-        `• Changing Line: Line ${hao} (${transformed.wasSolid ? 'Solid ⚊ shifts to Broken ⚋' : 'Broken ⚋ shifts to Solid ⚊'})\n` +
-        `  - Line Text: "${changingLineText}"\n` +
-        `• Transformed Hexagram: #${transformed.number} - ${transformedHex?.english || transformedMeta.vietnameseName} (${transformedMeta.chinese})\n` +
-        `  - Judgment: "${transformedJudgment}"\n` +
-        `• Seeker's Concrete Question: "${userQuestion}"\n\n`;
+    const hexContext =
+      `[TƯ LIỆU KINH DỊCH CỔ TRUYỀN THUẦN VIỆT]\n` +
+      `• Quẻ Chủ: Quẻ số #${queNum} - ${primaryViet.name} (${primaryViet.chinese})\n` +
+      `  - Tượng Quẻ: ${primaryViet.symbol} (Ngũ hành: ${primaryViet.element})\n` +
+      `  - Thoán Từ: "${primaryThoan}"\n` +
+      `  - Tượng Truyện: "${primaryViet.tuongTruyen}"\n` +
+      `  - Ý nghĩa quẻ: ${primaryViet.meaning}\n` +
+      `• Hào Động: Hào số ${haoNum} (${transformed.wasSolid ? 'Dương ⚊ hào động chuyển thành Âm ⚋' : 'Âm ⚋ hào động chuyển thành Dương ⚊'})\n` +
+      `  - Lời Hào Từ: "${changingLineText}"\n` +
+      `• Quẻ Biến: Quẻ số #${transformed.number} - ${transformedViet.name} (${transformedViet.chinese})\n` +
+      `  - Tượng Quẻ Biến: ${transformedViet.symbol} (Ngũ hành: ${transformedViet.element})\n` +
+      `  - Thoán Từ Quẻ Biến: "${transformedThoan}"\n` +
+      `• Câu hỏi & Băn khoăn thực tế của người xin quẻ: "${userQuestion}"\n\n`;
 
     if (history && Array.isArray(history) && history.length > 1) {
       // Conversational follow-up: Include original hex context and entire conversation history
@@ -148,7 +139,7 @@ app.post('/api/interpret', async (req, res) => {
           role: 'user',
           parts: [
             {
-              text: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn giữa người xin quẻ và Cô Thảo. Hãy trả lời câu hỏi mới nhất của họ thật súc tích, thực tế, chính xác và bám sát mạch Kinh Dịch đã gieo.`,
+              text: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn giữa người xin quẻ và Cô Thảo. Hãy trả lời câu hỏi mới nhất của họ bằng tiếng Việt thuần túy, thật súc tích, thực tế, chính xác và bám sát mạch Kinh Dịch đã gieo.`,
             },
           ],
         },
@@ -159,40 +150,26 @@ app.post('/api/interpret', async (req, res) => {
         ...formattedHistory,
       ];
     } else {
-      const promptInstruction = isVi
-        ? `${hexContext}` +
-          `HÃY LUẬN GIẢI THEO ĐÚNG CẤU TRÚC SAU (Trình bày thanh thoát, giàu tính thực tiễn):\n\n` +
-          `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\n` +
-          `Khẳng định ngay 1 câu rõ ràng về câu hỏi "${userQuestion}" (Cát/Đại Cát/Tiểu Cát/Bình Hòa/Cần Án Binh Bất Động) và câu trả lời trực tiếp cho việc họ đang trăn trở.\n\n` +
-          `📜 **1. HIỆN TRẠNG & GỐC RỄ (Quẻ Chủ #${que} - ${primaryMeta.vietnameseName}):**\n` +
-          `Phân tích nguyên nhân và hoàn cảnh thực tế lúc này của người hỏi dựa trên năng lượng ${primaryMeta.element} và Thoán Từ "${primaryJudgment}".\n\n` +
-          `⚡ **2. ĐIỂM THEN CHỐT & CHIẾN LƯỢC HÀNH ĐỘNG (Hào Động ${hao}):**\n` +
-          `Chỉ rõ bước ngoặt từ Lời Hào "${changingLineText}". Đưa ra:\n` +
-          `- **✔️ Việc NÊN LÀM:** (2-3 hành động cụ thể, rõ ràng, áp dụng ngay vào đời thực)\n` +
-          `- **❌ Điều CẦN TRÁNH:** (2-3 cạm bẫy, rủi ro hoặc thái độ nóng vội cần tuyệt đối tránh)\n\n` +
-          `✨ **3. KẾT QUẢ TƯƠNG LAI & THỜI CƠ (Quẻ Biến #${transformed.number} - ${transformedMeta.vietnameseName}):**\n` +
-          `Dự báo kết quả cụ thể nếu họ làm theo đúng chiến lược trên và thời điểm chuyển biến thuận lợi.\n\n` +
-          `🧭 **4. LỜI DẶN DÒ TÂM HUYẾT TỪ CÔ THẢO:**\n` +
-          `Lời khuyên đúc kết từ tâm từ Cô Thảo, giúp họ bình tâm, vững tin và sáng suốt.`
-        : `${hexContext}` +
-          `PLEASE DELIVER A HIGHLY ACTIONABLE & ACCURATE READING FOLLOWING THIS STRUCTURE:\n\n` +
-          `🎯 **DIRECT VERDICT & ASSESSMENT:**\n` +
-          `Direct 1-sentence answer to the seeker's query "${userQuestion}" with clear auspiciousness rating (Auspicious / Great Success / Caution / Hold Position).\n\n` +
-          `📜 **1. Present Foundation (Hexagram #${que} - ${primaryHex?.english || primaryMeta.vietnameseName}):**\n` +
-          `Analyze current state using ${primaryMeta.element} energy and judgment "${primaryJudgment}".\n\n` +
-          `⚡ **2. Turning Point & Action Strategy (Line ${hao}):**\n` +
-          `Unpack classical line text "${changingLineText}". Detail:\n` +
-          `- **✔️ What to DO:** (2-3 concrete real-world steps)\n` +
-          `- **❌ What to AVOID:** (2-3 fatal pitfalls or impatient behaviors)\n\n` +
-          `✨ **3. Future Outcome & Timing (Transformed Hexagram #${transformed.number}):**\n` +
-          `Concrete forecast and conditions for success.\n\n` +
-          `🧭 **4. Lady Thao's Heartfelt Wisdom:**\n` +
-          `Encouraging closure empowering the seeker with clarity and peace.`;
+      const promptInstruction =
+        `${hexContext}` +
+        `HÃY LUẬN GIẢI HOÀN TOÀN BẰNG TIẾNG VIỆT THEO ĐÚNG CẤU TRÚC SAU (Trình bày thanh thoát, giàu tính thực tiễn):\n\n` +
+        `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\n` +
+        `Khẳng định ngay 1 câu rõ ràng về câu hỏi "${userQuestion}" (Cát/Đại Cát/Tiểu Cát/Bình Hòa/Cần Thận Trọng/Án Binh Bất Động) và câu trả lời trực tiếp cho việc họ đang trăn trở.\n\n` +
+        `📜 **1. HIỆN TRẠNG & BỐI CẢNH (Quẻ Chủ #${queNum} - ${primaryViet.name}):**\n` +
+        `Phân tích nguyên nhân và hoàn cảnh thực tế lúc này của người hỏi dựa trên năng lượng ngũ hành ${primaryViet.element}, tượng quẻ "${primaryViet.symbol}" và Thoán Từ "${primaryThoan}".\n\n` +
+        `⚡ **2. ĐIỂM THEN CHỐT & CHIẾN LƯỢC HÀNH ĐỘNG (Hào Động ${haoNum}):**\n` +
+        `Chỉ rõ bước ngoặt từ Lời Hào "${changingLineText}". Đưa ra chiến lược thực tế:\n` +
+        `- **✔️ Việc NÊN LÀM:** (2-3 hành động cụ thể, rõ ràng, áp dụng ngay vào đời thực)\n` +
+        `- **❌ Điều CẦN TRÁNH:** (2-3 cạm bẫy, rủi ro hoặc thái độ nóng vội cần tuyệt đối tránh)\n\n` +
+        `✨ **3. KẾT QUẢ TƯƠNG LAI & THỜI CƠ (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
+        `Dự báo kết quả cụ thể nếu họ làm theo đúng chiến lược trên và thời điểm chuyển biến thuận lợi dựa trên Thoán Từ Quẻ Biến: "${transformedThoan}".\n\n` +
+        `🧭 **4. LỜI DẶN DÒ TÂM HUYẾT TỪ CÔ THẢO:**\n` +
+        `Lời khuyên đúc kết từ tâm từ Cô Thảo, giúp họ bình tâm, vững tin và sáng suốt.`;
 
       contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
     }
 
-    // Active, high-speed, reliable model candidate list with gemini-3.1-flash-lite as first priority
+    // High-speed, reliable model candidate list with gemini-3.1-flash-lite as first priority
     const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.7-flash', 'gemini-flash-latest'];
     let streamedAny = false;
 
@@ -217,7 +194,6 @@ app.post('/api/interpret', async (req, res) => {
         if (streamedAny) break;
       } catch (modelErr: any) {
         console.warn(`Model ${modelName} encountered error:`, modelErr?.message || modelErr);
-        // Continue loop to fallback to next candidate model
       }
     }
 
@@ -262,7 +238,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Sạp Bói Thảo (Thao's Fortune Stall) server running on http://localhost:${PORT}`);
+    console.log(`Sạp Bói Thảo (Thao Fortune Teller) server running on http://localhost:${PORT}`);
   });
 }
 
