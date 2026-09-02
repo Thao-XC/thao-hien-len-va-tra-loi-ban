@@ -3,6 +3,7 @@ import { HexagramDataset } from '../types';
 import { HEXAGRAM_DATA, getHexagramLines } from '../utils/hexagramPatterns';
 import { VIETNAMESE_HEXAGRAMS } from '../data/vietnameseHexagrams';
 import { LadyThaoAvatar } from './LadyThaoAvatar';
+import { JadeFanIcon } from './JadeFanIcon';
 import {
   Search,
   X,
@@ -103,6 +104,7 @@ export const HexagramCodexModal: React.FC<HexagramCodexModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[#AD8A2E]/40 bg-[#EFE4CB]/90">
           <div className="flex items-center gap-2.5">
+            <JadeFanIcon size={34} />
             <LadyThaoAvatar sizeClassName="w-8 h-8" />
             <div>
               <h2 className="font-serif font-bold text-base sm:text-lg text-[#7C2A1C] tracking-tight leading-tight">

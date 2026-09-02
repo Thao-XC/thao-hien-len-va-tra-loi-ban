@@ -7,7 +7,9 @@ import { StickTube } from './components/StickTube';
 import { HexagramVisualizer } from './components/HexagramVisualizer';
 import { OracleChat } from './components/OracleChat';
 import { HexagramCodexModal } from './components/HexagramCodexModal';
+import { LadyThaoHandsFanModal } from './components/LadyThaoHandsFanModal';
 import { BatQuaiIcon } from './components/BatQuaiIcon';
+import { JadeFanIcon } from './components/JadeFanIcon';
 import { TraditionalCurtain } from './components/TraditionalCurtain';
 import { HexagramDataset, Hexagram } from './types';
 import localHexagrams from './hexagrams.json' with { type: 'json' };
@@ -30,6 +32,7 @@ export default function App() {
   const [fallenHao, setFallenHao] = useState<number | null>(null);
   const [isThaoAppeared, setIsThaoAppeared] = useState<boolean>(false);
   const [isCodexOpen, setIsCodexOpen] = useState<boolean>(false);
+  const [isHandModalOpen, setIsHandModalOpen] = useState<boolean>(false);
 
   // Traditional Curtain Window Opening Effect State
   const [showCurtain, setShowCurtain] = useState<boolean>(false);
@@ -139,9 +142,9 @@ export default function App() {
 
       {/* Top App Bar */}
       <header className={`w-full ${isThaoAppeared ? 'max-w-3xl' : 'max-w-xl'} flex items-center justify-between py-2 px-1 mb-1 z-30 relative transition-all duration-500`}>
-        {/* Sạp Bói Brand Badge with Rotating Bát Quái Magic Circle & Cô Thảo Avatar */}
+        {/* Sạp Bói Brand Badge with Jade Fan App Icon & Lady Thao */}
         <div className="flex items-center gap-2">
-          <BatQuaiIcon size={32} animate={true} className="border border-[#E9CE84] shadow-xs" />
+          <JadeFanIcon size={34} animate={true} />
           <LadyThaoAvatar sizeClassName="w-8 h-8 sm:w-9 sm:h-9" animate={true} />
           <span className="font-serif italic font-bold text-base sm:text-lg text-[#7C2A1C] tracking-tight flex items-center gap-1.5">
             <span>Sạp Bói Cô Thảo</span>
@@ -150,7 +153,19 @@ export default function App() {
         </div>
 
         {/* Top Utility Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Cô Thảo Hands with Jade Fan & Bát Quái Nails Showroom */}
+          <button
+            type="button"
+            id="open-hands-button"
+            onClick={() => setIsHandModalOpen(true)}
+            className="px-2 py-1 rounded-xs bg-[#1B4D3E]/15 hover:bg-[#1B4D3E]/25 border border-[#2E7D62]/60 text-[#1B4D3E] hover:text-[#0F3327] transition-all flex items-center gap-1 cursor-pointer shadow-2xs font-sans text-xs font-bold"
+            title="Chiêm ngưỡng tay Cô Thảo cầm quạt ngọc & Móng Bát Quái"
+          >
+            <span>💅</span>
+            <span className="hidden sm:inline">Móng & Quạt Ngọc</span>
+          </button>
+
           {/* Instructions & 64 Hexagrams Codex Button */}
           <button
             type="button"
@@ -199,40 +214,6 @@ export default function App() {
               <p className="font-serif text-xs sm:text-sm text-[#4A3B22] mt-1 italic">
                 "🌸 Tại sao con khóc? Đừng lo, hãy để Thảo xem quẻ giúp bạn."
               </p>
-            </div>
-
-            {/* CÔ THẢO WELCOMING AVATAR & DIALOGUE AT SẠP BÓI ENTRANCE */}
-            <div className="flex flex-col sm:flex-row items-center gap-3.5 bg-gradient-to-r from-[#FFFDF8] via-[#FAF3E3] to-[#F5E8D0] p-3.5 sm:p-4 rounded-xs border border-[#AD8A2E]/50 shadow-xs relative overflow-hidden">
-              {/* Corner Accents */}
-              <div className="absolute top-1.5 left-1.5 w-2.5 h-2.5 border-t-2 border-l-2 border-[#B23B28]" />
-              <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 border-t-2 border-r-2 border-[#B23B28]" />
-
-              {/* Avatar of Cô Thảo with Aura */}
-              <div className="flex-shrink-0 flex flex-col items-center">
-                <div className="relative">
-                  <LadyThaoAvatar sizeClassName="w-20 h-20 sm:w-24 sm:h-24" animate={true} showBorder={true} />
-                  <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-[#7C2A1C] text-[#FFE082] text-[0.62rem] font-sans font-bold border border-[#FFE082]/60 shadow-xs flex items-center gap-1">
-                    <span>Cô Thảo</span>
-                    <span>🌸</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Welcoming Speech Bubble */}
-              <div className="flex-1 text-left">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-sans font-bold text-[#7C2A1C] uppercase tracking-wider flex items-center gap-1">
-                    <span>🌸</span>
-                    <span>Cô Thảo Tiếp Chuyện</span>
-                  </span>
-                  <span className="text-[0.65rem] px-2 py-0.2 rounded-full bg-[#B23B28]/10 text-[#B23B28] font-mono font-semibold">
-                    Đang ở sạp
-                  </span>
-                </div>
-                <p className="font-serif text-xs sm:text-sm text-[#2E2415] leading-relaxed italic">
-                  "Chào bạn ghé thăm Sạp Bói! Dù là chuyện công danh, sự nghiệp, tài lộc hay tình cảm, bạn hãy nhập câu hỏi vào ô bên dưới rồi bấm <strong className="text-[#B23B28] not-italic">Lắc Ống Xăm</strong> để Thảo khai mở quẻ Dịch linh ứng cho bạn nhé."
-                </p>
-              </div>
             </div>
 
             {/* STEP 1: USER ASKS QUESTION INPUT AREA */}
@@ -416,6 +397,12 @@ export default function App() {
         onClose={() => setIsCodexOpen(false)}
         dataset={dataset}
         onSelectHexagram={handleSelectFromCodex}
+      />
+
+      {/* Cô Thảo Hands Fan & Bát Quái Nails Lore Modal */}
+      <LadyThaoHandsFanModal
+        isOpen={isHandModalOpen}
+        onClose={() => setIsHandModalOpen(false)}
       />
 
       {/* Traditional Palace Window Curtain Opening Effect */}

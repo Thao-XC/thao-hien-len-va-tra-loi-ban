@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { playStickClack, playGong } from '../utils/audio';
-import { Sparkles, Smartphone, ArrowRight, RefreshCw, Compass } from 'lucide-react';
+import { Sparkles, Smartphone, ArrowRight, RefreshCw, Compass, Zap, Hand, Eye } from 'lucide-react';
 import { HEXAGRAM_DATA, getTransformedHexagram } from '../utils/hexagramPatterns';
 import { VIETNAMESE_HEXAGRAMS } from '../data/vietnameseHexagrams';
+import { LadyThaoShakingHands } from './LadyThaoShakingHands';
+import { LadyThaoHandsFanModal } from './LadyThaoHandsFanModal';
+import { JadeFanIcon } from './JadeFanIcon';
 
 interface StickTubeProps {
   onStickFallen: (que: number, hao: number) => void;
@@ -14,6 +17,9 @@ interface StickTubeProps {
   hasQuestion?: boolean;
   isEnlarged?: boolean;
 }
+
+export type TubeStyleType = 'classic_batquai' | 'octagonal_crimson' | 'cinnabar_royal' | 'aged_bamboo';
+export type ShakeModeType = 'phone' | 'auto' | 'co_thao';
 
 interface StickState {
   id: number;
@@ -39,6 +45,39 @@ export const StickTube: React.FC<StickTubeProps> = ({
   const [drawnHao, setDrawnHao] = useState<number | null>(null);
   const [motionPermNeeded, setMotionPermNeeded] = useState<boolean>(false);
   const [shakeDetectedFeedback, setShakeDetectedFeedback] = useState<boolean>(false);
+  const [motionForceMeter, setMotionForceMeter] = useState<number>(0);
+  const [isNailModalOpen, setIsNailModalOpen] = useState<boolean>(false);
+
+  // 3 SHAKE MODES: 1/ Phone Shake, 2/ Auto Shake, 3/ Co Thao Shake
+  const [shakeMode, setShakeMode] = useState<ShakeModeType>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('thao_shake_mode') as ShakeModeType;
+      if (saved) return saved;
+    }
+    return 'co_thao';
+  });
+
+  const handleSelectShakeMode = (mode: ShakeModeType) => {
+    setShakeMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('thao_shake_mode', mode);
+    }
+  };
+
+  const [tubeStyle, setTubeStyle] = useState<TubeStyleType>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('thao_tube_style') as TubeStyleType;
+      if (saved && (saved === 'classic_batquai' || saved === 'octagonal_crimson' || saved === 'cinnabar_royal' || saved === 'aged_bamboo')) return saved;
+    }
+    return 'classic_batquai';
+  });
+
+  const handleSelectStyle = (style: TubeStyleType) => {
+    setTubeStyle(style);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('thao_tube_style', style);
+    }
+  };
 
   // Cryptographically robust random generator for 64 Hexagrams & 6 Lines
   const generateCryptographicStick = () => {
@@ -212,37 +251,162 @@ export const StickTube: React.FC<StickTubeProps> = ({
 
   return (
     <div className={`flex flex-col items-center select-none w-full ${isEnlarged ? 'scale-105' : ''} transition-all duration-300`}>
-      {/* Wooden Hexagonal Table Stand & Bamboo Cylinder */}
-      <div className="relative flex flex-col items-center justify-center p-3 sm:p-5 w-full max-w-sm mx-auto">
+      {/* 3 SHAKE MODES SELECTOR (3 CHẾ ĐỘ LẮC ỐNG XĂM) */}
+      <div className="w-full max-w-sm mx-auto mb-2 px-1">
+        <div className="text-[0.68rem] font-serif font-bold text-[#7C2A1C] uppercase tracking-wider mb-1 flex items-center justify-between px-1">
+          <span className="flex items-center gap-1">
+            <span>🎲</span>
+            <span>3 Cách Lắc Ống Xăm:</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsNailModalOpen(true)}
+            className="text-[0.65rem] text-[#B23B28] hover:text-[#7C180E] underline flex items-center gap-1 cursor-pointer font-sans normal-case font-bold"
+          >
+            <span>💅 Móng Bát Quái & Quạt Ngọc</span>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-1 p-1 bg-[#2D120B]/90 backdrop-blur-xs rounded-full border border-[#D4AF37]/60 shadow-md">
+          {/* Mode 1: Phone Shake */}
+          <button
+            type="button"
+            onClick={() => handleSelectShakeMode('phone')}
+            className={`flex-1 py-1.5 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              shakeMode === 'phone'
+                ? 'bg-gradient-to-r from-[#B23B28] to-[#7C2A1C] text-[#FFE599] shadow-md border border-[#FFE599]/70 scale-102 ring-1 ring-[#FFE599]/40'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Smartphone className="w-3 h-3 text-[#FFE599]" />
+            <span>1. Lắc Đ.Thoại</span>
+          </button>
+
+          {/* Mode 2: Auto Shake */}
+          <button
+            type="button"
+            onClick={() => handleSelectShakeMode('auto')}
+            className={`flex-1 py-1.5 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              shakeMode === 'auto'
+                ? 'bg-gradient-to-r from-[#B23B28] to-[#7C2A1C] text-[#FFE599] shadow-md border border-[#FFE599]/70 scale-102 ring-1 ring-[#FFE599]/40'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Zap className="w-3 h-3 text-[#FFE599]" />
+            <span>2. Tự Động Lắc</span>
+          </button>
+
+          {/* Mode 3: Co Thao Shakes */}
+          <button
+            type="button"
+            onClick={() => handleSelectShakeMode('co_thao')}
+            className={`flex-1 py-1.5 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              shakeMode === 'co_thao'
+                ? 'bg-gradient-to-r from-[#1B4D3E] via-[#2E7D62] to-[#0F3327] text-[#FFE082] shadow-md border border-[#FFE082] scale-102 ring-1 ring-[#FFE082]/60'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span>🌸</span>
+            <span>3. Cô Thảo Lắc</span>
+          </button>
+        </div>
+      </div>
+
+      {/* TUBE STYLE SELECTOR BAR (BỘ SƯU TẬP CÁC KIỂU DÁNG ỐNG XĂM) */}
+      <div className="w-full max-w-sm mx-auto mb-2 px-1">
+        <div className="flex items-center justify-between gap-1 p-1 bg-[#2D120B]/80 backdrop-blur-xs rounded-full border border-[#D4AF37]/50 shadow-inner">
+          <button
+            type="button"
+            onClick={() => handleSelectStyle('classic_batquai')}
+            className={`flex-1 py-1 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 ${
+              tubeStyle === 'classic_batquai'
+                ? 'bg-gradient-to-r from-[#8C1D13] via-[#B23B28] to-[#591008] text-[#FFE599] shadow-xs border border-[#FFE599]/80 scale-102 ring-1 ring-[#FFE599]/50'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span>☯️</span>
+            <span>Ống Xăm Cổ Truyền</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectStyle('octagonal_crimson')}
+            className={`flex-1 py-1 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 ${
+              tubeStyle === 'octagonal_crimson'
+                ? 'bg-gradient-to-r from-[#D32F2F] to-[#8B0000] text-[#FFE599] shadow-xs border border-[#FFE599]/60 scale-102'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span>🏮</span>
+            <span>Đỏ Bát Giác</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectStyle('cinnabar_royal')}
+            className={`flex-1 py-1 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 ${
+              tubeStyle === 'cinnabar_royal'
+                ? 'bg-gradient-to-r from-[#8C1D13] to-[#4A0E08] text-[#FFE082] shadow-xs border border-[#FFE082]/60 scale-102'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span>🏛️</span>
+            <span>Hoàng Cung</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectStyle('aged_bamboo')}
+            className={`flex-1 py-1 px-1.5 rounded-full text-[0.65rem] sm:text-[0.7rem] font-serif font-bold transition-all flex items-center justify-center gap-1 ${
+              tubeStyle === 'aged_bamboo'
+                ? 'bg-gradient-to-r from-[#5C3A21] to-[#2B170B] text-[#FFE599] shadow-xs border border-[#D4AF37]/60 scale-102'
+                : 'text-[#E0C9A6] hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span>🎋</span>
+            <span>Tre Gỗ</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Wooden Table Stand & Fortune Tube */}
+      <div className="relative flex flex-col items-center justify-center p-2 sm:p-4 w-full max-w-sm mx-auto">
         {/* Halo Glow behind the tube */}
-        <div className="absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-b from-[#E9CE84]/30 via-[#B23B28]/10 to-transparent blur-2xl pointer-events-none" />
+        <div className="absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-b from-[#E9CE84]/30 via-[#B23B28]/15 to-transparent blur-2xl pointer-events-none" />
 
         {/* Shaking Stage */}
-        <motion.div
-          animate={
-            phase === 'shaking'
-              ? {
-                  rotate: [-6, 6, -5, 5, -4, 4, -2, 2, 0],
-                  y: [-4, 6, -5, 5, -3, 3, 0],
-                  x: [-3, 3, -2, 2, 0],
-                }
-              : phase === 'ejecting'
-              ? {
-                  rotate: [0, -2, 2, 0],
-                  y: [0, -4, 0],
-                }
-              : { rotate: 0, y: 0, x: 0 }
-          }
-          transition={{
-            repeat: phase === 'shaking' ? Infinity : 0,
-            duration: 0.28,
-            ease: 'easeInOut',
-          }}
-          className="relative flex flex-col items-center cursor-pointer group"
-          onClick={() => {
-            if (phase === 'idle') startShakeSequence();
-          }}
-        >
+        <div className="relative flex flex-col items-center">
+          {/* CÔ THẢO HANDS WITH BÁT QUÁI NAIL ART HOLDING AND SHAKING THE TUBE */}
+          <LadyThaoShakingHands
+            isShaking={phase === 'shaking'}
+            isActiveMode={shakeMode === 'co_thao' || phase === 'shaking'}
+          />
+
+          <motion.div
+            animate={
+              phase === 'shaking'
+                ? {
+                    rotate: [-6, 6, -5, 5, -4, 4, -2, 2, 0],
+                    y: [-4, 6, -5, 5, -3, 3, 0],
+                    x: [-3, 3, -2, 2, 0],
+                  }
+                : phase === 'ejecting'
+                ? {
+                    rotate: [0, -2, 2, 0],
+                    y: [0, -4, 0],
+                  }
+                : { rotate: 0, y: 0, x: 0 }
+            }
+            transition={{
+              repeat: phase === 'shaking' ? Infinity : 0,
+              duration: 0.28,
+              ease: 'easeInOut',
+            }}
+            className="relative flex flex-col items-center cursor-pointer group z-10"
+            onClick={() => {
+              if (phase === 'idle') startShakeSequence();
+            }}
+          >
           {/* THE BUNDLE OF BAMBOO FORTUNE STICKS PROTRUDING FROM THE CYLINDER MOUTH */}
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 -mb-8 z-10 flex items-end justify-center overflow-visible">
             {sticks.map((stick) => {
@@ -284,43 +448,249 @@ export const StickTube: React.FC<StickTubeProps> = ({
             })}
           </div>
 
-          {/* THE MASTER BAMBOO FORTUNE TUBE (ỐNG XĂM TRE KHẮC CHỮ NHO) */}
-          <div className="relative z-20 w-36 sm:w-40 h-52 sm:h-56 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#2A170A] via-[#4D2D18] via-30% via-[#6B3F22] via-60% to-[#241308] border-2 border-[#8C5E35] shadow-[0_14px_28px_rgba(0,0,0,0.5),0_6px_10px_rgba(0,0,0,0.3)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
-            {/* Top Lacquer Bamboo Lip Ring */}
-            <div className="w-full h-4 rounded-t-md bg-gradient-to-r from-[#1A0D06] via-[#8C4A26] to-[#1A0D06] border-b-2 border-[#D4AF37] flex items-center justify-center">
-              <div className="w-3/4 h-1 bg-[#D4AF37]/50 rounded-full" />
-            </div>
+          {/* ========================================================= */}
+          {/* STYLE: ỐNG XĂM CỔ TRUYỀN BÁT QUÁI (EXACT REFERENCE DESIGN) */}
+          {/* ========================================================= */}
+          {tubeStyle === 'classic_batquai' && (
+            <div className="relative z-20 w-40 sm:w-46 h-58 sm:h-64 rounded-t-xl rounded-b-3xl bg-gradient-to-r from-[#4A0D07] via-[#751B12] via-30% via-[#942419] via-50% via-[#751B12] via-70% to-[#3B0904] border-2 border-[#FFE599]/80 shadow-[0_16px_40px_rgba(117,27,18,0.5),0_8px_20px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between p-2 overflow-visible">
+              {/* Subtle Vertical Wood Slat Plank Grooves */}
+              <div
+                className="absolute inset-0 rounded-t-xl rounded-b-3xl pointer-events-none opacity-30"
+                style={{
+                  backgroundImage:
+                    'repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(0, 0, 0, 0.45) 16px, rgba(0, 0, 0, 0.45) 17px, rgba(255, 229, 153, 0.15) 17px, rgba(255, 229, 153, 0.15) 18px)',
+                }}
+              />
 
-            {/* Vertical Bamboo Grain Texture */}
-            <div className="absolute inset-0 opacity-15 pointer-events-none bg-[repeating-linear-gradient(90deg,#000_0px,#000_2px,transparent_2px,transparent_10px)]" />
+              {/* Side Wooden Upright Bracket Post (Left) */}
+              <div className="absolute -left-2.5 top-6 w-2.5 h-38 bg-gradient-to-r from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-l border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
+                {/* Red Vermilion Tip */}
+                <div className="w-full h-4 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mb-3 shadow-xs" />
+              </div>
 
-            {/* Traditional Auspicious Gold Inscription: "KINH DỊCH THẦN QUẺ" */}
-            <div className="relative z-10 flex flex-col items-center my-auto py-1">
-              <div className="w-16 h-20 sm:w-18 sm:h-24 rounded-xs border border-[#D4AF37]/80 bg-[#1F1008]/80 p-1 flex flex-col items-center justify-center shadow-inner">
-                {/* Traditional Eight Trigrams (Bát Quái) Center Seal */}
-                <div className="w-6 h-6 rounded-full border border-[#D4AF37] flex items-center justify-center mb-1 text-[0.6rem] text-[#FFE599]">
-                  ☯
+              {/* Left Hanging Red Lucky Tassel & Gold Diamond Plaque */}
+              <div className="absolute -left-5 top-14 flex flex-col items-center z-30 pointer-events-none">
+                {/* Gold Cord Ring */}
+                <div className="w-1.5 h-2 rounded-full border border-[#FFE599] bg-[#FFE599]/40" />
+                {/* Gold Diamond Plaque (Kim Bài Hình Thoi) */}
+                <div className="w-4 h-4 -my-0.5 rotate-45 border-2 border-[#FFE599] bg-[#B23B28] shadow-md flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599]" />
                 </div>
-                <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  靈
-                </div>
-                <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  籤
+                {/* Red Silk Hanging Tassel Cords */}
+                <div className="flex gap-0.5 mt-0.5">
+                  <div className="w-1 h-14 bg-gradient-to-b from-[#B23B28] via-[#8C1D13] to-[#4A0D07] rounded-b-full shadow-xs" />
+                  <div className="w-1 h-16 bg-gradient-to-b from-[#C43825] via-[#8C1D13] to-[#3B0904] rounded-b-full shadow-xs" />
                 </div>
               </div>
-              <span className="font-sans font-bold text-[0.62rem] text-[#D4AF37] tracking-[0.2em] mt-1 uppercase">
-                KINH DỊCH
-              </span>
-            </div>
 
-            {/* Bottom Brass Reinforced Band */}
-            <div className="w-full h-5 rounded-b-md bg-gradient-to-r from-[#5C3D1E] via-[#D4AF37] to-[#5C3D1E] border-t border-[#FFE599]/60 flex items-center justify-around px-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
-              <div className="w-8 h-1 bg-[#1A0D06]/40 rounded-full" />
-              <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
+              {/* Side Wooden Upright Bracket Post (Right) */}
+              <div className="absolute -right-2.5 top-6 w-2.5 h-38 bg-gradient-to-l from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-r border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
+                {/* Red Vermilion Tip */}
+                <div className="w-full h-4 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mb-3 shadow-xs" />
+              </div>
+
+              {/* TOP GOLD BATTLEMENT FRETWORK BAND (ĐAI VÀNG HỒI VĂN RĂNG CƯA TRÊN) */}
+              <div className="relative z-20 w-full flex flex-col items-center pt-1">
+                {/* Crenellated Greek Fret / Castle Battlement Steps */}
+                <div className="w-full flex justify-between px-1 h-2 overflow-hidden">
+                  {[...Array(9)].map((_, i) => (
+                    <div
+                      key={`top-notch-${i}`}
+                      className="w-2.5 h-2 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
+                    />
+                  ))}
+                </div>
+                {/* Solid Gold Horizontal Bar */}
+                <div className="w-full h-3.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-3">
+                  {/* Round Gold Rivets */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                </div>
+              </div>
+
+              {/* CENTER CIRCULAR YIN-YANG (THÁI CỰC BÁT QUÁI) MEDALLION */}
+              <div className="relative z-20 my-auto flex items-center justify-center">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-[#FFE599] bg-gradient-to-b from-[#1F0C08] to-[#0A0402] shadow-[0_8px_20px_rgba(0,0,0,0.8),inset_0_2px_6px_rgba(255,229,153,0.3)] flex items-center justify-center p-1">
+                  {/* Outer Concentric Dotted / Dashed Gold Ring */}
+                  <div className="absolute inset-1.5 rounded-full border-2 border-dashed border-[#FFE599]/80 pointer-events-none" />
+
+                  {/* High-Fidelity Golden & Dark Lacquer Yin-Yang Symbol (Thái Cực Đồ) */}
+                  <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FFE599] overflow-hidden border border-[#D4AF37] shadow-inner flex">
+                    {/* Left Dark Yin Half */}
+                    <div className="w-1/2 h-full bg-[#2A0E08]" />
+                    {/* Right Gold Yang Half */}
+                    <div className="w-1/2 h-full bg-[#FFE599]" />
+
+                    {/* Top Yin Disc (Dark with Gold Eye) */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#2A0E08] flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-[#FFE599] shadow-xs" />
+                    </div>
+
+                    {/* Bottom Yang Disc (Gold with Dark Eye) */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#FFE599] flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-[#2A0E08] shadow-xs" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BOTTOM GOLD BATTLEMENT FRETWORK BAND (ĐAI VÀNG HỒI VĂN RĂNG CƯA DƯỚI) */}
+              <div className="relative z-20 w-full flex flex-col items-center pb-1">
+                {/* Crenellated Greek Fret / Castle Battlement Steps */}
+                <div className="w-full flex justify-between px-1 h-2 overflow-hidden">
+                  {[...Array(9)].map((_, i) => (
+                    <div
+                      key={`bottom-notch-${i}`}
+                      className="w-2.5 h-2 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
+                    />
+                  ))}
+                </div>
+                {/* Solid Gold Horizontal Bar */}
+                <div className="w-full h-3.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-3">
+                  {/* Round Gold Rivets */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                </div>
+              </div>
+
+              {/* Bottom Rounded Base Trim */}
+              <div className="w-full h-3 rounded-b-2xl bg-gradient-to-r from-[#240603] via-[#4A0D07] to-[#240603] -mt-0.5 border-t border-[#FFE599]/30" />
             </div>
-          </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* STYLE 1: ỐNG XĂM ĐỎ THẮM BÁT GIÁC CUNG ĐÌNH (OCTAGONAL CRIMSON) */}
+          {/* ========================================================= */}
+          {tubeStyle === 'octagonal_crimson' && (
+            <div className="relative z-20 w-38 sm:w-44 h-54 sm:h-60 rounded-t-lg rounded-b-2xl bg-gradient-to-r from-[#690E05] via-[#B81F14] via-30% via-[#D83627] via-50% via-[#B81F14] via-70% to-[#500A03] border-2 border-[#FFE599] shadow-[0_16px_36px_rgba(184,31,20,0.5),0_6px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
+              {/* Faceted Octagonal Column Lines */}
+              <div className="absolute inset-0 flex justify-between px-7 pointer-events-none opacity-30">
+                <div className="w-px h-full bg-gradient-to-b from-white via-[#FFE599] to-transparent shadow-[0_0_2px_#fff]" />
+                <div className="w-px h-full bg-gradient-to-b from-white via-[#FFE599] to-transparent shadow-[0_0_2px_#fff]" />
+              </div>
+
+              {/* Top Imperial Gold Lip Ring */}
+              <div className="w-full h-4.5 rounded-t-md bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-b-2 border-[#540B04] flex items-center justify-center shadow-xs">
+                <div className="w-3/4 h-1 bg-[#540B04]/40 rounded-full" />
+              </div>
+
+              {/* Middle Ornate Plaque with Calligraphy "靈 籤" */}
+              <div className="relative z-10 flex flex-col items-center my-auto py-1">
+                <div className="w-20 h-24 sm:w-22 sm:h-28 rounded-sm border-2 border-[#FFE599] bg-gradient-to-b from-[#690E05] via-[#8C160B] to-[#400702] p-1.5 flex flex-col items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.6)]">
+                  {/* Bát Quái Center Seal */}
+                  <div className="w-7 h-7 rounded-full border border-[#FFE599] bg-[#FFE599]/20 flex items-center justify-center mb-0.5 text-xs text-[#FFE599] shadow-xs">
+                    ☯
+                  </div>
+                  {/* Bold Calligraphy */}
+                  <div className="font-serif font-black text-lg sm:text-xl text-[#FFE599] tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    靈
+                  </div>
+                  <div className="font-serif font-black text-lg sm:text-xl text-[#FFE599] tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    籤
+                  </div>
+                </div>
+                <div className="mt-1 px-2.5 py-0.5 rounded-full bg-[#400702]/90 border border-[#FFE599]/80 shadow-xs">
+                  <span className="font-sans font-black text-[0.65rem] text-[#FFE599] tracking-[0.2em] uppercase">
+                    THẦN THIÊM
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Brass Studded Ring with Red Lucky Tassel */}
+              <div className="w-full h-5.5 rounded-b-xl bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-t border-[#540B04]/50 flex items-center justify-around px-2 shadow-xs">
+                <div className="w-2 h-2 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                <div className="w-12 h-1 bg-[#540B04]/50 rounded-full" />
+                <div className="w-2 h-2 rounded-full bg-[#540B04] border border-[#FFE599]" />
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* STYLE 2: ỐNG XĂM ĐỎ CHU SA HOÀNG CUNG (CINNABAR ROYAL) */}
+          {/* ========================================================= */}
+          {tubeStyle === 'cinnabar_royal' && (
+            <div className="relative z-20 w-36 sm:w-42 h-52 sm:h-58 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#4A0E08] via-[#8C1D13] via-25% via-[#B23B28] via-50% via-[#9E2417] via-75% to-[#3D0A05] border-2 border-[#E9CE84] shadow-[0_16px_36px_rgba(124,31,22,0.45),0_6px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
+              <div className="w-full h-4.5 rounded-t-md bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-b-2 border-[#591008] flex items-center justify-center shadow-xs">
+                <div className="w-3/4 h-1 bg-[#591008]/40 rounded-full" />
+              </div>
+              <div className="absolute inset-y-0 left-1/3 w-8 bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+              <div className="relative z-10 flex flex-col items-center my-auto py-1">
+                <div className="w-18 h-22 sm:w-20 sm:h-26 rounded-xs border-2 border-[#FFE082] bg-gradient-to-b from-[#591008] via-[#7C180E] to-[#3D0A05] p-1.5 flex flex-col items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                  <div className="w-6 h-6 rounded-full border border-[#FFE082] bg-[#FFE082]/15 flex items-center justify-center mb-0.5 text-[0.65rem] text-[#FFE082] shadow-xs">
+                    ☯
+                  </div>
+                  <div className="font-serif font-black text-base sm:text-lg text-[#FFE082] tracking-widest leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    靈
+                  </div>
+                  <div className="font-serif font-black text-base sm:text-lg text-[#FFE082] tracking-widest leading-none mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    籤
+                  </div>
+                </div>
+                <div className="mt-1 px-2 py-0.5 rounded-full bg-[#3D0A05]/80 border border-[#FFE082]/70 shadow-xs">
+                  <span className="font-sans font-extrabold text-[0.6rem] text-[#FFE082] tracking-[0.2em] uppercase">
+                    KINH DỊCH
+                  </span>
+                </div>
+              </div>
+              <div className="w-full h-5.5 rounded-b-md bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-t border-[#591008]/50 flex items-center justify-around px-2 shadow-xs">
+                <div className="w-2 h-2 rounded-full bg-[#591008] border border-[#FFE082]" />
+                <div className="w-10 h-1 bg-[#591008]/50 rounded-full" />
+                <div className="w-2 h-2 rounded-full bg-[#591008] border border-[#FFE082]" />
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* STYLE 4: ỐNG TRE GIÀ KHẮC CHỮ NHO (AGED BAMBOO) */}
+          {/* ========================================================= */}
+          {tubeStyle === 'aged_bamboo' && (
+            <div className="relative z-20 w-36 sm:w-40 h-52 sm:h-56 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#2A170A] via-[#4D2D18] via-30% via-[#6B3F22] via-60% to-[#241308] border-2 border-[#8C5E35] shadow-[0_14px_28px_rgba(0,0,0,0.5),0_6px_10px_rgba(0,0,0,0.3)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
+              <div className="w-full h-4 rounded-t-md bg-gradient-to-r from-[#1A0D06] via-[#8C4A26] to-[#1A0D06] border-b-2 border-[#D4AF37] flex items-center justify-center">
+                <div className="w-3/4 h-1 bg-[#D4AF37]/50 rounded-full" />
+              </div>
+              <div className="absolute inset-0 opacity-15 pointer-events-none bg-[repeating-linear-gradient(90deg,#000_0px,#000_2px,transparent_2px,transparent_10px)]" />
+              <div className="relative z-10 flex flex-col items-center my-auto py-1">
+                <div className="w-16 h-20 sm:w-18 sm:h-24 rounded-xs border border-[#D4AF37]/80 bg-[#1F1008]/80 p-1 flex flex-col items-center justify-center shadow-inner">
+                  <div className="w-6 h-6 rounded-full border border-[#D4AF37] flex items-center justify-center mb-1 text-[0.6rem] text-[#FFE599]">
+                    ☯
+                  </div>
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    靈
+                  </div>
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    籤
+                  </div>
+                </div>
+                <span className="font-sans font-bold text-[0.62rem] text-[#D4AF37] tracking-[0.2em] mt-1 uppercase">
+                  KINH DỊCH
+                </span>
+              </div>
+              <div className="w-full h-5 rounded-b-md bg-gradient-to-r from-[#5C3D1E] via-[#D4AF37] to-[#5C3D1E] border-t border-[#FFE599]/60 flex items-center justify-around px-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
+                <div className="w-8 h-1 bg-[#1A0D06]/40 rounded-full" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
+              </div>
+            </div>
+          )}
+
+          {/* Master Red Lacquer & Gold Altar Pedestal (hidden for classic_batquai to match exact reference) */}
+          {tubeStyle !== 'classic_batquai' && (
+            <div className="relative z-10 -mt-1 w-44 sm:w-50 h-5.5 bg-gradient-to-r from-[#2A0805] via-[#5C140D] via-50% to-[#2A0805] rounded-sm border-t-2 border-b border-[#FFE082] shadow-lg flex items-center justify-between px-3">
+              <div className="w-2.5 h-2.5 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
+              <div className="w-20 h-0.5 bg-[#FFE082]/60 rounded-full" />
+              <div className="w-2.5 h-2.5 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
+            </div>
+          )}
+          {/* Subtle Ground Shadow */}
+          <div className="w-44 h-3 rounded-full bg-[#000000]/60 blur-xs mt-1.5" />
         </motion.div>
+        </div>
 
         {/* EJECTED / FALLEN WINNING FORTUNE STICK PLAQUE DISPLAY */}
         <div className="w-full mt-3 min-h-[160px] flex items-center justify-center">
@@ -409,8 +779,14 @@ export const StickTube: React.FC<StickTubeProps> = ({
 
         {/* Guidance Prompt & Shake Status */}
         <div className="text-center font-serif italic text-xs sm:text-sm text-[#6E5C3E] min-h-[1.5rem] mt-3 mb-1">
-          {phase === 'shaking' && 'Đang lắc ống xăm linh nghiệm...'}
-          {phase === 'ejecting' && 'Thẻ xăm đang nhô ra...'}
+          {phase === 'shaking' && (
+            <span className="text-[#B23B28] font-bold animate-pulse">
+              {shakeMode === 'co_thao'
+                ? '🌸 Đôi tay Cô Thảo đang thành tâm lắc ống xăm cầu phúc...'
+                : 'Đang lắc ống xăm linh nghiệm...'}
+            </span>
+          )}
+          {phase === 'ejecting' && 'Thẻ xăm đang nhô ra khỏi ống...'}
           {phase === 'fallen' && (
             <span className="text-[#7C2A1C] font-semibold">
               Thẻ xăm đã rơi ra! Mời bạn bấm Diễn Kiến Cô Thảo để khai mành giải quẻ.
@@ -418,10 +794,26 @@ export const StickTube: React.FC<StickTubeProps> = ({
           )}
           {phase === 'idle' && (
             <div className="flex items-center justify-center gap-1.5">
-              <Smartphone className={`w-3.5 h-3.5 text-[#B23B28] ${shakeDetectedFeedback ? 'animate-bounce' : 'animate-pulse'}`} />
-              <span>
-                Lắc ống xăm (hoặc lắc điện thoại) để gieo quẻ
-              </span>
+              {shakeMode === 'phone' && (
+                <>
+                  <Smartphone className={`w-3.5 h-3.5 text-[#B23B28] ${shakeDetectedFeedback ? 'animate-bounce' : 'animate-pulse'}`} />
+                  <span>Cầm điện thoại lắc đều tay (hoặc bấm nút bên dưới) để xin xăm</span>
+                </>
+              )}
+              {shakeMode === 'auto' && (
+                <>
+                  <Zap className="w-3.5 h-3.5 text-[#B23B28] animate-pulse" />
+                  <span>Bấm nút "Tự Động Lắc Nhanh" bên dưới để gieo quẻ</span>
+                </>
+              )}
+              {shakeMode === 'co_thao' && (
+                <>
+                  <span className="text-xs">🌸</span>
+                  <span className="text-[#1B4D3E] font-semibold">
+                    Cô Thảo sẽ dùng đôi tay móng Bát Quái ôm ống xăm lắc quẻ cho bạn
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -453,8 +845,8 @@ export const StickTube: React.FC<StickTubeProps> = ({
               </button>
             </div>
           ) : (
-            <div className="w-full flex flex-col sm:flex-row gap-2 justify-center items-center">
-              {/* SHAKE WOODEN STICKS BOX */}
+            <div className="w-full flex flex-col gap-2 justify-center items-center">
+              {/* MAIN ACTION BUTTON BASED ON ACTIVE MODE */}
               <button
                 type="button"
                 id="shake-tube-button"
@@ -463,21 +855,46 @@ export const StickTube: React.FC<StickTubeProps> = ({
                 className={`w-full py-3 px-5 rounded-xs font-sans font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${
                   phase === 'shaking' || phase === 'ejecting' || disabled
                     ? 'opacity-60 cursor-not-allowed bg-[#7C2A1C] text-[#F7F0E1]'
+                    : shakeMode === 'co_thao'
+                    ? 'bg-gradient-to-r from-[#1B4D3E] via-[#2E7D62] to-[#0F3327] hover:brightness-110 text-[#FFE082] border-2 border-[#FFE082] shadow-[0_6px_20px_rgba(30,110,80,0.4)]'
                     : 'bg-gradient-to-b from-[#B23B28] to-[#7C2A1C] hover:from-[#C8402C] hover:to-[#8E2F20] text-[#F7F0E1] border border-[#E9CE84]/50 hover:shadow-[0_4px_16px_rgba(178,59,40,0.35)]'
                 }`}
               >
-                <Sparkles className="w-4 h-4 text-[#E9CE84]" />
-                <span>
-                  {phase === 'idle'
-                    ? 'Lắc Ống Xăm Xin Quẻ'
-                    : 'Đang Lắc Ống Xăm...'}
-                </span>
+                {shakeMode === 'co_thao' ? (
+                  <>
+                    <span className="text-base">🌸</span>
+                    <span>
+                      {phase === 'idle'
+                        ? 'Nhờ Cô Thảo Lắc Dùm (Móng Bát Quái)'
+                        : 'Cô Thảo Đang Lắc Ống Xăm...'}
+                    </span>
+                    <Sparkles className="w-4 h-4 text-[#FFE082]" />
+                  </>
+                ) : shakeMode === 'phone' ? (
+                  <>
+                    <Smartphone className="w-4 h-4 text-[#FFE599]" />
+                    <span>
+                      {phase === 'idle'
+                        ? 'Lắc Điện Thoại Hoặc Bấm Vào Đây'
+                        : 'Đang Lắc Ống Xăm...'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4 text-[#FFE599]" />
+                    <span>
+                      {phase === 'idle'
+                        ? 'Tự Động Lắc Nhanh Xin Quẻ'
+                        : 'Đang Tự Động Lắc...'}
+                    </span>
+                  </>
+                )}
               </button>
             </div>
           )}
 
           {/* iOS Accelerometer permission prompt button if needed */}
-          {motionPermNeeded && (
+          {motionPermNeeded && shakeMode === 'phone' && (
             <button
               type="button"
               id="enable-motion-button"
@@ -490,6 +907,12 @@ export const StickTube: React.FC<StickTubeProps> = ({
           )}
         </div>
       </div>
+
+      {/* MODAL: CHIÊM NGƯỠNG ĐÔI TAY CÔ THẢO CẦM QUẠT NGỌC & MÓNG BÁT QUÁI */}
+      <LadyThaoHandsFanModal
+        isOpen={isNailModalOpen}
+        onClose={() => setIsNailModalOpen(false)}
+      />
     </div>
   );
 };

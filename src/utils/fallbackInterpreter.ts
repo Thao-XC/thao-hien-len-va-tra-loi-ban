@@ -68,139 +68,143 @@ export function generateRichFallbackInterpretation(
   // Follow-up conversation reply
   if (history && history.length > 1) {
     return (
-      `🌸 **Cô Thảo lắng nghe chia sẻ tiếp theo của bạn về:** *${userQ}*\n\n` +
-      `Nhìn lại gốc quẻ #${queNum} (${primaryViet.name}) đang chuyển động tại Hào ${haoNum} biến sang #${transformed.number} (${transformedViet.name}):\n\n` +
-      `💡 **Lời khuyên tức thời cho bạn:**\n` +
-      `- **Trọng tâm:** ${primaryViet.meaning}\n` +
-      `- **Hành động:** Thuận theo đạo lý của Hào ${haoNum} ("${changingLineText.replace(/^Hào \d+[^:]*:\s*/, '')}").\n` +
-      `- **Lưu ý:** Lấy sự chân thành, minh bạch và kiên nhẫn làm gốc rễ. Khi tâm bạn vững vàng, mọi khúc mắc sẽ tự tìm được lối mở hanh thông.`
+      `🎯 **TRẢ LỜI TRỰC TIẾP:**\n` +
+      `Về việc bạn hỏi: *"${userQ}"*\n\n` +
+      `- **Cục diện hiện tại:** Quẻ #${queNum} (${primaryViet.name}) - ${primaryViet.meaning}\n` +
+      `- **Hành động then chốt (Hào ${haoNum}):** Thuận theo lời Hào "${changingLineText.replace(/^Hào \d+[^:]*:\s*/, '')}".\n` +
+      `- **Kết luận & lời khuyên:** Cần dứt khoát, minh bạch và kiên trì với phương án đã chọn. Tránh dao động hoặc nghe theo lời bàn tán xung quanh.`
     );
   }
 
   // Initial rich tailored reading in 100% Vietnamese
-  let verdictAssessment = '';
+  let directVerdict = '';
   let concreteAdviceDos: string[] = [];
   let concreteAdviceDonts: string[] = [];
   let timingAndOutcome = '';
 
   switch (category.type) {
     case 'career':
-      verdictAssessment = `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\nĐối với công việc và định hướng của bạn — Thời vận báo hiệu: **${
-        queNum === 1 || queNum === 11 || queNum === 14 || queNum === 35 || queNum === 42 || queNum === 50
-          ? 'ĐẠI CÁT HANH THÔNG'
-          : queNum === 6 || queNum === 12 || queNum === 23 || queNum === 29 || queNum === 47
-          ? 'CẦN CẨN TRỌNG & TÍCH LŨY NỘI LỰC'
-          : 'THỜI CƠ ĐANG CHUYỂN BIẾN THUẬN LỢI NẾU HÀNH XỬ ĐÚNG ĐẠO'
-      }**. Dự định bạn ấp ủ hoàn toàn có cơ hội thành tựu, nhưng chìa khóa quyết định nằm ở sự bền bỉ và cách bạn xử lý tại mắt xích Hào ${haoNum}.`;
+      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+        `Về công việc/dự định: **${
+          queNum === 1 || queNum === 11 || queNum === 14 || queNum === 35 || queNum === 42 || queNum === 50
+            ? 'RẤT NÊN TIẾN HÀNH (ĐẠI CÁT)'
+            : queNum === 6 || queNum === 12 || queNum === 23 || queNum === 29 || queNum === 47
+            ? 'CHƯA NÊN VỘI VÃ (CẦN CỦNG CỐ THÊM NỘI LỰC)'
+            : 'NÊN THỰC HIỆN TỪNG BƯỚC CHẮC CHẮN'
+        }**. ${
+          queNum === 6 || queNum === 12 || queNum === 29
+            ? 'Hiện tại chưa phải thời cơ chín muồi, cần rà soát lại kỹ lưỡng.'
+            : 'Cơ hội thành công cao nếu bạn chủ động và tập trung dứt điểm từng mục tiêu.'
+        }`;
       concreteAdviceDos = [
-        `Rà soát kỹ lưỡng các điều khoản, kế hoạch cụ thể và trau dồi chuyên môn cốt lõi theo tinh thần quẻ ${primaryViet.name}.`,
-        'Chủ động tìm kiếm sự cố vấn từ người có uy tín, bề trên hoặc đối tác tin cậy ("lợi kiến đại nhân").',
-        'Tập trung hoàn thiện từng hạng mục nhỏ một cách chỉn chu trước khi mở rộng quy mô.',
+        `Rà soát kỹ hợp đồng, thỏa thuận và trau dồi năng lực chuyên môn cốt lõi.`,
+        'Chủ động xin ý kiến hoặc hợp tác với người có thẩm quyền/uy tín cao.',
       ];
       concreteAdviceDonts = [
-        'Tránh nóng vội đòi hỏi kết quả tức thì hoặc vội vàng đối đầu trực diện khi chưa nắm chắc phần thắng.',
-        'Tuyệt đối không để cảm xúc nhất thời làm ảnh hưởng đến các thỏa thuận công việc dài hạn.',
+        'Tránh nóng vội tranh cãi hay thay đổi định hướng đột ngột.',
+        'Tuyệt đối không để cảm xúc cá nhân chi phối quyết định công việc.',
       ];
-      timingAndOutcome = `Dưới tác động chuyển hóa sang Quẻ Biến #${transformed.number} (${transformedViet.name}), khi bạn thực hiện đúng chiến lược trên, công việc sẽ bước vào quỹ đạo hanh thông, gặt hái sự ghi nhận xứng đáng và mở ra cơ hội hợp tác mới.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}) cho thấy: Khi bạn làm đúng 2 điều trên, kết quả sẽ chuyển biến rõ rệt sau 1–3 tháng tới, công việc thông suốt và đạt sự công nhận.`;
       break;
 
     case 'love':
-      verdictAssessment = `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\nVề chuyện tình duyên & mối quan hệ của bạn — Quẻ báo hiệu: **${
-        queNum === 31 || queNum === 11 || queNum === 37 || queNum === 8 || queNum === 61
-          ? 'TƯƠNG HỢP CÁT LÀNH & ĐỒNG ĐIỆU'
-          : queNum === 38 || queNum === 54 || queNum === 6 || queNum === 12
-          ? 'CẦN HÓA GIẢI BẤT ĐỒNG & LẮNG NGHE CHÂN THÀNH'
-          : 'THUẬN THEO TỰ NHIÊN, CẦN SỰ CHÂN THÀNH VUN ĐẮP'
-      }**. Mối quan hệ đang ở thời điểm cần sự thấu cảm, hạ bớt cái tôi và đối thoại chân tình.`;
+      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+        `Về chuyện tình cảm/mối quan hệ: **${
+          queNum === 31 || queNum === 11 || queNum === 37 || queNum === 8 || queNum === 61
+            ? 'RẤT THUẬN LỢI & CÓ DUYÊN TỐT'
+            : queNum === 38 || queNum === 54 || queNum === 6 || queNum === 12
+            ? 'CÓ KHÚC MẮC CẦN GIẢI QUYẾT NGAY'
+            : 'CẦN CHỦ ĐỘNG VÀ CHÂN THÀNH HƠN'
+        }**. ${
+          queNum === 38 || queNum === 6
+            ? 'Hai bên đang thiếu sự thấu hiểu, cần nói chuyện thẳng thắn.'
+            : 'Tình cảm đang có cơ hội gắn kết sâu sắc nếu biết trân trọng.'
+        }`;
       concreteAdviceDos = [
-        'Mở lòng chia sẻ cảm xúc một cách nhẹ nhàng, chân thật, tạo không gian để đối phương giãi bày.',
-        'Vun vén những hành động quan tâm giản dị mỗi ngày thay vì chỉ tập trung vào những lời hứa hẹn xa vời.',
-        'Lấy lòng bao dung và sự tôn trọng làm nền tảng kết nối bền chặt.',
+        'Mở lòng nói chuyện thẳng thắn, rõ ràng với thái độ lắng nghe.',
+        'Thể hiện sự quan tâm bằng hành động thực tế mỗi ngày.',
       ];
       concreteAdviceDonts = [
-        'Tránh suy diễn, nghi ngờ hoặc nhắc lại những khúc mắc trong quá khứ.',
-        'Không nên gượng ép hay áp đặt quan điểm của mình lên đối phương.',
+        'Tránh suy diễn, im lặng kéo dài (chiến tranh lạnh) hoặc bới móc chuyện cũ.',
+        'Không áp đặt mong muốn của bản thân lên đối phương.',
       ];
-      timingAndOutcome = `Khi năng lượng chuyển sang Quẻ Biến #${transformed.number} (${transformedViet.name}), những hiểu lầm sẽ được hóa giải êm đẹp, tình cảm trở nên sâu sắc, thắm thiết và bền vững hơn.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Mọi hiểu lầm sẽ được tháo gỡ khi bạn chủ động đối thoại chân thành.`;
       break;
 
     case 'finance':
-      verdictAssessment = `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\nVề tiền bạc, tài lộc & các kế hoạch chi tiêu/đầu tư — Quẻ phán: **${
-        queNum === 14 || queNum === 26 || queNum === 42 || queNum === 11
-          ? 'TÀI LỘC TÍCH TỤ, SINH SÔI VỮNG CHẮC'
-          : queNum === 41 || queNum === 47 || queNum === 29 || queNum === 60
-          ? 'ƯU TIÊN BẢO TOÀN VỐN & TIẾT CHẾ CHI TIÊU'
-          : 'TIẾN BƯỚC TỪNG BƯỚC, RÕ RÀNG MINH BẠCH'
-      }**. Cơ hội tài chính có dấu hiệu khởi sắc nhưng đòi hỏi bạn phải có sự tính toán thực tế và kiểm soát rủi ro nghiêm ngặt.`;
+      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+        `Về tài chính/tiền bạc/đầu tư: **${
+          queNum === 14 || queNum === 26 || queNum === 42 || queNum === 11
+            ? 'THỜI CƠ SINH LỜI TỐT - NÊN ĐẦU TƯ CÓ TÍNH TOÁN'
+            : queNum === 41 || queNum === 47 || queNum === 29 || queNum === 60
+            ? 'KHÔNG NÊN MẠO HIỂM - CẦN GIỮ CHẶT TÚI TIỀN'
+            : 'THU NHẬP ỔN ĐỊNH - NÊN ĐI TỪNG BƯỚC AN TOÀN'
+        }**.`;
       concreteAdviceDos = [
-        'Quản lý chặt chẽ dòng tiền, ưu tiên đầu tư vào các lĩnh vực mình am hiểu tường tận và có cơ sở pháp lý minh bạch.',
-        'Duy trì quỹ dự phòng an toàn trước khi tính đến các khoản đầu tư sinh lời lớn.',
-        'Lắng nghe ý kiến phân tích khách quan từ các chuyên gia hoặc đối tác có kinh nghiệm.',
+        'Quản lý chặt chẽ dòng tiền, chỉ chi tiêu và đầu tư vào kênh bạn hiểu rõ.',
+        'Lập quỹ dự phòng an toàn trước khi mở rộng kinh doanh.',
       ];
       concreteAdviceDonts = [
-        'Tránh tâm lý chạy theo đám đông hoặc tin vào những lời rủ rê siêu lợi nhuận thiếu căn cứ.',
-        'Không vay mượn quá mức hay đầu tư vượt quá khả năng chịu đựng tài chính của bản thân.',
+        'Tuyệt đối không tham gia các kênh đầu tư mập mờ, cam kết lãi suất ảo.',
+        'Tránh vay mượn vượt quá khả năng chi trả.',
       ];
-      timingAndOutcome = `Khi cục diện bước vào Quẻ Biến #${transformed.number} (${transformedViet.name}), nguồn tài lộc sẽ tích lũy đều đặn, mang lại sự ổn định và an tâm tài chính lâu dài cho bạn.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Nguồn tài chính sẽ tăng trưởng ổn định và an toàn khi bạn giữ vững kỷ luật.`;
       break;
 
     case 'exam':
-      verdictAssessment = `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\nVề việc học tập, thi cử và trau dồi chuyên môn — Quẻ phán: **${
-        queNum === 30 || queNum === 4 || queNum === 26 || queNum === 46 || queNum === 50
-          ? 'TRÍ TUỆ MINH MẪN, BẢNG VÀNG ĐỀ DANH'
-          : 'CẦN TẬP TRUNG TẬN TÂM & BÌNH TĨNH TỰ TIN'
-      }**. Nỗ lực bồi dưỡng thực chất của bạn sẽ mang lại quả ngọt xứng đáng.`;
+      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+        `Về thi cử/học tập: **${
+          queNum === 30 || queNum === 4 || queNum === 26 || queNum === 46 || queNum === 50
+            ? 'KẾT QUẢ ĐẠT KỲ VỌNG - ĐỖ ĐẠT KHẢ QUAN'
+            : 'CẦN TẬP TRUNG CAO ĐỘ ĐỂ BÙ ĐẮP LỖ HỔNG KIẾN THỨC'
+        }**.`;
       concreteAdviceDos = [
-        'Lập thời gian biểu ôn luyện khoa học, chú trọng nắm vững kiến thức căn bản trước khi đào sâu bài khó.',
-        'Giữ tinh thần thoải mái, ăn uống nghỉ ngơi điều độ để có sự tập trung cao độ.',
+        'Ôn luyện bám sát cấu trúc đề thi, nắm chắc kiến thức nền tảng.',
+        'Giữ tinh thần thoải mái, ngủ đủ giấc trước ngày thi.',
       ];
       concreteAdviceDonts = [
-        'Tránh tâm lý chủ quan coi thường các chi tiết nhỏ hay học dồn dập vào phút chót.',
-        'Không để sự âu lo làm xao nhãng tâm trí trong phòng thi.',
+        'Tránh chủ quan hoặc học dồn dập thức khuya sát giờ thi.',
+        'Không để tâm lý hoang mang làm phân tán sự tập trung.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}) báo hiệu kết quả thi cử sẽ tương xứng với công sức bạn đã dày công bỏ ra, mang lại niềm vui lớn cho bạn và gia đình.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Điểm số và kết quả sẽ xứng đáng với mức độ nghiêm túc ôn tập của bạn.`;
       break;
 
     default:
-      verdictAssessment = `🎯 **PHÁN ĐOÁN TRỰC DIỆN & VẬN THẾ:**\nVề điều bạn đang trăn trở: "${userQ}" — Quẻ Kinh Dịch phán: **${
-        queNum === 1 || queNum === 11 || queNum === 14 || queNum === 15 || queNum === 42
-          ? 'CÁT LỢI THÔNG SUỐT'
-          : queNum === 12 || queNum === 23 || queNum === 29 || queNum === 39
-          ? 'VẠN SỰ KHỞI ĐẦU NAN, CẦN KIÊN TRÌ GIỮ ĐẠO TRUNG CHÍNH'
-          : 'THỜI CƠ THUẬN LỢI ĐANG MỞ RA NẾU GIỮ TÂM SÁNG SUỐT'
-      }**. Bản chất tình huống đòi hỏi bạn định vị rõ nội lực bản thân và thuận theo nhịp điệu của tự nhiên.`;
+      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+        `Về câu hỏi: *"${userQ}"* — **${
+          queNum === 1 || queNum === 11 || queNum === 14 || queNum === 15 || queNum === 42
+            ? 'VẬN THẾ HANH THÔNG - NÊN QUYẾT ĐOÁN HÀNH ĐỘNG'
+            : queNum === 12 || queNum === 23 || queNum === 29 || queNum === 39
+            ? 'CẦN THẬN TRỌNG - NÊN CHỜ THÊM THỜI CƠ THÍCH HỢP'
+            : 'ĐIỀU KIỆN ĐANG THUẬN LỢI NẾU BẠN CHỦ ĐỘNG'
+        }**.`;
       concreteAdviceDos = [
-        `Thực hành theo lời khuyên của quẻ ${primaryViet.name}: "${primaryViet.meaning}".`,
-        'Giữ thái độ khiêm nhường, lắng nghe và luôn chuẩn bị phương án dự phòng chu đáo.',
-        'Hành động quyết đoán khi thời điểm và điều kiện thực tế đã hội đủ.',
+        `Hành động thực tế theo nguyên lý quẻ ${primaryViet.name}: "${primaryViet.meaning}".`,
+        'Chuẩn bị phương án dự phòng và kiên định với mục tiêu.',
       ];
       concreteAdviceDonts = [
-        'Tránh để sự hoài nghi hay những lời bàn tán xung quanh làm lung lay lập trường đúng đắn.',
-        'Không nên hành động bốc đồng khi tâm trí còn xáo động.',
+        'Tránh bốc đồng hoặc nghe theo những lời bàn tán thiếu căn cứ.',
+        'Không trì hoãn khi điều kiện thuận lợi đã xuất hiện.',
       ];
-      timingAndOutcome = `Sự biến chuyển sang Quẻ Biến #${transformed.number} (${transformedViet.name}) sẽ đưa vận trình của bạn vào giai đoạn hanh thông mới, hóa giải âu lo và mang lại sự an lạc trọn vẹn.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Vấn đề sẽ có lời giải rõ ràng và chuyển biến tích cực trong thời gian tới.`;
       break;
   }
 
   return (
-    `🌸 **Thảo chào bạn!** Về điều bạn đang tâm niệm: *"${userQ}"*, Thảo đã thấu suốt huyền cơ của thẻ xăm linh ứng:\n\n` +
-    `${verdictAssessment}\n\n` +
-    `📜 **1. HIỆN TRẠNG & BỐI CẢNH (Quẻ Chủ #${queNum} - ${primaryViet.name}):**\n` +
-    `Quẻ mang tượng **${primaryViet.symbol}** (Ngũ hành: **${primaryViet.element}**). Lời Thoán dạy rằng: *"${primaryThoan}"*. Bối cảnh hiện nay cho thấy: ${primaryViet.meaning}\n\n` +
-    `⚡ **2. ĐIỂM THEN CHỐT & CHIẾN LƯỢC HÀNH ĐỘNG (Hào Động ${haoNum}):**\n` +
-    `Lời Hào then chốt truyền lại: *"${changingLineText}"*.\n` +
-    `Đây là mắt xích mấu chốt quyết định sự chuyển hóa cục diện từ Quẻ Chủ sang Quẻ Biến:\n` +
-    `- **✔️ Việc NÊN LÀM:**\n` +
-    `  • ${concreteAdviceDos[0]}\n` +
-    `  • ${concreteAdviceDos[1]}\n` +
-    (concreteAdviceDos[2] ? `  • ${concreteAdviceDos[2]}\n` : '') +
-    `- **❌ Điều CẦN TRÁNH:**\n` +
-    `  • ${concreteAdviceDonts[0]}\n` +
-    `  • ${concreteAdviceDonts[1]}\n\n` +
-    `✨ **3. KẾT QUẢ TƯƠNG LAI & THỜI CƠ (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
-    `Lời Thoán Quẻ Biến: *"${transformedThoan}"*.\n` +
+    `${directVerdict}\n\n` +
+    `📜 **QUẺ CHỦ & CỤC DIỆN (Quẻ #${queNum} - ${primaryViet.name}):**\n` +
+    `Quẻ mang tượng **${primaryViet.symbol}** (${primaryViet.element}). Thoán Từ: *"${primaryThoan}"*. Thực trạng: ${primaryViet.meaning}\n\n` +
+    `⚡ **HÀNH ĐỘNG CỤ THỂ (Hào Động ${haoNum}):**\n` +
+    `Lời Hào: *"${changingLineText}"*.\n` +
+    `- ✔️ **Nên làm:**\n` +
+    `  1. ${concreteAdviceDos[0]}\n` +
+    `  2. ${concreteAdviceDos[1]}\n` +
+    `- ❌ **Cần tránh:**\n` +
+    `  1. ${concreteAdviceDonts[0]}\n` +
+    `  2. ${concreteAdviceDonts[1]}\n\n` +
+    `🔮 **KẾT QUẢ & THỜI ĐIỂM (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
     `${timingAndOutcome}\n\n` +
-    `🧭 **4. LỜI DẶN DÒ TÂM HUYẾT TỪ CÔ THẢO:**\n` +
-    `Cổ nhân có câu: *"Tận nhân lực, tri thiên mệnh"*. Quẻ Kinh Dịch khai mở trí tuệ định hướng, nhưng chính tâm thế vững vàng, lòng chính trực và sự nỗ lực kiên trì của bạn mới là ngọn đèn dẫn lối đến mọi thành tựu. Thảo chúc bạn luôn an vui, sáng suốt và vạn sự hanh thông!`
+    `💡 **LỜI KHUYÊN CỐT LÕI TỪ CÔ THẢO:**\n` +
+    `Hãy tin vào năng lực và sự chuẩn bị của chính bạn; hành động chuẩn xác, dứt khoát sẽ mang lại kết quả tốt nhất.`
   );
 }
