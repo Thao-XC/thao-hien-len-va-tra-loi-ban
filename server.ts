@@ -6,6 +6,7 @@ import hexagramsData from './src/hexagrams.json' with { type: 'json' };
 import { HEXAGRAM_DATA, getTransformedHexagram } from './src/utils/hexagramPatterns.ts';
 import { VIETNAMESE_HEXAGRAMS } from './src/data/vietnameseHexagrams.ts';
 import { generateRichFallbackInterpretation } from './src/utils/fallbackInterpreter.ts';
+import { streamOpenRouterCompletion } from './src/utils/openrouter.ts';
 
 const app = express();
 const PORT = 3000;
@@ -13,26 +14,53 @@ const PORT = 3000;
 app.use(express.json());
 
 const SYSTEM_PROMPT =
-  "Bạn là Cô Thảo (Sạp Bói Thảo) - chuyên gia giải quẻ Kinh Dịch sắc bén, thực tế và trả lời TRỰC DIỆN VÀO TRỌNG TÂM câu hỏi của người dùng.\n\n" +
-  "NGUYÊN TẮC BẮT BUỘC:\n" +
-  "1. ĐI THẲNG VÀO CÂU TRẢ LỜI: Tuyệt đối KHÔNG chào hỏi vòng vo, KHÔNG giải thích dài dòng lan man, KHÔNG nói triết lý sáo rỗng. Người dùng cần câu trả lời dứt khoát, chính xác và có thể hành động ngay.\n" +
-  "2. 100% TIẾNG VIỆT THUẦN TÚY: Rõ ràng, gãy gọn, sắc sảo.\n" +
-  "3. ÁP DỤNG TRỰC TIẾP QUẺ & HÀO ĐỘNG VÀO ĐÚNG CÂU HỎI:\n" +
-  "   - Nếu hỏi 'Có nên làm X không?': Trả lời rõ Nên / Không nên / Thời điểm nào.\n" +
-  "   - Nếu hỏi 'Tình cảm / công việc ra sao?': Đưa ra kết luận cụ thể (tốt/xấu, thuận lợi hay trắc trở ở đâu).\n" +
-  "4. CẤU TRÚC BẢN GIẢI QUẺ NGẮN GỌN, ĐẦY ĐỦ TRỌNG TÂM:\n" +
-  "   - 🎯 **KẾT LUẬN TRỰC DIỆN:** (1-2 câu trả lời thẳng vào câu hỏi: Nên/Không nên, Cát/Hung, Được/Mất, Thành/Bại và thời cơ).\n" +
-  "   - 📜 **QUẺ CHỦ & BỐI CẢNH THỰC TẾ:** (2 câu ngắn gọn giải mã cục diện hiện tại dựa trên Quẻ Chủ và Thoán Từ).\n" +
-  "   - ⚡ **HÀNH ĐỘNG CỤ THỂ (Hào Động):**\n" +
-  "     * ✔️ **Nên làm:** 2 việc cụ thể, thực tế, làm được ngay.\n" +
-  "     * ❌ **Cần tránh:** 2 việc tối kỵ, nguy cơ cụ thể.\n" +
-  "   - 🔮 **DỰ ĐOÁN KẾT QUẢ & THỜI ĐIỂM (Quẻ Biến):** (1-2 câu dự báo kết cục và mốc thời gian chuyển biến).\n" +
-  "   - 💡 **LỜI KHUYÊN CỐT LÕI TỪ CÔ THẢO:** (1 câu đúc kết dứt khoát, định hướng hành động rõ ràng).";
+  "Bạn là Cô Thảo (Sạp Bói Thảo) - bậc thầy giải quẻ Kinh Dịch thực chiến, chuyên giải mã huyền cơ và ĐƯA RA GIẢI PHÁP TRIỆT ĐỂ CHO MỌI BẾ TẮC CỦA NGƯỜI XIN QUẺ.\n\n" +
+  "TÔN CHỈ BẮT BUỘC (TUÂN THỦ 100% - KHÔNG NGOẠI LỆ):\n" +
+  "1. ĐI THẲNG VÀO TRỌNG TÂM CÂU HỎI NGAY TỪ CÂU ĐẦU TIÊN (ZERO FLUFF):\n" +
+  "   - Cấm mở đầu bằng chào hỏi rườm rà, cấm nói đạo lý xa vời, cấm văn phong mơ hồ nước đôi.\n" +
+  "   - Nếu câu hỏi CÓ LỰA CHỌN (Nên A hay B? Đi hay Ở? Tiếp tục hay Dừng lại?):\n" +
+  "     -> BẮT BUỘC CHỌN RÕ 1 PHƯƠNG ÁN TỐI ƯU NHẤT theo quẻ và hào động. Tuyệt đối KHÔNG trả lời kiểu 'tùy bạn cân nhắc' hay 'cả hai đều có lý'.\n" +
+  "   - Nếu câu hỏi CÓ / KHÔNG (Có được không? Có kết hôn không? Có tăng lương không?):\n" +
+  "     -> BẮT BUỘC khẳng định rõ mức độ khả thi ngay câu đầu: [CÓ KHẢ NĂNG RẤT CAO / CHƯA PHẢI THỜI ĐIỂM / RỦI RO LỚN - NÊN TRÁNH].\n" +
+  "   - Nếu câu hỏi có TÊN RIÊNG (ví dụ: 'Mirai', 'Nam'...), MỐC THỜI GIAN (ví dụ: 'năm 2028', 'tháng 5'...), hoặc SỰ VIỆC CỤ THỂ:\n" +
+  "     -> BẮT BUỘC gọi đích danh người đó, mốc thời gian đó và sự việc đó ngay câu mở đầu!\n\n" +
+  "2. TẬP TRUNG GIẢI QUYẾT VẤN ĐỀ THỰC TẾ (PROBLEM-SOLVING):\n" +
+  "   - Người xin quẻ đang gặp trăn trở, bế tắc cụ thể trong công việc, tình cảm, tiền bạc hoặc các mối quan hệ.\n" +
+  "   - Đừng chỉ giải thích tượng quẻ học thuật. Phải bóc tách:\n" +
+  "     * Nút thắt thực sự ở đâu? Vì sao việc đang tắc nghẽn?\n" +
+  "     * Kế sách tháo gỡ từng bước (làm gì ngay, xử sự thế nào)?\n" +
+  "     * Đâu là tử huyệt / sai lầm chết người cần tránh?\n\n" +
+  "3. CẤU TRÚC 5 PHẦN BẮT BUỘC, SẮC BÉN VÀ GÃY GỌN:\n" +
+  "   🎯 **KẾT LUẬN TRỰC DIỆN & PHƯƠNG ÁN TỐI ƯU:**\n" +
+  "   (1-2 câu trả lời thẳng tắp vào câu hỏi, gọi tên người và mốc thời gian nếu có, chốt phương án dứt khoát).\n\n" +
+  "   🔍 **BẢN CHẤT NÚT THẮT:**\n" +
+  "   (1-2 câu chỉ rõ nguyên nhân gốc rễ và thực trạng bế tắc dựa trên Quẻ Chủ và Thoán Từ).\n\n" +
+  "   ⚡ **KẾ SÁCH HÀNH ĐỘNG GỠ RỐI (Hào Động):**\n" +
+  "   - ✔️ **Bước 1 (Làm ngay):** 1 hành động thực tế, cụ thể triển khai ngay.\n" +
+  "   - ✔️ **Bước 2 (Chiến lược):** 1 cách thức ứng xử, đàm phán hoặc cách bảo vệ vị thế an toàn.\n" +
+  "   - ❌ **Tử huyệt tối kỵ:** 1 sai lầm hoặc cạm bẫy nguy hiểm nhất tuyệt đối không được phạm vào.\n\n" +
+  "   🔮 **DỰ BÁO KẾT CỤC & MỐC THỜI GIAN (Quẻ Biến):**\n" +
+  "   (1-2 câu dự báo kết quả khi làm theo kế sách và mốc thời gian/tháng nào việc sẽ ngã ngũ hoặc chuyển biến rõ rệt).\n\n" +
+  "   💡 **CÔ THẢO CHỐT HẠ:**\n" +
+  "   (1 câu kim chỉ nam đanh thép, định hướng hành động dứt khoát).";
+
+function getGeminiKey() {
+  return (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+}
+
+function getOpenRouterKey() {
+  return (
+    process.env.OPENROUTER_API_KEY ||
+    process.env.OPENROUTE_API_KEY ||
+    process.env.OPEN_ROUTE_API_KEY ||
+    ''
+  ).trim();
+}
 
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
   if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
+    const key = getGeminiKey();
     if (key) {
       aiClient = new GoogleGenAI({ apiKey: key });
     }
@@ -42,7 +70,11 @@ function getAI() {
 
 // API Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', hasGeminiKey: !!process.env.GEMINI_API_KEY });
+  res.json({
+    status: 'ok',
+    hasGeminiKey: !!getGeminiKey(),
+    hasOpenRouterKey: !!getOpenRouterKey(),
+  });
 });
 
 // API Hexagrams info
@@ -83,7 +115,8 @@ app.post('/api/interpret', async (req, res) => {
   };
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const geminiKey = getGeminiKey();
+    const openRouterKey = getOpenRouterKey();
     const queNum = Number(que) || 1;
     const haoNum = Number(hao) || 1;
 
@@ -95,20 +128,12 @@ app.post('/api/interpret', async (req, res) => {
     const transformedViet = VIETNAMESE_HEXAGRAMS[transformed.number] || VIETNAMESE_HEXAGRAMS[1];
     const transformedMeta = transformed.meta;
 
-    if (!apiKey) {
-      await streamFallback();
-      return;
-    }
-
-    const ai = getAI();
-    if (!ai) {
+    if (!geminiKey && !openRouterKey) {
       await streamFallback();
       return;
     }
 
     const userQuestion = question?.trim() || 'Xin Cô Thảo luận giải vận trình và hướng đi phía trước cho tôi.';
-
-    let contentsArray: any[] = [];
 
     const primaryThoan = primaryViet.thoanTu;
     const changingLineText = primaryViet.haoTu[haoNum] || primaryViet.haoTu[1];
@@ -128,76 +153,142 @@ app.post('/api/interpret', async (req, res) => {
       `  - Thoán Từ Quẻ Biến: "${transformedThoan}"\n` +
       `• Câu hỏi & Băn khoăn thực tế của người xin quẻ: "${userQuestion}"\n\n`;
 
-    if (history && Array.isArray(history) && history.length > 1) {
-      // Conversational follow-up: Include original hex context and entire conversation history
-      const formattedHistory = history.map((m: any) => ({
-        role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-        parts: [{ text: m.text }],
-      }));
+    const promptInstruction =
+      `${hexContext}` +
+      `BẠN ĐANG GIẢI QUẺ CHO CÂU HỎI CỦA NGƯỜI XIN QUẺ: "${userQuestion}"\n` +
+      `HÃY TRẢ LỜI TRỰC DIỆN, THẲNG THẮN, GIẢI QUYẾT TRIỆT ĐỂ VẤN ĐỀ THEO ĐÚNG 5 PHẦN DƯỚI ĐÂY (Tuyệt đối không chào hỏi rườm rà, không nói đạo lý xa vời):\n\n` +
+      `🎯 **KẾT LUẬN TRỰC DIỆN & PHƯƠNG ÁN TỐI ƯU:**\n` +
+      `- Nếu câu hỏi có LỰA CHỌN (A hay B? Đi hay Ở? Tiếp tục hay Dừng?): BẮT BUỘC CHỌN 1 HƯỚNG TỐI ƯU NHẤT. Cấm nói 'tùy bạn'.\n` +
+      `- Nếu câu hỏi CÓ / KHÔNG (Có được không? Có kết hôn năm X không?): Câu đầu tiên trả lời thẳng: [CÓ KHẢ NĂNG RẤT CAO / CHƯA PHẢI THỜI ĐIỂM / KHẢ NĂNG THẤP].\n` +
+      `- Nếu có TÊN NGƯỜI hoặc NĂM/THÁNG: Gọi đích danh người đó và mốc thời gian đó ngay câu mở đầu (Ví dụ: 'Về việc Mirai có kết hôn vào năm 2028: Dựa theo quẻ ${primaryViet.name}...').\n\n` +
+      `🔍 **BẢN CHẤT NÚT THẮT (Quẻ #${queNum} - ${primaryViet.name}):**\n` +
+      `Đúng 2 câu vạch trần căn nguyên thực trạng và lý do vì sao sự việc đang bế tắc hoặc cần thận trọng, dựa trên quẻ ${primaryViet.name} và lời Thoán: "${primaryThoan}".\n\n` +
+      `⚡ **KẾ SÁCH HÀNH ĐỘNG GỠ RỐI (Hào Động ${haoNum}):**\n` +
+      `Dựa trên lời Hào Từ: "${changingLineText}", hãy chỉ ra giải pháp thực chiến:\n` +
+      `- ✔️ **Bước 1 (Làm ngay):** 1 việc cụ thể người hỏi cần thực hiện ngay trong 24-48 giờ tới để nắm thế chủ động.\n` +
+      `- ✔️ **Bước 2 (Chiến lược):** 1 cách thức ứng xử, đàm phán hoặc cách bảo vệ quyền lợi an toàn nhất.\n` +
+      `- ❌ **Tử huyệt cần tránh:** 1 cạm bẫy hoặc sai lầm tối kỵ nếu phạm phải sẽ làm hỏng việc.\n\n` +
+      `🔮 **DỰ BÁO KẾT CỤC & MỐC THỜI GIAN (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
+      `Dự báo 1-2 câu về kết quả khi thực hiện đúng kế sách và mốc thời gian/tháng cụ thể sự việc sẽ ngã ngũ hoặc chuyển biến hanh thông.\n\n` +
+      `💡 **CÔ THẢO CHỐT HẠ:**\n` +
+      `1 câu đúc kết đanh thép, định hướng hành động dứt khoát nhất để người hỏi tự tin quyết định.`;
 
-      contentsArray = [
-        {
-          role: 'user',
-          parts: [
-            {
-              text: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn. Hãy trả lời câu hỏi mới nhất của họ TRỰC DIỆN, ĐÚNG TRỌNG TÂM, THỰC TẾ và DỨT KHOÁT, không vòng vo, bám sát nghĩa quẻ đã gieo.`,
-            },
-          ],
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'Thảo đã rõ câu hỏi. Trả lời thẳng vào việc bạn cần biết:' }],
-        },
-        ...formattedHistory,
-      ];
-    } else {
-      const promptInstruction =
-        `${hexContext}` +
-        `HÃY TRẢ LỜI TRỰC TIẾP, ĐÚNG TRỌNG TÂM CÂU HỎI "${userQuestion}" THEO CẤU TRÚC GỌN GÀNG DƯỚI ĐÂY (Không chào hỏi rườm rà, đi thẳng vào vấn đề):\n\n` +
-        `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Trả lời thẳng 1-2 câu dứt khoát cho câu hỏi "${userQuestion}": Nên hay Không nên? Thành hay Bại? Thuận lợi hay Khó khăn? Thời cơ thế nào?\n\n` +
-        `📜 **QUẺ CHỦ & CỤC DIỆN HIỆN TẠI (Quẻ #${queNum} - ${primaryViet.name}):**\n` +
-        `Đúng 2 câu giải thích thực trạng bạn đang gặp phải dựa trên quẻ ${primaryViet.name} và lời Thoán: "${primaryThoan}".\n\n` +
-        `⚡ **HÀNH ĐỘNG CỤ THỂ (Hào Động ${haoNum}):**\n` +
-        `- ✔️ **Nên làm:** 2 hành động cụ thể, thực tế áp dụng ngay.\n` +
-        `- ❌ **Cần tránh:** 2 sai lầm hoặc rủi ro tối kỵ cần dẹp bỏ.\n\n` +
-        `🔮 **KẾT QUẢ & THỜI ĐIỂM (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
-        `Dự báo 1-2 câu về kết quả cụ thể và thời điểm mọi việc ngã ngũ/hanh thông.\n\n` +
-        `💡 **LỜI KHUYÊN CỐT LÕI TỪ CÔ THẢO:**\n` +
-        `1 câu chốt dứt khoát, chuẩn xác nhất để người hỏi tự tin quyết định.`;
-
-      contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
-    }
-
-    // High-speed, reliable model candidate list with gemini-3.1-flash-lite as first priority
-    const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.7-flash', 'gemini-flash-latest'];
     let streamedAny = false;
 
-    for (const modelName of CANDIDATE_MODELS) {
-      if (streamedAny) break;
+    // --- PIPELINE 1: Gemini API (if key available) ---
+    if (geminiKey) {
       try {
-        const responseStream = await ai.models.generateContentStream({
-          model: modelName,
-          config: {
-            systemInstruction: SYSTEM_PROMPT,
-            temperature: 0.5,
-          },
-          contents: contentsArray,
-        });
+        const ai = getAI();
+        if (ai) {
+          let contentsArray: any[] = [];
+          if (history && Array.isArray(history) && history.length > 1) {
+            const formattedHistory = history.map((m: any) => ({
+              role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+              parts: [{ text: m.text }],
+            }));
+            contentsArray = [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    text: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn. Hãy trả lời câu hỏi mới nhất của họ TRỰC DIỆN, ĐÚNG TRỌNG TÂM, THỰC TẾ và DỨT KHOÁT, bám sát người và mốc thời gian được hỏi.`,
+                  },
+                ],
+              },
+              {
+                role: 'model',
+                parts: [{ text: 'Thảo đã rõ câu hỏi. Trả lời thẳng vào việc bạn cần biết:' }],
+              },
+              ...formattedHistory,
+            ];
+          } else {
+            contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
+          }
 
-        for await (const chunk of responseStream) {
-          if (chunk.text && !res.writableEnded) {
-            streamedAny = true;
-            res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+          const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+          for (const modelName of CANDIDATE_MODELS) {
+            if (streamedAny) break;
+            try {
+              const responseStream = await ai.models.generateContentStream({
+                model: modelName,
+                config: {
+                  systemInstruction: SYSTEM_PROMPT,
+                  temperature: 0.4,
+                },
+                contents: contentsArray,
+              });
+
+              for await (const chunk of responseStream) {
+                if (chunk.text && !res.writableEnded) {
+                  streamedAny = true;
+                  res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+                }
+              }
+              if (streamedAny) break;
+            } catch (modelErr: any) {
+              console.warn(`Gemini model ${modelName} error:`, modelErr?.message || modelErr);
+            }
           }
         }
-        if (streamedAny) break;
-      } catch (modelErr: any) {
-        console.warn(`Model ${modelName} encountered error:`, modelErr?.message || modelErr);
+      } catch (geminiErr: any) {
+        console.warn('Gemini stream error, will check OpenRouter fallback:', geminiErr?.message || geminiErr);
+      }
+    }
+
+    // --- PIPELINE 2: OpenRouter API (if Gemini didn't stream and OpenRouter key exists) ---
+    if (!streamedAny && openRouterKey) {
+      try {
+        console.log('Routing request to OpenRouter API...');
+        const openRouterMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+          { role: 'system', content: SYSTEM_PROMPT },
+        ];
+
+        if (history && Array.isArray(history) && history.length > 1) {
+          openRouterMessages.push({
+            role: 'user',
+            content: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn. Trả lời câu hỏi mới nhất TRỰC DIỆN, ĐÚNG TRỌNG TÂM, THỰC TẾ.`,
+          });
+          openRouterMessages.push({
+            role: 'assistant',
+            content: 'Thảo đã rõ câu hỏi. Trả lời thẳng vào việc bạn cần biết:',
+          });
+          for (const m of history) {
+            openRouterMessages.push({
+              role: m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user',
+              content: m.text,
+            });
+          }
+        } else {
+          openRouterMessages.push({
+            role: 'user',
+            content: promptInstruction,
+          });
+        }
+
+        const openRouterSuccess = await streamOpenRouterCompletion({
+          apiKey: openRouterKey,
+          model: process.env.OPENROUTER_MODEL,
+          messages: openRouterMessages,
+          temperature: 0.4,
+          appUrl: process.env.APP_URL || 'https://ai.studio',
+          onChunk: (textChunk) => {
+            if (!res.writableEnded) {
+              streamedAny = true;
+              res.write(`data: ${JSON.stringify({ text: textChunk })}\n\n`);
+            }
+          },
+        });
+
+        if (openRouterSuccess) {
+          streamedAny = true;
+        }
+      } catch (openRouterErr: any) {
+        console.warn('OpenRouter stream failed:', openRouterErr?.message || openRouterErr);
       }
     }
 
     if (!streamedAny) {
+      console.log('Both AI providers unavailable or exhausted, streaming smart local interpretation...');
       await streamFallback();
       return;
     }

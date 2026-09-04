@@ -6,6 +6,67 @@ interface QuestionCategory {
   topicVi: string;
 }
 
+interface QuestionEntities {
+  subject: string;
+  timeframe: string;
+  action: string;
+  isPolar: boolean;
+}
+
+function extractEntities(rawQ: string): QuestionEntities {
+  const q = (rawQ || '').trim();
+  const lower = q.toLowerCase();
+
+  // 1. Timeframe
+  let timeframe = '';
+  const yearMatch = q.match(/(?:năm\s*)?(202[4-9]|203[0-9])/i);
+  if (yearMatch) {
+    timeframe = `năm ${yearMatch[1]}`;
+  } else if (/năm nay/i.test(lower)) {
+    timeframe = 'năm nay';
+  } else if (/sang năm|năm sau|năm tới/i.test(lower)) {
+    timeframe = 'năm tới';
+  } else if (/tháng\s*([0-9]{1,2})/i.test(lower)) {
+    const m = lower.match(/tháng\s*([0-9]{1,2})/i);
+    timeframe = `tháng ${m?.[1]}`;
+  }
+
+  // 2. Action
+  let action = '';
+  if (/kết hôn|cưới|lấy chồng|lấy vợ|kết duyên/i.test(lower)) action = 'kết hôn';
+  else if (/chia tay|ly hôn|dừng lại/i.test(lower)) action = 'chia tay';
+  else if (/chuyển việc|nhảy việc|đổi việc/i.test(lower)) action = 'chuyển đổi công việc';
+  else if (/thăng chức|tăng lương/i.test(lower)) action = 'thăng tiến';
+  else if (/mua nhà|mua đất|mua xe/i.test(lower)) action = 'mua tài sản lớn';
+  else if (/đầu tư|khởi nghiệp|kinh doanh|mở quán/i.test(lower)) action = 'đầu tư kinh doanh';
+  else if (/thi đỗ|đậu đại học|tốt nghiệp|du học/i.test(lower)) action = 'thi cử đỗ đạt';
+
+  // 3. Subject (extract proper capitalized name like "Mirai", "Nam", etc. or pronouns)
+  let subject = '';
+  const words = q.split(/\s+/);
+  const potentialNames = words.filter((w) => {
+    const clean = w.replace(/[^a-zA-ZÀ-ỹ]/g, '');
+    return (
+      /^[A-Z][a-zÀ-ỹ]+$/.test(clean) &&
+      !/^(Tôi|Mình|Bạn|Em|Anh|Chị|Có|Không|Năm|Tháng|Hỏi|Xin|Cho|Liệu|Quẻ|Cô|Thảo)$/i.test(clean)
+    );
+  });
+  if (potentialNames.length > 0) {
+    subject = potentialNames.join(' ');
+  } else if (/người ấy|crush|bạn gái|bạn trai|người yêu/i.test(lower)) {
+    subject = 'người ấy';
+  }
+
+  const isPolar = /có\s+.*\s+không|được\s+không|thành\s+không|liệu\s+có|nên\s+.*\s+không/i.test(lower);
+
+  return { subject, timeframe, action, isPolar };
+}
+
+const AUSPICIOUS_HEXAGRAMS = new Set([
+  1, 11, 14, 15, 19, 26, 30, 31, 35, 42, 45, 46, 50, 53, 55, 57, 58, 61,
+]);
+const INAUSPICIOUS_HEXAGRAMS = new Set([6, 12, 23, 29, 38, 39, 47, 54]);
+
 function detectCategory(question: string): QuestionCategory {
   const q = (question || '').toLowerCase();
 
@@ -77,25 +138,55 @@ export function generateRichFallbackInterpretation(
   }
 
   // Initial rich tailored reading in 100% Vietnamese
+  const entities = extractEntities(question || '');
+  const isAuspicious = AUSPICIOUS_HEXAGRAMS.has(queNum);
+  const isInauspicious = INAUSPICIOUS_HEXAGRAMS.has(queNum);
+
   let directVerdict = '';
   let concreteAdviceDos: string[] = [];
   let concreteAdviceDonts: string[] = [];
   let timingAndOutcome = '';
 
+  // If user asked about a specific person, timeframe (e.g. 2028), or specific action, directly address it!
+  if (entities.subject || entities.timeframe || entities.action) {
+    const focusTarget = entities.subject ? `**${entities.subject}**` : 'bạn';
+    const focusAction = entities.action ? `có ${entities.action}` : 'có đạt được dự định';
+    const focusTime = entities.timeframe ? `vào **${entities.timeframe}**` : '';
+
+    const verdictCore = isAuspicious
+      ? 'CÓ KHẢ NĂNG RẤT CAO (CÁT KHÍ & THỜI CƠ THUẬN LỢI)'
+      : isInauspicious
+      ? 'CHƯA PHẢI THỜI ĐIỂM CHÍN MUỒI (CÒN NHIỀU TRỞ NGẠI)'
+      : 'HOÀN TOÀN CÓ THỂ ĐẠT ĐƯỢC NẾU CHỦ ĐỘNG HÓA GIẢI KHÚC MẮC';
+
+    directVerdict =
+      `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+      `Về câu hỏi *${focusTarget} ${focusAction} ${focusTime} hay không*:\n` +
+      `Dựa theo quẻ #${queNum} (${primaryViet.name}) và Hào ${haoNum} động biến sang #${transformed.number} (${transformedViet.name}):\n` +
+      `-> **KẾT QUẢ: ${verdictCore}**.\n` +
+      `${entities.timeframe ? `Mốc thời gian ${entities.timeframe} ` : 'Giai đoạn này '}${
+        isAuspicious
+          ? `là thời điểm hội tụ nhân duyên và điều kiện thuận lợi để tiến tới bước ngoặt lớn.`
+          : `vẫn cần thêm sự kiên nhẫn, tháo gỡ từng khúc mắc thực tế trước khi đi đến quyết định chung kết.`
+      }`;
+  }
+
   switch (category.type) {
     case 'career':
-      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Về công việc/dự định: **${
-          queNum === 1 || queNum === 11 || queNum === 14 || queNum === 35 || queNum === 42 || queNum === 50
-            ? 'RẤT NÊN TIẾN HÀNH (ĐẠI CÁT)'
-            : queNum === 6 || queNum === 12 || queNum === 23 || queNum === 29 || queNum === 47
-            ? 'CHƯA NÊN VỘI VÃ (CẦN CỦNG CỐ THÊM NỘI LỰC)'
-            : 'NÊN THỰC HIỆN TỪNG BƯỚC CHẮC CHẮN'
-        }**. ${
-          queNum === 6 || queNum === 12 || queNum === 29
-            ? 'Hiện tại chưa phải thời cơ chín muồi, cần rà soát lại kỹ lưỡng.'
-            : 'Cơ hội thành công cao nếu bạn chủ động và tập trung dứt điểm từng mục tiêu.'
-        }`;
+      if (!directVerdict) {
+        directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+          `Về công việc/dự định: **${
+            queNum === 1 || queNum === 11 || queNum === 14 || queNum === 35 || queNum === 42 || queNum === 50
+              ? 'RẤT NÊN TIẾN HÀNH (ĐẠI CÁT)'
+              : queNum === 6 || queNum === 12 || queNum === 23 || queNum === 29 || queNum === 47
+              ? 'CHƯA NÊN VỘI VÃ (CẦN CỦNG CỐ THÊM NỘI LỰC)'
+              : 'NÊN THỰC HIỆN TỪNG BƯỚC CHẮC CHẮN'
+          }**. ${
+            queNum === 6 || queNum === 12 || queNum === 29
+              ? 'Hiện tại chưa phải thời cơ chín muồi, cần rà soát lại kỹ lưỡng.'
+              : 'Cơ hội thành công cao nếu bạn chủ động và tập trung dứt điểm từng mục tiêu.'
+          }`;
+      }
       concreteAdviceDos = [
         `Rà soát kỹ hợp đồng, thỏa thuận và trau dồi năng lực chuyên môn cốt lõi.`,
         'Chủ động xin ý kiến hoặc hợp tác với người có thẩm quyền/uy tín cao.',
@@ -104,22 +195,26 @@ export function generateRichFallbackInterpretation(
         'Tránh nóng vội tranh cãi hay thay đổi định hướng đột ngột.',
         'Tuyệt đối không để cảm xúc cá nhân chi phối quyết định công việc.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}) cho thấy: Khi bạn làm đúng 2 điều trên, kết quả sẽ chuyển biến rõ rệt sau 1–3 tháng tới, công việc thông suốt và đạt sự công nhận.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}) cho thấy: ${
+        entities.timeframe ? `Đến ${entities.timeframe}` : 'Khi bạn làm đúng 2 điều trên'
+      }, kết quả sẽ chuyển biến rõ rệt, công việc thông suốt và đạt sự công nhận.`;
       break;
 
     case 'love':
-      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Về chuyện tình cảm/mối quan hệ: **${
-          queNum === 31 || queNum === 11 || queNum === 37 || queNum === 8 || queNum === 61
-            ? 'RẤT THUẬN LỢI & CÓ DUYÊN TỐT'
-            : queNum === 38 || queNum === 54 || queNum === 6 || queNum === 12
-            ? 'CÓ KHÚC MẮC CẦN GIẢI QUYẾT NGAY'
-            : 'CẦN CHỦ ĐỘNG VÀ CHÂN THÀNH HƠN'
-        }**. ${
-          queNum === 38 || queNum === 6
-            ? 'Hai bên đang thiếu sự thấu hiểu, cần nói chuyện thẳng thắn.'
-            : 'Tình cảm đang có cơ hội gắn kết sâu sắc nếu biết trân trọng.'
-        }`;
+      if (!directVerdict) {
+        directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
+          `Về chuyện tình cảm/mối quan hệ: **${
+            queNum === 31 || queNum === 11 || queNum === 37 || queNum === 8 || queNum === 61
+              ? 'RẤT THUẬN LỢI & CÓ DUYÊN TỐT'
+              : queNum === 38 || queNum === 54 || queNum === 6 || queNum === 12
+              ? 'CÓ KHÚC MẮC CẦN GIẢI QUYẾT NGAY'
+              : 'CẦN CHỦ ĐỘNG VÀ CHÂN THÀNH HƠN'
+          }**. ${
+            queNum === 38 || queNum === 6
+              ? 'Hai bên đang thiếu sự thấu hiểu, cần nói chuyện thẳng thắn.'
+              : 'Tình cảm đang có cơ hội gắn kết sâu sắc nếu biết trân trọng.'
+          }`;
+      }
       concreteAdviceDos = [
         'Mở lòng nói chuyện thẳng thắn, rõ ràng với thái độ lắng nghe.',
         'Thể hiện sự quan tâm bằng hành động thực tế mỗi ngày.',
@@ -128,7 +223,11 @@ export function generateRichFallbackInterpretation(
         'Tránh suy diễn, im lặng kéo dài (chiến tranh lạnh) hoặc bới móc chuyện cũ.',
         'Không áp đặt mong muốn của bản thân lên đối phương.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Mọi hiểu lầm sẽ được tháo gỡ khi bạn chủ động đối thoại chân thành.`;
+      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): ${
+        entities.timeframe
+          ? `Mốc ${entities.timeframe} là thời điểm mối quan hệ sẽ có câu trả lời và bước chuyển then chốt.`
+          : 'Mọi hiểu lầm sẽ được tháo gỡ khi hai bên chủ động đối thoại chân thành.'
+      }`;
       break;
 
     case 'finance':
