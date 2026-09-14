@@ -48,6 +48,50 @@ function getOpenRouterKey(): string {
   ).trim();
 }
 
+// --- Decisiveness compliance check -----------------------------------------
+// The system prompt demands the reply open with a clear verdict. LLMs don't
+// always follow every rule in a long prompt, so we verify the actual output
+// before it reaches the user, and retry once with a reinforced instruction
+// if the required verdict language is missing.
+
+const VERDICT_MARKERS = [
+  'KẾT LUẬN TRỰC DIỆN',
+  'CÓ KHẢ NĂNG RẤT CAO',
+  'CHƯA PHẢI THỜI ĐIỂM',
+  'KHẢ NĂNG THẤP',
+  'RỦI RO LỚN',
+  'NÊN TRÁNH',
+  'RẤT NÊN TIẾN HÀNH',
+  'CHƯA NÊN VỘI VÃ',
+];
+
+function isCompliant(text: string): boolean {
+  if (!text) return false;
+  const head = text.slice(0, 500).toUpperCase();
+  return VERDICT_MARKERS.some((marker) => head.includes(marker));
+}
+
+async function generateOnce(ai: GoogleGenAI, modelName: string, contents: any[]): Promise<string> {
+  const result: any = await ai.models.generateContent({
+    model: modelName,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.4,
+    },
+    contents,
+  });
+  return result?.text || result?.response?.text?.() || '';
+}
+
+async function streamTextAsWords(res: any, text: string) {
+  const words = text.split(' ');
+  for (const word of words) {
+    if (res.writableEnded) break;
+    res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
+    await new Promise((r) => setTimeout(r, 12));
+  }
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -167,27 +211,73 @@ export default async function handler(req: any, res: any) {
         }
 
         const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
-        for (const modelName of CANDIDATE_MODELS) {
-          if (streamedAny) break;
-          try {
-            const responseStream = await ai.models.generateContentStream({
-              model: modelName,
-              config: {
-                systemInstruction: SYSTEM_PROMPT,
-                temperature: 0.4,
-              },
-              contents: contentsArray,
-            });
+        const isInitialReading = !(history && Array.isArray(history) && history.length > 1);
 
-            for await (const chunk of responseStream) {
-              if (chunk.text && !res.writableEnded) {
-                streamedAny = true;
-                res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
-              }
-            }
+        if (isInitialReading) {
+          // Initial reading: this is where a decisive verdict matters most.
+          // Generate once, check for the required verdict language, and
+          // retry a single time with a reinforced instruction if it's missing
+          // — before anything is shown to the user.
+          for (const modelName of CANDIDATE_MODELS) {
             if (streamedAny) break;
-          } catch (modelErr: any) {
-            console.warn(`Gemini model ${modelName} error in /api/interpret:`, modelErr?.message || modelErr);
+            try {
+              let finalText = await generateOnce(ai, modelName, contentsArray);
+
+              if (finalText && !isCompliant(finalText)) {
+                console.warn(`Gemini model ${modelName} gave a non-decisive answer, retrying once...`);
+                const retryContents = [
+                  ...contentsArray,
+                  { role: 'model', parts: [{ text: finalText }] },
+                  {
+                    role: 'user',
+                    parts: [
+                      {
+                        text:
+                          'Câu trả lời trên THIẾU phần 🎯 KẾT LUẬN TRỰC DIỆN rõ ràng ở đầu. ' +
+                          'Hãy viết lại TOÀN BỘ câu trả lời, bắt đầu ngay bằng "🎯 **KẾT LUẬN TRỰC DIỆN:**" ' +
+                          'và một khẳng định dứt khoát (CÓ KHẢ NĂNG RẤT CAO / CHƯA PHẢI THỜI ĐIỂM / KHẢ NĂNG THẤP / RỦI RO LỚN - NÊN TRÁNH). ' +
+                          'Tuyệt đối không được mơ hồ hay nói "tùy bạn".',
+                      },
+                    ],
+                  },
+                ];
+                const retryText = await generateOnce(ai, modelName, retryContents);
+                if (retryText) finalText = retryText;
+              }
+
+              if (finalText) {
+                streamedAny = true;
+                await streamTextAsWords(res, finalText);
+                break;
+              }
+            } catch (modelErr: any) {
+              console.warn(`Gemini model ${modelName} error in /api/interpret:`, modelErr?.message || modelErr);
+            }
+          }
+        } else {
+          // Follow-up turn in an ongoing conversation: stream normally.
+          for (const modelName of CANDIDATE_MODELS) {
+            if (streamedAny) break;
+            try {
+              const responseStream = await ai.models.generateContentStream({
+                model: modelName,
+                config: {
+                  systemInstruction: SYSTEM_PROMPT,
+                  temperature: 0.4,
+                },
+                contents: contentsArray,
+              });
+
+              for await (const chunk of responseStream) {
+                if (chunk.text && !res.writableEnded) {
+                  streamedAny = true;
+                  res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+                }
+              }
+              if (streamedAny) break;
+            } catch (modelErr: any) {
+              console.warn(`Gemini model ${modelName} error in /api/interpret:`, modelErr?.message || modelErr);
+            }
           }
         }
       } catch (geminiErr: any) {
