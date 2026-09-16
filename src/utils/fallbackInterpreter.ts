@@ -11,6 +11,8 @@ interface QuestionEntities {
   timeframe: string;
   action: string;
   isPolar: boolean;
+  optionA?: string;
+  optionB?: string;
 }
 
 function extractEntities(rawQ: string): QuestionEntities {
@@ -29,43 +31,65 @@ function extractEntities(rawQ: string): QuestionEntities {
   } else if (/tháng\s*([0-9]{1,2})/i.test(lower)) {
     const m = lower.match(/tháng\s*([0-9]{1,2})/i);
     timeframe = `tháng ${m?.[1]}`;
+  } else if (/quý\s*([1-4])/i.test(lower)) {
+    const qm = lower.match(/quý\s*([1-4])/i);
+    timeframe = `Quý ${qm?.[1]}`;
+  } else if (/gần đây|sắp tới|thời gian tới/i.test(lower)) {
+    timeframe = 'thời gian sắp tới';
   }
 
-  // 2. Action
+  // 2. Action / Topic
   let action = '';
-  if (/kết hôn|cưới|lấy chồng|lấy vợ|kết duyên/i.test(lower)) action = 'kết hôn';
-  else if (/chia tay|ly hôn|dừng lại/i.test(lower)) action = 'chia tay';
-  else if (/chuyển việc|nhảy việc|đổi việc/i.test(lower)) action = 'chuyển đổi công việc';
-  else if (/thăng chức|tăng lương/i.test(lower)) action = 'thăng tiến';
-  else if (/mua nhà|mua đất|mua xe/i.test(lower)) action = 'mua tài sản lớn';
-  else if (/đầu tư|khởi nghiệp|kinh doanh|mở quán/i.test(lower)) action = 'đầu tư kinh doanh';
-  else if (/thi đỗ|đậu đại học|tốt nghiệp|du học/i.test(lower)) action = 'thi cử đỗ đạt';
+  if (/kết hôn|cưới|lấy chồng|lấy vợ|kết duyên|đám cưới/i.test(lower)) action = 'kết hôn / lập gia đình';
+  else if (/chia tay|ly hôn|dừng lại|buông tay/i.test(lower)) action = 'chia tay / kết thúc mối quan hệ';
+  else if (/chuyển việc|nhảy việc|đổi việc|tìm việc mới/i.test(lower)) action = 'chuyển đổi công việc mới';
+  else if (/nghỉ việc|thôi việc|từ chức/i.test(lower)) action = 'nghỉ việc';
+  else if (/thăng chức|tăng lương|đề bạt/i.test(lower)) action = 'thăng tiến chức vị';
+  else if (/mua nhà|mua đất|mua xe|tậu nhà/i.test(lower)) action = 'mua tài sản lớn';
+  else if (/đầu tư|khởi nghiệp|kinh doanh|mở quán|mở tiệm|rót vốn/i.test(lower)) action = 'đầu tư kinh doanh';
+  else if (/thi đỗ|đậu đại học|tốt nghiệp|du học|thi cử/i.test(lower)) action = 'thi cử / du học đỗ đạt';
+  else if (/phẫu thuật|chữa bệnh|khám bệnh/i.test(lower)) action = 'điều trị sức khỏe';
 
-  // 3. Subject (extract proper capitalized name like "Mirai", "Nam", etc. or pronouns)
+  // 3. Option A vs Option B extraction ("Nên A hay B", "Nên nghỉ việc hay ở lại", "Đi hay Ở")
+  let optionA: string | undefined;
+  let optionB: string | undefined;
+  const orMatch = q.match(/(?:nên\s+)?([^?,;]+?)\s+(?:hay|hay là|hoặc)\s+([^?,;]+)/i);
+  if (orMatch && orMatch[1] && orMatch[2]) {
+    optionA = orMatch[1].replace(/^(nên|tôi nên|chọn|liệu nên)\s+/i, '').trim();
+    optionB = orMatch[2].replace(/^(hay|hay là|hoặc|chọn)\s+/i, '').trim();
+  }
+
+  // 4. Subject (extract proper capitalized name like "Mirai", "Nam", "Lan", etc. or pronouns)
   let subject = '';
   const words = q.split(/\s+/);
   const potentialNames = words.filter((w) => {
     const clean = w.replace(/[^a-zA-ZÀ-ỹ]/g, '');
     return (
       /^[A-Z][a-zÀ-ỹ]+$/.test(clean) &&
-      !/^(Tôi|Mình|Bạn|Em|Anh|Chị|Có|Không|Năm|Tháng|Hỏi|Xin|Cho|Liệu|Quẻ|Cô|Thảo)$/i.test(clean)
+      !/^(Tôi|Mình|Bạn|Em|Anh|Chị|Có|Không|Năm|Tháng|Hỏi|Xin|Cho|Liệu|Quẻ|Cô|Thảo|Dự|Án|Công|Việc|Tình|Duyên|Nên|Hay|Làm|Sao)$/i.test(
+        clean
+      )
     );
   });
   if (potentialNames.length > 0) {
     subject = potentialNames.join(' ');
   } else if (/người ấy|crush|bạn gái|bạn trai|người yêu/i.test(lower)) {
     subject = 'người ấy';
+  } else if (/đối tác|sếp|khách hàng/i.test(lower)) {
+    subject = 'đối tác';
   }
 
-  const isPolar = /có\s+.*\s+không|được\s+không|thành\s+không|liệu\s+có|nên\s+.*\s+không/i.test(lower);
+  const isPolar =
+    /có\s+.*\s+không|được\s+không|thành\s+không|liệu\s+có|nên\s+.*\s+không|có\s+nên/i.test(lower);
 
-  return { subject, timeframe, action, isPolar };
+  return { subject, timeframe, action, isPolar, optionA, optionB };
 }
 
+// 64 Hexagrams Categorization by Nature
 const AUSPICIOUS_HEXAGRAMS = new Set([
-  1, 11, 14, 15, 19, 26, 30, 31, 35, 42, 45, 46, 50, 53, 55, 57, 58, 61,
+  1, 2, 11, 14, 15, 19, 26, 30, 31, 35, 42, 45, 46, 50, 53, 55, 57, 58, 61,
 ]);
-const INAUSPICIOUS_HEXAGRAMS = new Set([6, 12, 23, 29, 38, 39, 47, 54]);
+const INAUSPICIOUS_HEXAGRAMS = new Set([6, 12, 23, 29, 36, 38, 39, 47, 54]);
 
 function detectCategory(question: string): QuestionCategory {
   const q = (question || '').toLowerCase();
@@ -97,7 +121,7 @@ function detectCategory(question: string): QuestionCategory {
   if (/sức khỏe|bệnh|mệt|tâm an|ngủ|chữa|khỏe|bình an/.test(q)) {
     return { type: 'health', topicVi: 'sức khỏe, thể chất & sự bình an tâm trí' };
   }
-  if (/nên|chọn|quyết định|thay đổi|bỏ|tiếp tục|đi|ở|rẽ|ngã rẽ|phương án/.test(q)) {
+  if (/nên|chọn|quyết định|thay đổi|bỏ|tiếp tục|đi|ở|rẽ|ngã rẽ|phương án|hay|hoặc/.test(q)) {
     return { type: 'decision', topicVi: 'ngã rẽ chọn lựa & định hướng cuộc sống' };
   }
   return { type: 'general', topicVi: 'vận trình & thời vận tổng quát' };
@@ -126,184 +150,201 @@ export function generateRichFallbackInterpretation(
   const changingLineText = primaryViet.haoTu[haoNum] || primaryViet.haoTu[1];
   const transformedThoan = transformedViet.thoanTu;
 
-  // Follow-up conversation reply
+  // 1. Follow-up conversation reply in ongoing session
   if (history && history.length > 1) {
+    const isAuspicious = AUSPICIOUS_HEXAGRAMS.has(queNum);
+    const isInauspicious = INAUSPICIOUS_HEXAGRAMS.has(queNum);
+    const goDecision = isAuspicious
+      ? '🎯 **KẾT LUẬN: [GO - TIẾN HÀNH DỨT KHOÁT]**'
+      : isInauspicious
+      ? '🎯 **KẾT LUẬN: [NO-GO - TẠM DỪNG / THẬN TRỌNG BẢO TOÀN]**'
+      : '🎯 **KẾT LUẬN: [GO CÓ ĐIỀU KIỆN - ĐI TỪNG BƯỚC CHẮC CHẮN]**';
+
     return (
-      `🎯 **TRẢ LỜI TRỰC TIẾP:**\n` +
-      `Về việc bạn hỏi: *"${userQ}"*\n\n` +
-      `- **Cục diện hiện tại:** Quẻ #${queNum} (${primaryViet.name}) - ${primaryViet.meaning}\n` +
-      `- **Hành động then chốt (Hào ${haoNum}):** Thuận theo lời Hào "${changingLineText.replace(/^Hào \d+[^:]*:\s*/, '')}".\n` +
-      `- **Kết luận & lời khuyên:** Cần dứt khoát, minh bạch và kiên trì với phương án đã chọn. Tránh dao động hoặc nghe theo lời bàn tán xung quanh.`
+      `${goDecision}\n\n` +
+      `Về câu hỏi tiếp theo của bạn: *"${userQ}"*\n\n` +
+      `1. **Căn cứ biến dịch:** Từ Quẻ Chủ #${queNum} (${primaryViet.name}) chuyển hóa qua Hào ${haoNum} động sang #${transformed.number} (${transformedViet.name}).\n` +
+      `2. **Chỉ dẫn trọng yếu:** Lời Hào dạy: "${changingLineText.replace(/^Hào \d+[^:]*:\s*/, '')}". Nghĩa là không được hành động theo cảm tính nhất thời. Hãy bám sát thực tế, minh bạch mọi điều khoản và giữ vững lập trường cốt lõi.\n` +
+      `3. **Quyết sách thực thi:** ${
+        isAuspicious
+          ? 'Nắm bắt ngay thời cơ trong giai đoạn này, chủ động liên hệ các bên liên quan để chốt thỏa thuận.'
+          : isInauspicious
+          ? 'Tạm thời án binh bất động, kiểm tra lại rủi ro pháp lý/tài chính trước khi ký kết hay quyết định lớn.'
+          : 'Chuẩn bị đầy đủ phương án dự phòng (kế hoạch B) rồi mới triển khai từng phần nhỏ.'
+      }\n\n` +
+      `💡 **Lời Cô Thảo:** Lòng có định thì tuệ mới sáng, quyết định dứt khoát sẽ hóa giải mọi hoang mang.`
     );
   }
 
-  // Initial rich tailored reading in 100% Vietnamese
+  // 2. Initial Comprehensive 5-Part GO/NO-GO Reading
   const entities = extractEntities(question || '');
   const isAuspicious = AUSPICIOUS_HEXAGRAMS.has(queNum);
   const isInauspicious = INAUSPICIOUS_HEXAGRAMS.has(queNum);
 
-  let directVerdict = '';
+  // DECISION SUPPORT: Build explicit GO / NO-GO Verdict
+  let decisionBadge = '';
+  let decisionExplanation = '';
   let concreteAdviceDos: string[] = [];
   let concreteAdviceDonts: string[] = [];
   let timingAndOutcome = '';
+  let rootCauseAnalysis = '';
 
-  // If user asked about a specific person, timeframe (e.g. 2028), or specific action, directly address it!
-  if (entities.subject || entities.timeframe || entities.action) {
-    const focusTarget = entities.subject ? `**${entities.subject}**` : 'bạn';
-    const focusAction = entities.action ? `có ${entities.action}` : 'có đạt được dự định';
-    const focusTime = entities.timeframe ? `vào **${entities.timeframe}**` : '';
+  const focusSubject = entities.subject ? `cho **${entities.subject}**` : '';
+  const focusTime = entities.timeframe ? `trong mốc **${entities.timeframe}**` : '';
+  const focusAction = entities.action ? `về việc *${entities.action}*` : '';
 
-    const verdictCore = isAuspicious
-      ? 'CÓ KHẢ NĂNG RẤT CAO (CÁT KHÍ & THỜI CƠ THUẬN LỢI)'
-      : isInauspicious
-      ? 'CHƯA PHẢI THỜI ĐIỂM CHÍN MUỒI (CÒN NHIỀU TRỞ NGẠI)'
-      : 'HOÀN TOÀN CÓ THỂ ĐẠT ĐƯỢC NẾU CHỦ ĐỘNG HÓA GIẢI KHÚC MẮC';
+  // Case A: User asks an "A or B" choice question ("Nên nghỉ việc hay ở lại", "Đi hay Ở")
+  if (entities.optionA && entities.optionB) {
+    const isDynamicYang = haoNum === 1 || haoNum === 3 || haoNum === 5 || isAuspicious;
+    const optimalOption = isDynamicYang ? entities.optionA : entities.optionB;
+    const alternateOption = isDynamicYang ? entities.optionB : entities.optionA;
 
-    directVerdict =
-      `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-      `Về câu hỏi *${focusTarget} ${focusAction} ${focusTime} hay không*:\n` +
-      `Dựa theo quẻ #${queNum} (${primaryViet.name}) và Hào ${haoNum} động biến sang #${transformed.number} (${transformedViet.name}):\n` +
-      `-> **KẾT QUẢ: ${verdictCore}**.\n` +
-      `${entities.timeframe ? `Mốc thời gian ${entities.timeframe} ` : 'Giai đoạn này '}${
-        isAuspicious
-          ? `là thời điểm hội tụ nhân duyên và điều kiện thuận lợi để tiến tới bước ngoặt lớn.`
-          : `vẫn cần thêm sự kiên nhẫn, tháo gỡ từng khúc mắc thực tế trước khi đi đến quyết định chung kết.`
-      }`;
+    decisionBadge = `🎯 **KẾT LUẬN TRỰC DIỆN: [PHƯƠNG ÁN TỐI ƯU: CHỌN "${optimalOption.toUpperCase()}"]**`;
+    decisionExplanation =
+      `Đặt lên bàn cân giữa hai phương án: *"${entities.optionA}"* và *"${entities.optionB}"* ${focusTime}:\n` +
+      `- Dựa vào sự vận động của Quẻ Chủ #${queNum} (${primaryViet.name}) và Hào Động #${haoNum} biến sang #${transformed.number} (${transformedViet.name}), năng lượng Dịch Lý chỉ ra rằng phương án **"${optimalOption}"** hội tụ đủ thời vận và sinh khí hơn hẳn.\n` +
+      `- Ngược lại, phương án *"${alternateOption}"* tiềm ẩn nhiều nút thắt trì trệ hoặc hao tổn tâm lực không đáng có. Bạn nên dồn toàn lực triển khai phương án tối ưu đã chọn.`;
+  } else if (isAuspicious) {
+    // Case B: Auspicious Hexagram -> Clear GO
+    decisionBadge = `🎯 **KẾT LUẬN TRỰC DIỆN: [GO - RẤT NÊN TIẾN HÀNH / CƠ HỘI THÀNH CÔNG RẤT CAO]**`;
+    decisionExplanation =
+      `Về câu hỏi ${focusAction} ${focusSubject} ${focusTime}:\n` +
+      `- **ĐÁNH GIÁ: CÁT KHÍ HANH THÔNG (GO).** Lời quẻ khẳng định đây là thời điểm thiên thời địa lợi và nhân hòa cùng hội tụ.\n` +
+      `- Mọi điều kiện khách quan đang xoay chuyển ủng hộ bạn. Bạn hoàn toàn nên chủ động nắm bắt cơ hội, không nên chần chừ hay e ngại mà bỏ lỡ thời cơ vàng.`;
+  } else if (isInauspicious) {
+    // Case C: Inauspicious Hexagram -> Clear NO-GO
+    decisionBadge = `🎯 **KẾT LUẬN TRỰC DIỆN: [NO-GO - TẠM DỪNG / RỦI RO LỚN - NÊN TRÁNH]**`;
+    decisionExplanation =
+      `Về câu hỏi ${focusAction} ${focusSubject} ${focusTime}:\n` +
+      `- **ĐÁNH GIÁ: BẤT LỢI / NGUY HIỂM (NO-GO).** Quẻ mang điềm báo trước mắt có nhiều chướng ngại ngầm, cạm bẫy hoặc sự bất đồng chưa lộ diện.\n` +
+      `- Nếu cố tình đốt cháy giai đoạn hoặc mạo hiểm dấn thân ngay lúc này, nguy cơ thất bại, đổ vỡ hoặc tổn thất tài chính/tinh thần là rất lớn. Phương án khôn ngoan nhất là **TẠM DỪNG / GIỮ VỮNG VỊ TRÍ HIỆN TẠI** để củng cố phòng thủ.`;
+  } else {
+    // Case D: Transformational / Conditional Hexagram -> CONDITIONAL GO
+    decisionBadge = `🎯 **KẾT LUẬN TRỰC DIỆN: [GO CÓ ĐIỀU KIỆN - CHƯA VỘI BỨT PHÁ, CHỈ TIẾN HÀNH KHI ĐÃ CỦNG CỐ PHÒNG BỊ]**`;
+    decisionExplanation =
+      `Về câu hỏi ${focusAction} ${focusSubject} ${focusTime}:\n` +
+      `- **ĐÁNH GIÁ: CƠ HỘI ĐI KÈM THỬ THÁCH (CONDITIONAL GO).** Việc này hoàn toàn có thể thành tựu, nhưng tuyệt đối không thể thành công bằng sự vội vàng hấp tấp.\n` +
+      `- Bạn chỉ nên "GO" khi đã rà soát kỹ lưỡng các điều kiện thực tế, chuẩn bị kế hoạch dự phòng chu đáo và có sự đồng thuận từ những người quan trọng.`;
   }
 
+  // Domain-specific tailored analysis
   switch (category.type) {
     case 'career':
-      if (!directVerdict) {
-        directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-          `Về công việc/dự định: **${
-            queNum === 1 || queNum === 11 || queNum === 14 || queNum === 35 || queNum === 42 || queNum === 50
-              ? 'RẤT NÊN TIẾN HÀNH (ĐẠI CÁT)'
-              : queNum === 6 || queNum === 12 || queNum === 23 || queNum === 29 || queNum === 47
-              ? 'CHƯA NÊN VỘI VÃ (CẦN CỦNG CỐ THÊM NỘI LỰC)'
-              : 'NÊN THỰC HIỆN TỪNG BƯỚC CHẮC CHẮN'
-          }**. ${
-            queNum === 6 || queNum === 12 || queNum === 29
-              ? 'Hiện tại chưa phải thời cơ chín muồi, cần rà soát lại kỹ lưỡng.'
-              : 'Cơ hội thành công cao nếu bạn chủ động và tập trung dứt điểm từng mục tiêu.'
-          }`;
-      }
+      rootCauseAnalysis =
+        `Nút thắt cốt lõi nằm ở thế tương quan giữa năng lực nội tại và môi trường bên ngoài: quẻ #${queNum} (${primaryViet.name}) chỉ ra rằng ` +
+        (isAuspicious
+          ? `bạn đã tích lũy đủ độ chín muồi, rào cản hiện tại chỉ là phép thử sự tự tin và khả năng quyết đoán.`
+          : isInauspicious
+          ? `môi trường công việc đang có luồng sóng ngầm hoặc quyền lực bất lợi, việc nóng vội thể hiện bản thân sẽ dễ biến bạn thành đích ngắm của thị phi.`
+          : `bạn đang đứng giữa ngã rẽ chuyển giao, đòi hỏi phải tái cấu trúc lại kế hoạch và kỹ năng trước khi nhận trọng trách mới.`);
       concreteAdviceDos = [
-        `Rà soát kỹ hợp đồng, thỏa thuận và trau dồi năng lực chuyên môn cốt lõi.`,
-        'Chủ động xin ý kiến hoặc hợp tác với người có thẩm quyền/uy tín cao.',
+        'Rà soát kỹ các văn bản thỏa thuận, điều khoản hợp đồng và số liệu thực tế trước khi đặt bút ký kết.',
+        'Chủ động xây dựng liên minh với cấp trên hoặc đối tác có uy tín, giữ thái độ khiêm nhường nhưng dứt khoát.',
       ];
       concreteAdviceDonts = [
-        'Tránh nóng vội tranh cãi hay thay đổi định hướng đột ngột.',
-        'Tuyệt đối không để cảm xúc cá nhân chi phối quyết định công việc.',
+        'Tuyệt đối tránh tranh cãi trực diện nơi công sở hoặc bộc lộ tham vọng quá sớm.',
+        'Không nhảy việc hoặc đổi định hướng chỉ vì cảm xúc bất mãn nhất thời.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}) cho thấy: ${
-        entities.timeframe ? `Đến ${entities.timeframe}` : 'Khi bạn làm đúng 2 điều trên'
-      }, kết quả sẽ chuyển biến rõ rệt, công việc thông suốt và đạt sự công nhận.`;
+      timingAndOutcome =
+        `Quẻ Biến #${transformed.number} (${transformedViet.name}) cho thấy: ${
+          entities.timeframe ? `Vào khoảng ${entities.timeframe}` : 'Khi bạn thực thi triệt để 2 hành động trên'
+        }, cục diện sẽ xoay chuyển theo chiều hướng tích cực, công danh thông suốt và khẳng định được vị thế vững chắc.`;
       break;
 
     case 'love':
-      if (!directVerdict) {
-        directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-          `Về chuyện tình cảm/mối quan hệ: **${
-            queNum === 31 || queNum === 11 || queNum === 37 || queNum === 8 || queNum === 61
-              ? 'RẤT THUẬN LỢI & CÓ DUYÊN TỐT'
-              : queNum === 38 || queNum === 54 || queNum === 6 || queNum === 12
-              ? 'CÓ KHÚC MẮC CẦN GIẢI QUYẾT NGAY'
-              : 'CẦN CHỦ ĐỘNG VÀ CHÂN THÀNH HƠN'
-          }**. ${
-            queNum === 38 || queNum === 6
-              ? 'Hai bên đang thiếu sự thấu hiểu, cần nói chuyện thẳng thắn.'
-              : 'Tình cảm đang có cơ hội gắn kết sâu sắc nếu biết trân trọng.'
-          }`;
-      }
+      rootCauseAnalysis =
+        `Về mặt tình duyên, quẻ #${queNum} (${primaryViet.name}) phản ánh bản chất của sự kết nối: ` +
+        (isAuspicious
+          ? `hai tâm hồn đang có sự đồng điệu sâu sắc; nút thắt duy nhất chỉ là sự e dè hoặc chưa có bước tiến chính thức rõ ràng.`
+          : isInauspicious
+          ? `giữa hai bên đang tồn tại sự xung đột về quan điểm sống hoặc kỳ vọng bất cân xứng, nếu không tháo gỡ thì càng gắn kết càng tổn thương.`
+          : `mối quan hệ đang ở giai đoạn cần sự thấu cảm và thử thách độ kiên nhẫn; sự chân thành sẽ là chìa khóa then chốt.`);
       concreteAdviceDos = [
-        'Mở lòng nói chuyện thẳng thắn, rõ ràng với thái độ lắng nghe.',
-        'Thể hiện sự quan tâm bằng hành động thực tế mỗi ngày.',
+        'Mở lòng đối thoại thẳng thắn với thái độ lắng nghe chân thành, làm rõ những điều còn hoài nghi.',
+        'Dành sự quan tâm bằng những hành động thực tế, chăm sóc cuộc sống hàng ngày thay vì chỉ nói lời hoa mỹ.',
       ];
       concreteAdviceDonts = [
-        'Tránh suy diễn, im lặng kéo dài (chiến tranh lạnh) hoặc bới móc chuyện cũ.',
-        'Không áp đặt mong muốn của bản thân lên đối phương.',
+        'Tuyệt đối tránh chiến tranh lạnh, suy diễn vô căn cứ hoặc bới móc sai lầm trong quá khứ.',
+        'Không để sự tác động từ người ngoài (gia đình, bạn bè) làm lung lay tình cảm chân thật của hai bạn.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): ${
-        entities.timeframe
-          ? `Mốc ${entities.timeframe} là thời điểm mối quan hệ sẽ có câu trả lời và bước chuyển then chốt.`
-          : 'Mọi hiểu lầm sẽ được tháo gỡ khi hai bên chủ động đối thoại chân thành.'
-      }`;
+      timingAndOutcome =
+        `Quẻ Biến #${transformed.number} (${transformedViet.name}) dự báo: ${
+          entities.timeframe ? `Mốc ${entities.timeframe}` : 'Sau khi nút thắt đối thoại được giải tỏa'
+        }, tình cảm sẽ bước sang trang mới tươi sáng, hai bên tìm được tiếng nói chung và đi đến cam kết gắn bó bền chặt.`;
       break;
 
     case 'finance':
-      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Về tài chính/tiền bạc/đầu tư: **${
-          queNum === 14 || queNum === 26 || queNum === 42 || queNum === 11
-            ? 'THỜI CƠ SINH LỜI TỐT - NÊN ĐẦU TƯ CÓ TÍNH TOÁN'
-            : queNum === 41 || queNum === 47 || queNum === 29 || queNum === 60
-            ? 'KHÔNG NÊN MẠO HIỂM - CẦN GIỮ CHẶT TÚI TIỀN'
-            : 'THU NHẬP ỔN ĐỊNH - NÊN ĐI TỪNG BƯỚC AN TOÀN'
-        }**.`;
+      rootCauseAnalysis =
+        `Về tài chính, quẻ #${queNum} (${primaryViet.name}) cho thấy quy luật vận hành của dòng tiền: ` +
+        (isAuspicious
+          ? `dòng tiền đang có xu hướng quy tụ về bạn; cơ hội đầu tư sinh lời đang mở ra nếu bạn biết nắm bắt đúng nhịp.`
+          : isInauspicious
+          ? `vận tài đang ở thế hao hụt hoặc cạm bẫy tài chính; nếu tham lam lợi nhuận ngắn hạn sẽ dễ rơi vào thế bị động khó gỡ.`
+          : `nguồn thu nhập cơ bản duy trì ổn định nhưng chưa thích hợp để bung vốn quy mô lớn.`);
       concreteAdviceDos = [
-        'Quản lý chặt chẽ dòng tiền, chỉ chi tiêu và đầu tư vào kênh bạn hiểu rõ.',
-        'Lập quỹ dự phòng an toàn trước khi mở rộng kinh doanh.',
+        'Tập trung bảo toàn vốn gốc, chỉ giải ngân vào những lĩnh vực hoặc tài sản mà bạn nắm rõ bản chất.',
+        'Lập bảng cân đối thu chi minh bạch và trích lập ngay quỹ dự phòng rủi ro khẩn cấp.',
       ];
       concreteAdviceDonts = [
-        'Tuyệt đối không tham gia các kênh đầu tư mập mờ, cam kết lãi suất ảo.',
-        'Tránh vay mượn vượt quá khả năng chi trả.',
+        'Tuyệt đối không tham gia các kênh đầu tư mập mờ, đòn bẩy quá cao hoặc cam kết lãi suất ảo phi lý.',
+        'Tránh vay mượn hộ người khác hoặc cho vay mà thiếu cam kết pháp lý rõ ràng.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Nguồn tài chính sẽ tăng trưởng ổn định và an toàn khi bạn giữ vững kỷ luật.`;
+      timingAndOutcome =
+        `Quẻ Biến #${transformed.number} (${transformedViet.name}) chỉ rõ: Giữ chặt kỷ luật tài chính thì ${
+          entities.timeframe ? `đến ${entities.timeframe}` : 'vận tài sẽ từng bước hồi phục'
+        }, túi tiền đong đầy và tâm trí an nhàn.`;
       break;
 
     case 'exam':
-      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Về thi cử/học tập: **${
-          queNum === 30 || queNum === 4 || queNum === 26 || queNum === 46 || queNum === 50
-            ? 'KẾT QUẢ ĐẠT KỲ VỌNG - ĐỖ ĐẠT KHẢ QUAN'
-            : 'CẦN TẬP TRUNG CAO ĐỘ ĐỂ BÙ ĐẮP LỖ HỔNG KIẾN THỨC'
-        }**.`;
+      rootCauseAnalysis =
+        `Về đường học vấn - thi cử, quẻ #${queNum} (${primaryViet.name}) nhắc nhở: Sự đỗ đạt không đến từ may rủi mà là kết quả của sự rèn giũa có phương pháp. Nút thắt lớn nhất lúc này là tâm lý phòng thi và sự phân bổ thời gian.`;
       concreteAdviceDos = [
-        'Ôn luyện bám sát cấu trúc đề thi, nắm chắc kiến thức nền tảng.',
-        'Giữ tinh thần thoải mái, ngủ đủ giấc trước ngày thi.',
+        'Lập thời gian biểu ôn tập khoa học, tập trung giải quyết dứt điểm các lỗ hổng kiến thức trọng tâm.',
+        'Giữ nhịp sinh hoạt điều độ, ngủ đủ giấc để trí não luôn minh mẫn và sáng suốt.',
       ];
       concreteAdviceDonts = [
-        'Tránh chủ quan hoặc học dồn dập thức khuya sát giờ thi.',
-        'Không để tâm lý hoang mang làm phân tán sự tập trung.',
+        'Tránh học nhồi nhét thâu đêm sát giờ thi khiến thần trí kiệt quệ.',
+        'Không để áp lực kỳ vọng từ người khác làm lung lay niềm tin vào sự chuẩn bị của chính mình.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Điểm số và kết quả sẽ xứng đáng với mức độ nghiêm túc ôn tập của bạn.`;
+      timingAndOutcome =
+        `Quẻ Biến #${transformed.number} (${transformedViet.name}): Điểm số và kết quả thi cử sẽ tương xứng với nỗ lực kỷ luật của bạn, bảng vàng ghi danh thuận lợi.`;
       break;
 
     default:
-      directVerdict = `🎯 **KẾT LUẬN TRỰC DIỆN:**\n` +
-        `Về câu hỏi: *"${userQ}"* — **${
-          queNum === 1 || queNum === 11 || queNum === 14 || queNum === 15 || queNum === 42
-            ? 'VẬN THẾ HANH THÔNG - NÊN QUYẾT ĐOÁN HÀNH ĐỘNG'
-            : queNum === 12 || queNum === 23 || queNum === 29 || queNum === 39
-            ? 'CẦN THẬN TRỌNG - NÊN CHỜ THÊM THỜI CƠ THÍCH HỢP'
-            : 'ĐIỀU KIỆN ĐANG THUẬN LỢI NẾU BẠN CHỦ ĐỘNG'
-        }**.`;
+      rootCauseAnalysis =
+        `Xét toàn cục vận trình, quẻ #${queNum} (${primaryViet.name}) cho thấy bạn đang ở thế: ${primaryViet.meaning}. ` +
+        `Thoán Từ: *"${primaryThoan}"*. Bản chất nút thắt không phải do bên ngoài cản trở mà chính là ở sự định tâm bên trong của bạn.`;
       concreteAdviceDos = [
-        `Hành động thực tế theo nguyên lý quẻ ${primaryViet.name}: "${primaryViet.meaning}".`,
-        'Chuẩn bị phương án dự phòng và kiên định với mục tiêu.',
+        `Hành động thực tế, kiên trì theo tinh thần của quẻ ${primaryViet.name}: cẩn trọng nhưng dứt khoát.`,
+        'Xác định rõ mục tiêu ưu tiên số một và tập trung nguồn lực thực hiện cho xong trước.',
       ];
       concreteAdviceDonts = [
-        'Tránh bốc đồng hoặc nghe theo những lời bàn tán thiếu căn cứ.',
-        'Không trì hoãn khi điều kiện thuận lợi đã xuất hiện.',
+        'Tránh nóng vội hành động khi chưa có kế hoạch cụ thể.',
+        'Không để những lời bàn tán phiến diện xung quanh làm phân tâm.',
       ];
-      timingAndOutcome = `Quẻ Biến #${transformed.number} (${transformedViet.name}): Vấn đề sẽ có lời giải rõ ràng và chuyển biến tích cực trong thời gian tới.`;
+      timingAndOutcome =
+        `Quẻ Biến #${transformed.number} (${transformedViet.name}): Vấn đề bạn trăn trở sẽ có câu trả lời ngã ngũ rõ ràng ${
+          entities.timeframe ? `trong ${entities.timeframe}` : 'trong thời gian tới'
+        }, mang lại sự an tâm và vững bước.`;
       break;
   }
 
+  // ASSEMBLE 100% VIETNAMESE 5-PART MASTERPIECE
   return (
-    `${directVerdict}\n\n` +
-    `📜 **QUẺ CHỦ & CỤC DIỆN (Quẻ #${queNum} - ${primaryViet.name}):**\n` +
-    `Quẻ mang tượng **${primaryViet.symbol}** (${primaryViet.element}). Thoán Từ: *"${primaryThoan}"*. Thực trạng: ${primaryViet.meaning}\n\n` +
-    `⚡ **HÀNH ĐỘNG CỤ THỂ (Hào Động ${haoNum}):**\n` +
-    `Lời Hào: *"${changingLineText}"*.\n` +
-    `- ✔️ **Nên làm:**\n` +
-    `  1. ${concreteAdviceDos[0]}\n` +
-    `  2. ${concreteAdviceDos[1]}\n` +
-    `- ❌ **Cần tránh:**\n` +
-    `  1. ${concreteAdviceDonts[0]}\n` +
-    `  2. ${concreteAdviceDonts[1]}\n\n` +
-    `🔮 **KẾT QUẢ & THỜI ĐIỂM (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
+    `${decisionBadge}\n\n` +
+    `${decisionExplanation}\n\n` +
+    `🔍 **BẢN CHẤT NÚT THẮT (Quẻ Chủ #${queNum} - ${primaryViet.name}):**\n` +
+    `Quẻ mang tượng **${primaryViet.symbol}** (${primaryViet.element}). Thoán Từ cổ văn: *"${primaryThoan}"*.\n` +
+    `${rootCauseAnalysis}\n\n` +
+    `⚡ **KẾ SÁCH HÀNH ĐỘNG GỠ RỐI (Hào Động #${haoNum}):**\n` +
+    `Lời Hào biến dịch: *"${changingLineText}"*.\n` +
+    `- ✔️ **Hành động then chốt 1:** ${concreteAdviceDos[0]}\n` +
+    `- ✔️ **Hành động then chốt 2:** ${concreteAdviceDos[1]}\n` +
+    `- ❌ **Tử huyệt tối kỵ cần tránh:** ${concreteAdviceDonts[0]} ${concreteAdviceDonts[1]}\n\n` +
+    `🔮 **DỰ BÁO KẾT CỤC & MỐC THỜI GIAN (Quẻ Biến #${transformed.number} - ${transformedViet.name}):**\n` +
+    `Chuyển hóa sang Thoán Từ: *"${transformedThoan}"*.\n` +
     `${timingAndOutcome}\n\n` +
-    `💡 **LỜI KHUYÊN CỐT LÕI TỪ CÔ THẢO:**\n` +
-    `Hãy tin vào năng lực và sự chuẩn bị của chính bạn; hành động chuẩn xác, dứt khoát sẽ mang lại kết quả tốt nhất.`
+    `💡 **CÔ THẢO CHỐT HẠ:**\n` +
+    `"Đường đi dưới chân do tâm định, thời vận trong tay bởi đức dày. Hãy tin tưởng vào sự lựa chọn sáng suốt của bạn và hành động dứt khoát!"`
   );
 }

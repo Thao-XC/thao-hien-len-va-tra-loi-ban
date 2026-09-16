@@ -57,6 +57,45 @@ function getOpenRouterKey() {
   ).trim();
 }
 
+// --- Decisiveness compliance check -----------------------------------------
+const VERDICT_MARKERS = [
+  'KẾT LUẬN TRỰC DIỆN',
+  'CÓ KHẢ NĂNG RẤT CAO',
+  'CHƯA PHẢI THỜI ĐIỂM',
+  'KHẢ NĂNG THẤP',
+  'RỦI RO LỚN',
+  'NÊN TRÁNH',
+  'RẤT NÊN TIẾN HÀNH',
+  'CHƯA NÊN VỘI VÃ',
+];
+
+function isCompliant(text: string): boolean {
+  if (!text) return false;
+  const head = text.slice(0, 500).toUpperCase();
+  return VERDICT_MARKERS.some((marker) => head.includes(marker));
+}
+
+async function generateOnce(ai: GoogleGenAI, modelName: string, contents: any[]): Promise<string> {
+  const result: any = await ai.models.generateContent({
+    model: modelName,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.4,
+    },
+    contents,
+  });
+  return result?.text || result?.response?.text?.() || '';
+}
+
+async function streamTextAsWords(res: any, text: string) {
+  const words = text.split(' ');
+  for (const word of words) {
+    if (res.writableEnded) break;
+    res.write(`data: ${JSON.stringify({ text: word + ' ' })}\n\n`);
+    await new Promise((r) => setTimeout(r, 12));
+  }
+}
+
 let aiClient: GoogleGenAI | null = null;
 function getAI() {
   if (!aiClient) {
@@ -206,27 +245,70 @@ app.post('/api/interpret', async (req, res) => {
           }
 
           const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
-          for (const modelName of CANDIDATE_MODELS) {
-            if (streamedAny) break;
-            try {
-              const responseStream = await ai.models.generateContentStream({
-                model: modelName,
-                config: {
-                  systemInstruction: SYSTEM_PROMPT,
-                  temperature: 0.4,
-                },
-                contents: contentsArray,
-              });
+          const isInitialReading = !(history && Array.isArray(history) && history.length > 1);
 
-              for await (const chunk of responseStream) {
-                if (chunk.text && !res.writableEnded) {
-                  streamedAny = true;
-                  res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
-                }
-              }
+          if (isInitialReading) {
+            // Initial reading: verify verdict compliance before streaming to user
+            for (const modelName of CANDIDATE_MODELS) {
               if (streamedAny) break;
-            } catch (modelErr: any) {
-              console.warn(`Gemini model ${modelName} error:`, modelErr?.message || modelErr);
+              try {
+                let finalText = await generateOnce(ai, modelName, contentsArray);
+
+                if (finalText && !isCompliant(finalText)) {
+                  console.warn(`Gemini model ${modelName} gave a non-decisive answer, retrying once with reinforcement...`);
+                  const retryContents = [
+                    ...contentsArray,
+                    { role: 'model', parts: [{ text: finalText }] },
+                    {
+                      role: 'user',
+                      parts: [
+                        {
+                          text:
+                            'Câu trả lời trên THIẾU phần 🎯 KẾT LUẬN TRỰC DIỆN rõ ràng ở đầu. ' +
+                            'Hãy viết lại TOÀN BỘ câu trả lời, bắt đầu ngay bằng "🎯 **KẾT LUẬN TRỰC DIỆN:**" ' +
+                            'và một khẳng định dứt khoát (CÓ KHẢ NĂNG RẤT CAO / CHƯA PHẢI THỜI ĐIỂM / KHẢ NĂNG THẤP / RỦI RO LỚN - NÊN TRÁNH). ' +
+                            'Tuyệt đối không được mơ hồ hay nói "tùy bạn".',
+                        },
+                      ],
+                    },
+                  ];
+                  const retryText = await generateOnce(ai, modelName, retryContents);
+                  if (retryText) finalText = retryText;
+                }
+
+                if (finalText) {
+                  streamedAny = true;
+                  await streamTextAsWords(res, finalText);
+                  break;
+                }
+              } catch (modelErr: any) {
+                console.warn(`Gemini model ${modelName} error:`, modelErr?.message || modelErr);
+              }
+            }
+          } else {
+            // Follow-up turn in an ongoing conversation: stream normally.
+            for (const modelName of CANDIDATE_MODELS) {
+              if (streamedAny) break;
+              try {
+                const responseStream = await ai.models.generateContentStream({
+                  model: modelName,
+                  config: {
+                    systemInstruction: SYSTEM_PROMPT,
+                    temperature: 0.4,
+                  },
+                  contents: contentsArray,
+                });
+
+                for await (const chunk of responseStream) {
+                  if (chunk.text && !res.writableEnded) {
+                    streamedAny = true;
+                    res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+                  }
+                }
+                if (streamedAny) break;
+              } catch (modelErr: any) {
+                console.warn(`Gemini model ${modelName} error:`, modelErr?.message || modelErr);
+              }
             }
           }
         }

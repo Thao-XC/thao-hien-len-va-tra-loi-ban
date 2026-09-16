@@ -112,10 +112,10 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                 setCurrentStreamText(fullText);
               }
               if (data.error) {
-                fullText += `\n[${data.error}]`;
-                setCurrentStreamText(fullText);
+                throw new Error(`API stream error: ${data.error}`);
               }
-            } catch {
+            } catch (e: any) {
+              if (e.message?.startsWith('API stream error')) throw e;
               // Ignore partial JSON
             }
           }
@@ -129,14 +129,23 @@ export const OracleChat: React.FC<OracleChatProps> = ({
             fullText += data.text;
             setCurrentStreamText(fullText);
           }
-        } catch {}
+          if (data.error) {
+            throw new Error(`API stream error: ${data.error}`);
+          }
+        } catch (e: any) {
+          if (e.message?.startsWith('API stream error')) throw e;
+        }
+      }
+
+      if (!fullText || fullText.trim().length < 30 || fullText.includes('Quẻ đang được chiêm nghiệm')) {
+        throw new Error('Incomplete response from backend, switching to offline fallback engine');
       }
 
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          text: fullText || 'Thảo đang định tâm chiêm nghiệm quẻ.',
+          text: fullText,
           timestamp: Date.now(),
         },
       ]);

@@ -49,11 +49,11 @@ export const LadyThaoShakingHands: React.FC<LadyThaoShakingHandsProps> = ({
             ? { duration: 0.22, repeat: Infinity, ease: 'easeInOut' }
             : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
         }
-        className="absolute -left-12 sm:-left-16 top-1/2 -translate-y-1/2 flex items-center"
+        className="absolute -left-7 sm:-left-9 top-1/2 -translate-y-1/2 flex items-center pointer-events-none"
       >
         {/* Left Sleeve & Hand SVG */}
         <svg
-          className="w-24 sm:w-30 h-28 sm:h-34 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+          className="w-18 sm:w-22 h-20 sm:h-24 filter drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)] pointer-events-none"
           viewBox="0 0 120 140"
           fill="none"
         >
@@ -191,11 +191,11 @@ export const LadyThaoShakingHands: React.FC<LadyThaoShakingHandsProps> = ({
             ? { duration: 0.22, repeat: Infinity, ease: 'easeInOut' }
             : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
         }
-        className="absolute -right-12 sm:-right-16 top-1/2 -translate-y-1/2 flex items-center"
+        className="absolute -right-7 sm:-right-9 top-1/2 -translate-y-1/2 flex items-center pointer-events-none"
       >
         {/* Right Sleeve & Hand SVG (Mirrored) */}
         <svg
-          className="w-24 sm:w-30 h-28 sm:h-34 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform -scale-x-100"
+          className="w-18 sm:w-22 h-20 sm:h-24 filter drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)] transform -scale-x-100 pointer-events-none"
           viewBox="0 0 120 140"
           fill="none"
         >

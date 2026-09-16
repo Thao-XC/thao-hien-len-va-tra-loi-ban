@@ -97,17 +97,17 @@ export const StickTube: React.FC<StickTubeProps> = ({
 
   // Authentic tightly-clustered bundle of wooden fortune sticks inside the cylinder mouth
   const initialSticks: StickState[] = [
-    { id: 1, height: 135, rotation: -3.5, offsetX: -22, offsetY: 0, cinnabarRatio: 100 },
-    { id: 2, height: 138, rotation: -2.5, offsetX: -17, offsetY: -2, cinnabarRatio: 100 },
-    { id: 3, height: 140, rotation: -1.8, offsetX: -12, offsetY: -3, cinnabarRatio: 100 },
-    { id: 4, height: 142, rotation: -1.0, offsetX: -7, offsetY: -5, cinnabarRatio: 100 },
-    { id: 5, height: 144, rotation: -0.5, offsetX: -3, offsetY: -6, cinnabarRatio: 100 },
-    { id: 6, height: 145, rotation: 0, offsetX: 0, offsetY: -7, cinnabarRatio: 100 },
-    { id: 7, height: 144, rotation: 0.5, offsetX: 3, offsetY: -6, cinnabarRatio: 100 },
-    { id: 8, height: 142, rotation: 1.0, offsetX: 7, offsetY: -5, cinnabarRatio: 100 },
-    { id: 9, height: 140, rotation: 1.8, offsetX: 12, offsetY: -3, cinnabarRatio: 100 },
-    { id: 10, height: 138, rotation: 2.5, offsetX: 17, offsetY: -2, cinnabarRatio: 100 },
-    { id: 11, height: 135, rotation: 3.5, offsetX: 22, offsetY: 0, cinnabarRatio: 100 },
+    { id: 1, height: 75, rotation: -3.5, offsetX: -16, offsetY: 0, cinnabarRatio: 100 },
+    { id: 2, height: 78, rotation: -2.5, offsetX: -12, offsetY: -2, cinnabarRatio: 100 },
+    { id: 3, height: 80, rotation: -1.8, offsetX: -8, offsetY: -3, cinnabarRatio: 100 },
+    { id: 4, height: 82, rotation: -1.0, offsetX: -5, offsetY: -4, cinnabarRatio: 100 },
+    { id: 5, height: 84, rotation: -0.5, offsetX: -2, offsetY: -5, cinnabarRatio: 100 },
+    { id: 6, height: 85, rotation: 0, offsetX: 0, offsetY: -6, cinnabarRatio: 100 },
+    { id: 7, height: 84, rotation: 0.5, offsetX: 2, offsetY: -5, cinnabarRatio: 100 },
+    { id: 8, height: 82, rotation: 1.0, offsetX: 5, offsetY: -4, cinnabarRatio: 100 },
+    { id: 9, height: 80, rotation: 1.8, offsetX: 8, offsetY: -3, cinnabarRatio: 100 },
+    { id: 10, height: 78, rotation: 2.5, offsetX: 12, offsetY: -2, cinnabarRatio: 100 },
+    { id: 11, height: 75, rotation: 3.5, offsetX: 16, offsetY: 0, cinnabarRatio: 100 },
   ];
 
   const [sticks, setSticks] = useState<StickState[]>(initialSticks);
@@ -375,7 +375,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
         <div className="absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-b from-[#E9CE84]/30 via-[#B23B28]/15 to-transparent blur-2xl pointer-events-none" />
 
         {/* Shaking Stage */}
-        <div className="relative flex flex-col items-center">
+        <div className={`relative flex flex-col items-center transition-all duration-300 ${phase === 'fallen' ? 'scale-75 -my-4' : ''}`}>
           {/* CÔ THẢO HANDS WITH BÁT QUÁI NAIL ART HOLDING AND SHAKING THE TUBE */}
           <LadyThaoShakingHands
             isShaking={phase === 'shaking'}
@@ -408,7 +408,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
             }}
           >
           {/* THE BUNDLE OF BAMBOO FORTUNE STICKS PROTRUDING FROM THE CYLINDER MOUTH */}
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 -mb-8 z-10 flex items-end justify-center overflow-visible">
+          <div className="relative w-24 h-16 sm:w-28 sm:h-18 -mb-4 z-10 flex items-end justify-center overflow-visible">
             {sticks.map((stick) => {
               const isEjectedWinner = phase === 'ejecting' && stick.id === 6;
               return (
@@ -417,7 +417,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
                   animate={
                     isEjectedWinner
                       ? {
-                          y: -95,
+                          y: -46,
                           rotate: 8,
                           scale: 1.05,
                         }
@@ -452,10 +452,10 @@ export const StickTube: React.FC<StickTubeProps> = ({
           {/* STYLE: ỐNG XĂM CỔ TRUYỀN BÁT QUÁI (EXACT REFERENCE DESIGN) */}
           {/* ========================================================= */}
           {tubeStyle === 'classic_batquai' && (
-            <div className="relative z-20 w-40 sm:w-46 h-58 sm:h-64 rounded-t-xl rounded-b-3xl bg-gradient-to-r from-[#4A0D07] via-[#751B12] via-30% via-[#942419] via-50% via-[#751B12] via-70% to-[#3B0904] border-2 border-[#FFE599]/80 shadow-[0_16px_40px_rgba(117,27,18,0.5),0_8px_20px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between p-2 overflow-visible">
+            <div className="relative z-20 w-30 sm:w-34 h-36 sm:h-40 rounded-t-lg rounded-b-2xl bg-gradient-to-r from-[#4A0D07] via-[#751B12] via-30% via-[#942419] via-50% via-[#751B12] via-70% to-[#3B0904] border-2 border-[#FFE599]/80 shadow-[0_12px_28px_rgba(117,27,18,0.5),0_6px_14px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between p-1.5 overflow-visible">
               {/* Subtle Vertical Wood Slat Plank Grooves */}
               <div
-                className="absolute inset-0 rounded-t-xl rounded-b-3xl pointer-events-none opacity-30"
+                className="absolute inset-0 rounded-t-lg rounded-b-2xl pointer-events-none opacity-30"
                 style={{
                   backgroundImage:
                     'repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(0, 0, 0, 0.45) 16px, rgba(0, 0, 0, 0.45) 17px, rgba(255, 229, 153, 0.15) 17px, rgba(255, 229, 153, 0.15) 18px)',
@@ -463,104 +463,92 @@ export const StickTube: React.FC<StickTubeProps> = ({
               />
 
               {/* Side Wooden Upright Bracket Post (Left) */}
-              <div className="absolute -left-2.5 top-6 w-2.5 h-38 bg-gradient-to-r from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-l border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
+              <div className="absolute -left-2 top-4 w-2 h-26 bg-gradient-to-r from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-l border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
                 {/* Red Vermilion Tip */}
-                <div className="w-full h-4 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mb-3 shadow-xs" />
+                <div className="w-full h-3 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
+                <div className="w-1 h-1 rounded-full bg-[#FFE599] mb-2 shadow-xs" />
               </div>
 
               {/* Left Hanging Red Lucky Tassel & Gold Diamond Plaque */}
-              <div className="absolute -left-5 top-14 flex flex-col items-center z-30 pointer-events-none">
+              <div className="absolute -left-4 top-9 flex flex-col items-center z-30 pointer-events-none">
                 {/* Gold Cord Ring */}
                 <div className="w-1.5 h-2 rounded-full border border-[#FFE599] bg-[#FFE599]/40" />
                 {/* Gold Diamond Plaque (Kim Bài Hình Thoi) */}
-                <div className="w-4 h-4 -my-0.5 rotate-45 border-2 border-[#FFE599] bg-[#B23B28] shadow-md flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599]" />
+                <div className="w-3.5 h-3.5 -my-0.5 rotate-45 border-2 border-[#FFE599] bg-[#B23B28] shadow-md flex items-center justify-center">
+                  <div className="w-1 h-1 rounded-full bg-[#FFE599]" />
                 </div>
                 {/* Red Silk Hanging Tassel Cords */}
                 <div className="flex gap-0.5 mt-0.5">
-                  <div className="w-1 h-14 bg-gradient-to-b from-[#B23B28] via-[#8C1D13] to-[#4A0D07] rounded-b-full shadow-xs" />
-                  <div className="w-1 h-16 bg-gradient-to-b from-[#C43825] via-[#8C1D13] to-[#3B0904] rounded-b-full shadow-xs" />
+                  <div className="w-0.5 h-10 bg-gradient-to-b from-[#B23B28] via-[#8C1D13] to-[#4A0D07] rounded-b-full shadow-xs" />
+                  <div className="w-0.5 h-12 bg-gradient-to-b from-[#C43825] via-[#8C1D13] to-[#3B0904] rounded-b-full shadow-xs" />
                 </div>
               </div>
 
               {/* Side Wooden Upright Bracket Post (Right) */}
-              <div className="absolute -right-2.5 top-6 w-2.5 h-38 bg-gradient-to-l from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-r border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
+              <div className="absolute -right-2 top-4 w-2 h-26 bg-gradient-to-l from-[#240603] to-[#5E140D] rounded-t-sm rounded-b-xs border-r border-[#FFE599]/60 shadow-md flex flex-col items-center justify-between z-10">
                 {/* Red Vermilion Tip */}
-                <div className="w-full h-4 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599] mb-3 shadow-xs" />
+                <div className="w-full h-3 bg-gradient-to-b from-[#B23B28] to-[#751B12] rounded-t-xs border-b border-[#FFE599]/50" />
+                <div className="w-1 h-1 rounded-full bg-[#FFE599] mb-2 shadow-xs" />
               </div>
 
-              {/* TOP GOLD BATTLEMENT FRETWORK BAND (ĐAI VÀNG HỒI VĂN RĂNG CƯA TRÊN) */}
-              <div className="relative z-20 w-full flex flex-col items-center pt-1">
-                {/* Crenellated Greek Fret / Castle Battlement Steps */}
-                <div className="w-full flex justify-between px-1 h-2 overflow-hidden">
+              {/* TOP GOLD BATTLEMENT FRETWORK BAND */}
+              <div className="relative z-20 w-full flex flex-col items-center pt-0.5">
+                <div className="w-full flex justify-between px-1 h-1.5 overflow-hidden">
                   {[...Array(9)].map((_, i) => (
                     <div
                       key={`top-notch-${i}`}
-                      className="w-2.5 h-2 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
+                      className="w-2 h-1.5 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
                     />
                   ))}
                 </div>
-                {/* Solid Gold Horizontal Bar */}
-                <div className="w-full h-3.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-3">
-                  {/* Round Gold Rivets */}
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                <div className="w-full h-2.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-2">
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
                 </div>
               </div>
 
-              {/* CENTER CIRCULAR YIN-YANG (THÁI CỰC BÁT QUÁI) MEDALLION */}
+              {/* CENTER CIRCULAR YIN-YANG MEDALLION */}
               <div className="relative z-20 my-auto flex items-center justify-center">
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-[#FFE599] bg-gradient-to-b from-[#1F0C08] to-[#0A0402] shadow-[0_8px_20px_rgba(0,0,0,0.8),inset_0_2px_6px_rgba(255,229,153,0.3)] flex items-center justify-center p-1">
-                  {/* Outer Concentric Dotted / Dashed Gold Ring */}
-                  <div className="absolute inset-1.5 rounded-full border-2 border-dashed border-[#FFE599]/80 pointer-events-none" />
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-[#FFE599] bg-gradient-to-b from-[#1F0C08] to-[#0A0402] shadow-[0_6px_14px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(255,229,153,0.3)] flex items-center justify-center p-0.5">
+                  <div className="absolute inset-1 rounded-full border border-dashed border-[#FFE599]/80 pointer-events-none" />
 
-                  {/* High-Fidelity Golden & Dark Lacquer Yin-Yang Symbol (Thái Cực Đồ) */}
-                  <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FFE599] overflow-hidden border border-[#D4AF37] shadow-inner flex">
-                    {/* Left Dark Yin Half */}
+                  <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FFE599] overflow-hidden border border-[#D4AF37] shadow-inner flex">
                     <div className="w-1/2 h-full bg-[#2A0E08]" />
-                    {/* Right Gold Yang Half */}
                     <div className="w-1/2 h-full bg-[#FFE599]" />
 
-                    {/* Top Yin Disc (Dark with Gold Eye) */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#2A0E08] flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-[#FFE599] shadow-xs" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-[#2A0E08] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#FFE599]" />
                     </div>
 
-                    {/* Bottom Yang Disc (Gold with Dark Eye) */}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#FFE599] flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-[#2A0E08] shadow-xs" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-[#FFE599] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#2A0E08]" />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* BOTTOM GOLD BATTLEMENT FRETWORK BAND (ĐAI VÀNG HỒI VĂN RĂNG CƯA DƯỚI) */}
-              <div className="relative z-20 w-full flex flex-col items-center pb-1">
-                {/* Crenellated Greek Fret / Castle Battlement Steps */}
-                <div className="w-full flex justify-between px-1 h-2 overflow-hidden">
+              {/* BOTTOM GOLD BATTLEMENT FRETWORK BAND */}
+              <div className="relative z-20 w-full flex flex-col items-center pb-0.5">
+                <div className="w-full flex justify-between px-1 h-1.5 overflow-hidden">
                   {[...Array(9)].map((_, i) => (
                     <div
                       key={`bottom-notch-${i}`}
-                      className="w-2.5 h-2 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
+                      className="w-2 h-1.5 bg-gradient-to-b from-[#FFE599] to-[#D4AF37] border-t border-x border-[#FFF3B0] shadow-xs"
                     />
                   ))}
                 </div>
-                {/* Solid Gold Horizontal Bar */}
-                <div className="w-full h-3.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-3">
-                  {/* Round Gold Rivets */}
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599] shadow-xs" />
+                <div className="w-full h-2.5 bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-y border-[#540B04] shadow-xs flex items-center justify-around px-2">
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                  <div className="w-1 h-1 rounded-full bg-[#540B04] border border-[#FFE599]" />
                 </div>
               </div>
 
               {/* Bottom Rounded Base Trim */}
-              <div className="w-full h-3 rounded-b-2xl bg-gradient-to-r from-[#240603] via-[#4A0D07] to-[#240603] -mt-0.5 border-t border-[#FFE599]/30" />
+              <div className="w-full h-2.5 rounded-b-2xl bg-gradient-to-r from-[#240603] via-[#4A0D07] to-[#240603] -mt-0.5 border-t border-[#FFE599]/30" />
             </div>
           )}
 
@@ -568,45 +556,43 @@ export const StickTube: React.FC<StickTubeProps> = ({
           {/* STYLE 1: ỐNG XĂM ĐỎ THẮM BÁT GIÁC CUNG ĐÌNH (OCTAGONAL CRIMSON) */}
           {/* ========================================================= */}
           {tubeStyle === 'octagonal_crimson' && (
-            <div className="relative z-20 w-38 sm:w-44 h-54 sm:h-60 rounded-t-lg rounded-b-2xl bg-gradient-to-r from-[#690E05] via-[#B81F14] via-30% via-[#D83627] via-50% via-[#B81F14] via-70% to-[#500A03] border-2 border-[#FFE599] shadow-[0_16px_36px_rgba(184,31,20,0.5),0_6px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
+            <div className="relative z-20 w-28 sm:w-32 h-34 sm:h-38 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#690E05] via-[#B81F14] via-30% via-[#D83627] via-50% via-[#B81F14] via-70% to-[#500A03] border-2 border-[#FFE599] shadow-[0_12px_28px_rgba(184,31,20,0.5),0_6px_14px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2 overflow-hidden">
               {/* Faceted Octagonal Column Lines */}
-              <div className="absolute inset-0 flex justify-between px-7 pointer-events-none opacity-30">
+              <div className="absolute inset-0 flex justify-between px-5 pointer-events-none opacity-30">
                 <div className="w-px h-full bg-gradient-to-b from-white via-[#FFE599] to-transparent shadow-[0_0_2px_#fff]" />
                 <div className="w-px h-full bg-gradient-to-b from-white via-[#FFE599] to-transparent shadow-[0_0_2px_#fff]" />
               </div>
 
               {/* Top Imperial Gold Lip Ring */}
-              <div className="w-full h-4.5 rounded-t-md bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-b-2 border-[#540B04] flex items-center justify-center shadow-xs">
-                <div className="w-3/4 h-1 bg-[#540B04]/40 rounded-full" />
+              <div className="w-full h-3.5 rounded-t-md bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-b-2 border-[#540B04] flex items-center justify-center shadow-xs">
+                <div className="w-3/4 h-0.5 bg-[#540B04]/40 rounded-full" />
               </div>
 
               {/* Middle Ornate Plaque with Calligraphy "靈 籤" */}
-              <div className="relative z-10 flex flex-col items-center my-auto py-1">
-                <div className="w-20 h-24 sm:w-22 sm:h-28 rounded-sm border-2 border-[#FFE599] bg-gradient-to-b from-[#690E05] via-[#8C160B] to-[#400702] p-1.5 flex flex-col items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.6)]">
-                  {/* Bát Quái Center Seal */}
-                  <div className="w-7 h-7 rounded-full border border-[#FFE599] bg-[#FFE599]/20 flex items-center justify-center mb-0.5 text-xs text-[#FFE599] shadow-xs">
+              <div className="relative z-10 flex flex-col items-center my-auto py-0.5">
+                <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-xs border border-[#FFE599] bg-gradient-to-b from-[#690E05] via-[#8C160B] to-[#400702] p-1 flex flex-col items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                  <div className="w-5 h-5 rounded-full border border-[#FFE599] bg-[#FFE599]/20 flex items-center justify-center mb-0.5 text-[0.6rem] text-[#FFE599] shadow-xs">
                     ☯
                   </div>
-                  {/* Bold Calligraphy */}
-                  <div className="font-serif font-black text-lg sm:text-xl text-[#FFE599] tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     靈
                   </div>
-                  <div className="font-serif font-black text-lg sm:text-xl text-[#FFE599] tracking-widest leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     籤
                   </div>
                 </div>
-                <div className="mt-1 px-2.5 py-0.5 rounded-full bg-[#400702]/90 border border-[#FFE599]/80 shadow-xs">
-                  <span className="font-sans font-black text-[0.65rem] text-[#FFE599] tracking-[0.2em] uppercase">
+                <div className="mt-0.5 px-2 py-0.2 rounded-full bg-[#400702]/90 border border-[#FFE599]/80 shadow-xs">
+                  <span className="font-sans font-black text-[0.55rem] text-[#FFE599] tracking-[0.18em] uppercase">
                     THẦN THIÊM
                   </span>
                 </div>
               </div>
 
               {/* Bottom Brass Studded Ring with Red Lucky Tassel */}
-              <div className="w-full h-5.5 rounded-b-xl bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-t border-[#540B04]/50 flex items-center justify-around px-2 shadow-xs">
-                <div className="w-2 h-2 rounded-full bg-[#540B04] border border-[#FFE599]" />
-                <div className="w-12 h-1 bg-[#540B04]/50 rounded-full" />
-                <div className="w-2 h-2 rounded-full bg-[#540B04] border border-[#FFE599]" />
+              <div className="w-full h-4 rounded-b-lg bg-gradient-to-r from-[#99732B] via-[#FFE599] via-50% to-[#99732B] border-t border-[#540B04]/50 flex items-center justify-around px-2 shadow-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599]" />
+                <div className="w-8 h-0.5 bg-[#540B04]/50 rounded-full" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#540B04] border border-[#FFE599]" />
               </div>
             </div>
           )}
@@ -615,33 +601,33 @@ export const StickTube: React.FC<StickTubeProps> = ({
           {/* STYLE 2: ỐNG XĂM ĐỎ CHU SA HOÀNG CUNG (CINNABAR ROYAL) */}
           {/* ========================================================= */}
           {tubeStyle === 'cinnabar_royal' && (
-            <div className="relative z-20 w-36 sm:w-42 h-52 sm:h-58 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#4A0E08] via-[#8C1D13] via-25% via-[#B23B28] via-50% via-[#9E2417] via-75% to-[#3D0A05] border-2 border-[#E9CE84] shadow-[0_16px_36px_rgba(124,31,22,0.45),0_6px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
-              <div className="w-full h-4.5 rounded-t-md bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-b-2 border-[#591008] flex items-center justify-center shadow-xs">
-                <div className="w-3/4 h-1 bg-[#591008]/40 rounded-full" />
+            <div className="relative z-20 w-28 sm:w-32 h-34 sm:h-38 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#4A0E08] via-[#8C1D13] via-25% via-[#B23B28] via-50% via-[#9E2417] via-75% to-[#3D0A05] border-2 border-[#E9CE84] shadow-[0_12px_28px_rgba(124,31,22,0.45),0_6px_14px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between p-2 overflow-hidden">
+              <div className="w-full h-3.5 rounded-t-md bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-b-2 border-[#591008] flex items-center justify-center shadow-xs">
+                <div className="w-3/4 h-0.5 bg-[#591008]/40 rounded-full" />
               </div>
-              <div className="absolute inset-y-0 left-1/3 w-8 bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
-              <div className="relative z-10 flex flex-col items-center my-auto py-1">
-                <div className="w-18 h-22 sm:w-20 sm:h-26 rounded-xs border-2 border-[#FFE082] bg-gradient-to-b from-[#591008] via-[#7C180E] to-[#3D0A05] p-1.5 flex flex-col items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
-                  <div className="w-6 h-6 rounded-full border border-[#FFE082] bg-[#FFE082]/15 flex items-center justify-center mb-0.5 text-[0.65rem] text-[#FFE082] shadow-xs">
+              <div className="absolute inset-y-0 left-1/3 w-6 bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+              <div className="relative z-10 flex flex-col items-center my-auto py-0.5">
+                <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-xs border border-[#FFE082] bg-gradient-to-b from-[#591008] via-[#7C180E] to-[#3D0A05] p-1 flex flex-col items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                  <div className="w-5 h-5 rounded-full border border-[#FFE082] bg-[#FFE082]/15 flex items-center justify-center mb-0.5 text-[0.6rem] text-[#FFE082] shadow-xs">
                     ☯
                   </div>
-                  <div className="font-serif font-black text-base sm:text-lg text-[#FFE082] tracking-widest leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE082] tracking-widest leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     靈
                   </div>
-                  <div className="font-serif font-black text-base sm:text-lg text-[#FFE082] tracking-widest leading-none mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE082] tracking-widest leading-none mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     籤
                   </div>
                 </div>
-                <div className="mt-1 px-2 py-0.5 rounded-full bg-[#3D0A05]/80 border border-[#FFE082]/70 shadow-xs">
-                  <span className="font-sans font-extrabold text-[0.6rem] text-[#FFE082] tracking-[0.2em] uppercase">
+                <div className="mt-0.5 px-2 py-0.2 rounded-full bg-[#3D0A05]/80 border border-[#FFE082]/70 shadow-xs">
+                  <span className="font-sans font-extrabold text-[0.55rem] text-[#FFE082] tracking-[0.18em] uppercase">
                     KINH DỊCH
                   </span>
                 </div>
               </div>
-              <div className="w-full h-5.5 rounded-b-md bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-t border-[#591008]/50 flex items-center justify-around px-2 shadow-xs">
-                <div className="w-2 h-2 rounded-full bg-[#591008] border border-[#FFE082]" />
-                <div className="w-10 h-1 bg-[#591008]/50 rounded-full" />
-                <div className="w-2 h-2 rounded-full bg-[#591008] border border-[#FFE082]" />
+              <div className="w-full h-4 rounded-b-lg bg-gradient-to-r from-[#8C6D2F] via-[#FFE082] via-50% to-[#8C6D2F] border-t border-[#591008]/50 flex items-center justify-around px-2 shadow-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#591008] border border-[#FFE082]" />
+                <div className="w-8 h-0.5 bg-[#591008]/50 rounded-full" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#591008] border border-[#FFE082]" />
               </div>
             </div>
           )}
@@ -650,50 +636,50 @@ export const StickTube: React.FC<StickTubeProps> = ({
           {/* STYLE 4: ỐNG TRE GIÀ KHẮC CHỮ NHO (AGED BAMBOO) */}
           {/* ========================================================= */}
           {tubeStyle === 'aged_bamboo' && (
-            <div className="relative z-20 w-36 sm:w-40 h-52 sm:h-56 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#2A170A] via-[#4D2D18] via-30% via-[#6B3F22] via-60% to-[#241308] border-2 border-[#8C5E35] shadow-[0_14px_28px_rgba(0,0,0,0.5),0_6px_10px_rgba(0,0,0,0.3)] flex flex-col items-center justify-between p-2.5 overflow-hidden">
-              <div className="w-full h-4 rounded-t-md bg-gradient-to-r from-[#1A0D06] via-[#8C4A26] to-[#1A0D06] border-b-2 border-[#D4AF37] flex items-center justify-center">
-                <div className="w-3/4 h-1 bg-[#D4AF37]/50 rounded-full" />
+            <div className="relative z-20 w-28 sm:w-32 h-34 sm:h-38 rounded-t-lg rounded-b-xl bg-gradient-to-r from-[#2A170A] via-[#4D2D18] via-30% via-[#6B3F22] via-60% to-[#241308] border-2 border-[#8C5E35] shadow-[0_12px_24px_rgba(0,0,0,0.5),0_4px_8px_rgba(0,0,0,0.3)] flex flex-col items-center justify-between p-2 overflow-hidden">
+              <div className="w-full h-3.5 rounded-t-md bg-gradient-to-r from-[#1A0D06] via-[#8C4A26] to-[#1A0D06] border-b-2 border-[#D4AF37] flex items-center justify-center">
+                <div className="w-3/4 h-0.5 bg-[#D4AF37]/50 rounded-full" />
               </div>
               <div className="absolute inset-0 opacity-15 pointer-events-none bg-[repeating-linear-gradient(90deg,#000_0px,#000_2px,transparent_2px,transparent_10px)]" />
-              <div className="relative z-10 flex flex-col items-center my-auto py-1">
-                <div className="w-16 h-20 sm:w-18 sm:h-24 rounded-xs border border-[#D4AF37]/80 bg-[#1F1008]/80 p-1 flex flex-col items-center justify-center shadow-inner">
-                  <div className="w-6 h-6 rounded-full border border-[#D4AF37] flex items-center justify-center mb-1 text-[0.6rem] text-[#FFE599]">
+              <div className="relative z-10 flex flex-col items-center my-auto py-0.5">
+                <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-xs border border-[#D4AF37]/80 bg-[#1F1008]/80 p-1 flex flex-col items-center justify-center shadow-inner">
+                  <div className="w-5 h-5 rounded-full border border-[#D4AF37] flex items-center justify-center mb-0.5 text-[0.6rem] text-[#FFE599]">
                     ☯
                   </div>
-                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <div className="font-serif font-black text-xs sm:text-sm text-[#FFE599] tracking-widest leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     靈
                   </div>
-                  <div className="font-serif font-black text-sm sm:text-base text-[#FFE599] tracking-widest leading-none mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <div className="font-serif font-black text-xs sm:text-sm text-[#FFE599] tracking-widest leading-none mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     籤
                   </div>
                 </div>
-                <span className="font-sans font-bold text-[0.62rem] text-[#D4AF37] tracking-[0.2em] mt-1 uppercase">
+                <span className="font-sans font-bold text-[0.55rem] text-[#D4AF37] tracking-[0.18em] mt-0.5 uppercase">
                   KINH DỊCH
                 </span>
               </div>
-              <div className="w-full h-5 rounded-b-md bg-gradient-to-r from-[#5C3D1E] via-[#D4AF37] to-[#5C3D1E] border-t border-[#FFE599]/60 flex items-center justify-around px-2">
+              <div className="w-full h-4 rounded-b-lg bg-gradient-to-r from-[#5C3D1E] via-[#D4AF37] to-[#5C3D1E] border-t border-[#FFE599]/60 flex items-center justify-around px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
-                <div className="w-8 h-1 bg-[#1A0D06]/40 rounded-full" />
+                <div className="w-6 h-0.5 bg-[#1A0D06]/40 rounded-full" />
                 <div className="w-1.5 h-1.5 rounded-full bg-[#1A0D06]" />
               </div>
             </div>
           )}
 
-          {/* Master Red Lacquer & Gold Altar Pedestal (hidden for classic_batquai to match exact reference) */}
+          {/* Master Red Lacquer & Gold Altar Pedestal */}
           {tubeStyle !== 'classic_batquai' && (
-            <div className="relative z-10 -mt-1 w-44 sm:w-50 h-5.5 bg-gradient-to-r from-[#2A0805] via-[#5C140D] via-50% to-[#2A0805] rounded-sm border-t-2 border-b border-[#FFE082] shadow-lg flex items-center justify-between px-3">
-              <div className="w-2.5 h-2.5 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
-              <div className="w-20 h-0.5 bg-[#FFE082]/60 rounded-full" />
-              <div className="w-2.5 h-2.5 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
+            <div className="relative z-10 -mt-1 w-34 sm:w-38 h-4 bg-gradient-to-r from-[#2A0805] via-[#5C140D] via-50% to-[#2A0805] rounded-sm border-t-2 border-b border-[#FFE082] shadow-md flex items-center justify-between px-2.5">
+              <div className="w-2 h-2 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
+              <div className="w-16 h-0.5 bg-[#FFE082]/60 rounded-full" />
+              <div className="w-2 h-2 rounded-full border border-[#FFE082] bg-[#FFE082]/30" />
             </div>
           )}
           {/* Subtle Ground Shadow */}
-          <div className="w-44 h-3 rounded-full bg-[#000000]/60 blur-xs mt-1.5" />
+          <div className="w-32 h-2 rounded-full bg-[#000000]/60 blur-xs mt-1" />
         </motion.div>
         </div>
 
         {/* EJECTED / FALLEN WINNING FORTUNE STICK PLAQUE DISPLAY */}
-        <div className="w-full mt-3 min-h-[160px] flex items-center justify-center">
+        <div className="w-full mt-2 flex items-center justify-center">
           <AnimatePresence mode="wait">
             {phase === 'fallen' && drawnQue !== null && drawnHao !== null && (
               <motion.div
@@ -719,21 +705,21 @@ export const StickTube: React.FC<StickTubeProps> = ({
                 </motion.div>
 
                 {/* Traditional Wooden Plaque with Cinnabar Header and Gold Foil Inlay */}
-                <div className="relative w-full flex flex-col items-center bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F1DFC0] border-2 border-[#B23B28] p-3.5 rounded-xs shadow-[0_18px_40px_rgba(178,59,40,0.4),0_6px_16px_rgba(0,0,0,0.18)]">
+                <div className="relative w-full flex flex-col items-center bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E3] to-[#F1DFC0] border-2 border-[#B23B28] p-2.5 sm:p-3 rounded-xs shadow-[0_12px_30px_rgba(178,59,40,0.35),0_4px_12px_rgba(0,0,0,0.15)]">
                   {/* Auspicious Badge Header */}
-                  <div className="flex items-center gap-1.5 text-[0.68rem] tracking-[0.2em] uppercase font-sans text-[#AD8A2E] font-extrabold mb-1">
+                  <div className="flex items-center gap-1.5 text-[0.65rem] tracking-[0.2em] uppercase font-sans text-[#AD8A2E] font-extrabold mb-0.5">
                     <Sparkles className="w-3 h-3 text-[#B23B28]" />
                     <span>THẺ XĂM ĐÃ RƠI RA KHỎI ỐNG</span>
                     <Sparkles className="w-3 h-3 text-[#B23B28]" />
                   </div>
 
                   {/* Main Primary Hexagram Title */}
-                  <div className="font-serif italic text-2xl sm:text-3xl font-bold text-[#7C2A1C] whitespace-nowrap tracking-tight text-center">
+                  <div className="font-serif italic text-xl sm:text-2xl font-bold text-[#7C2A1C] whitespace-nowrap tracking-tight text-center">
                     Quẻ Số #{drawnQue}
                   </div>
 
                   {/* Quẻ Chủ Name */}
-                  <div className="font-serif font-bold text-sm sm:text-base text-[#2E2415] text-center mt-0.5 mb-1.5">
+                  <div className="font-serif font-bold text-xs sm:text-sm text-[#2E2415] text-center mt-0.5 mb-1">
                     {drawnViet?.name}
                   </div>
 
@@ -778,7 +764,7 @@ export const StickTube: React.FC<StickTubeProps> = ({
         </div>
 
         {/* Guidance Prompt & Shake Status */}
-        <div className="text-center font-serif italic text-xs sm:text-sm text-[#6E5C3E] min-h-[1.5rem] mt-3 mb-1">
+        <div className="text-center font-serif italic text-xs sm:text-sm text-[#6E5C3E] min-h-[1.25rem] mt-1.5 mb-1">
           {phase === 'shaking' && (
             <span className="text-[#B23B28] font-bold animate-pulse">
               {shakeMode === 'co_thao'
