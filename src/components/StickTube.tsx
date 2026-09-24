@@ -4,6 +4,7 @@ import { playStickClack, playGong } from '../utils/audio';
 import { Sparkles, Smartphone, ArrowRight, RefreshCw, Compass, Zap, Hand, Eye } from 'lucide-react';
 import { HEXAGRAM_DATA, getTransformedHexagram } from '../utils/hexagramPatterns';
 import { VIETNAMESE_HEXAGRAMS } from '../data/vietnameseHexagrams';
+import { getQuickHexagramVerdict } from '../utils/fallbackInterpreter';
 import { LadyThaoShakingHands } from './LadyThaoShakingHands';
 import { LadyThaoHandsFanModal } from './LadyThaoHandsFanModal';
 import { JadeFanIcon } from './JadeFanIcon';
@@ -753,6 +754,30 @@ export const StickTube: React.FC<StickTubeProps> = ({
                       </div>
                     )}
                   </div>
+
+                  {/* Immediate Go / No-Go Cosmic Directive Pill */}
+                  {drawnQue && drawnHao && (() => {
+                    const verdict = getQuickHexagramVerdict(drawnQue, drawnHao);
+                    return (
+                      <div
+                        className={`w-full my-1 px-2.5 py-1.5 rounded-xs border text-[0.72rem] font-sans font-bold flex items-center justify-between shadow-2xs ${
+                          verdict.themeColor === 'emerald'
+                            ? 'bg-[#E8F5E9] border-[#2E7D32]/50 text-[#1B5E20]'
+                            : verdict.themeColor === 'ruby'
+                            ? 'bg-[#FFEBEE] border-[#C62828]/50 text-[#B71C1C]'
+                            : 'bg-[#FFF8E1] border-[#F57F17]/50 text-[#E65100]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>{verdict.themeColor === 'emerald' ? '🟢' : verdict.themeColor === 'ruby' ? '🔴' : '🟡'}</span>
+                          <span className="tracking-wide">{verdict.shortVerdict}</span>
+                        </div>
+                        <span className="text-[0.62rem] font-semibold opacity-90 uppercase tracking-wider bg-white/70 px-1.5 py-0.5 rounded-xs border border-current/20">
+                          {verdict.type === 'GO' ? 'Cát Khí' : verdict.type === 'NO_GO' ? 'Cần Phòng Thủ' : 'Có Điều Kiện'}
+                        </span>
+                      </div>
+                    );
+                  })()}
 
                   {/* Bottom Golden Corner Accents */}
                   <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#B23B28]" />

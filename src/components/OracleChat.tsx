@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Markdown from 'react-markdown';
 import { ChatMessage, Hexagram } from '../types';
-import { Send, Copy, Check, Sparkles, MessageCircle } from 'lucide-react';
+import { Send, Copy, Check, Sparkles, MessageCircle, ShieldCheck, Target } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { generateRichFallbackInterpretation } from '../utils/fallbackInterpreter';
 import { VIETNAMESE_HEXAGRAMS } from '../data/vietnameseHexagrams';
@@ -228,8 +228,144 @@ export const OracleChat: React.FC<OracleChatProps> = ({
     'Mối quan hệ và người xung quanh ra sao?',
   ];
 
+  interface ParsedVerdict {
+    type: 'GO' | 'NO_GO' | 'CONDITIONAL' | 'OPTION';
+    headline: string;
+    sub: string;
+    theme: 'emerald' | 'ruby' | 'amber';
+    icon: string;
+    badgeLabel: string;
+  }
+
+  const getVerdictDetails = (text: string): ParsedVerdict | null => {
+    if (!text) return null;
+    const upper = text.toUpperCase();
+
+    // Match OPTION
+    if (upper.includes('PHƯƠNG ÁN TỐI ƯU')) {
+      const match = text.match(/\[PHƯƠNG ÁN TỐI ƯU:\s*(?:CHỌN\s+)?["']?([^\]"']+)["']?\]/i);
+      const chosen = match ? match[1].trim().toUpperCase() : 'PHƯƠNG ÁN TỐI ƯU';
+      return {
+        type: 'OPTION',
+        headline: `QUYẾT SÁCH: CHỌN "${chosen}"`,
+        sub: 'Năng lượng quẻ ủng hộ dồn toàn lực vào phương án tối ưu này',
+        theme: 'emerald',
+        icon: '⭐',
+        badgeLabel: 'TỐI ƯU',
+      };
+    }
+
+    // Match NO-GO
+    if (
+      upper.includes('[NO-GO') ||
+      upper.includes('NO-GO -') ||
+      upper.includes('RỦI RO LỚN - NÊN TRÁNH') ||
+      upper.includes('BẢO TOÀN NỘI LỰC') ||
+      upper.includes('BẢO TOÀN VỊ THẾ')
+    ) {
+      return {
+        type: 'NO_GO',
+        headline: 'QUYẾT SÁCH: NO-GO — TẠM DỪNG & BẢO TOÀN',
+        sub: 'Rủi ro tiềm ẩn lớn · Không nên nóng vội dấn bước lúc này',
+        theme: 'ruby',
+        icon: '🔴',
+        badgeLabel: 'TẠM DỪNG',
+      };
+    }
+
+    // Match GO
+    if (
+      upper.includes('[GO -') ||
+      upper.includes('GO - RẤT NÊN TIẾN HÀNH') ||
+      upper.includes('GO - TIẾN HÀNH DỨT KHOÁT') ||
+      upper.includes('RẤT NÊN TIẾN HÀNH') ||
+      upper.includes('CƠ HỘI THÀNH CÔNG RẤT CAO')
+    ) {
+      return {
+        type: 'GO',
+        headline: 'QUYẾT SÁCH: GO — RẤT NÊN TIẾN HÀNH',
+        sub: 'Cát khí hanh thông · Thiên thời địa lợi hội tụ, chủ động nắm bắt',
+        theme: 'emerald',
+        icon: '🟢',
+        badgeLabel: 'TIẾN HÀNH',
+      };
+    }
+
+    // Match CONDITIONAL
+    if (
+      upper.includes('GO CÓ ĐIỀU KIỆN') ||
+      upper.includes('CHƯA VỘI BỨT PHÁ') ||
+      upper.includes('CHƯA PHẢI THỜI ĐIỂM')
+    ) {
+      return {
+        type: 'CONDITIONAL',
+        headline: 'QUYẾT SÁCH: GO CÓ ĐIỀU KIỆN — TỪNG BƯỚC CHẮC CHẮN',
+        sub: 'Cơ hội đi kèm thử thách · Củng cố phòng bị chu đáo trước khi hành động',
+        theme: 'amber',
+        icon: '🟡',
+        badgeLabel: 'CẨN TRỌNG',
+      };
+    }
+
+    return null;
+  };
+
+  const renderVerdictBanner = (text: string) => {
+    const v = getVerdictDetails(text);
+    if (!v) return null;
+
+    return (
+      <div
+        className={`mb-3 p-2.5 sm:p-3 rounded-xs border flex items-center justify-between gap-2 shadow-xs ${
+          v.theme === 'emerald'
+            ? 'bg-gradient-to-r from-[#E8F5E9] via-[#F1F8E9] to-[#E8F5E9] border-[#2E7D32]/50 text-[#1B5E20]'
+            : v.theme === 'ruby'
+            ? 'bg-gradient-to-r from-[#FFEBEE] via-[#FFF3E0] to-[#FFEBEE] border-[#C62828]/50 text-[#B71C1C]'
+            : 'bg-gradient-to-r from-[#FFF8E1] via-[#FFFDE7] to-[#FFF8E1] border-[#F57F17]/50 text-[#E65100]'
+        }`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-base sm:text-lg leading-none shrink-0">{v.icon}</span>
+          <div className="min-w-0">
+            <div className="font-sans font-extrabold text-xs sm:text-sm tracking-wide truncate">
+              {v.headline}
+            </div>
+            <div className="text-[0.7rem] sm:text-xs font-serif opacity-90 leading-tight truncate">
+              {v.sub}
+            </div>
+          </div>
+        </div>
+        <div className="shrink-0">
+          <span
+            className={`text-[0.62rem] sm:text-[0.68rem] font-sans font-extrabold px-2 py-0.5 rounded-full border shadow-2xs ${
+              v.theme === 'emerald'
+                ? 'bg-[#2E7D32] text-white border-[#1B5E20]'
+                : v.theme === 'ruby'
+                ? 'bg-[#C62828] text-white border-[#B71C1C]'
+                : 'bg-[#F57F17] text-white border-[#E65100]'
+            }`}
+          >
+            {v.badgeLabel}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full flex flex-col space-y-3">
+      {/* High-Reliability Decision Support Guarantee Header */}
+      <div className="w-full flex items-center justify-between px-3 py-1.5 bg-[#FAF3E3] border border-[#AD8A2E]/40 rounded-xs text-[0.72rem] font-sans text-[#7C2A1C] shadow-2xs">
+        <div className="flex items-center gap-1.5 font-bold">
+          <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
+          <span>Hỗ Trợ Ra Quyết Định Trực Diện (Go / No-Go Decision)</span>
+        </div>
+        <div className="flex items-center gap-1 text-[#2E7D32] font-semibold text-[0.68rem]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
+          <span>Thông Suốt 100%</span>
+        </div>
+      </div>
+
       {/* Scrollable Conversation Container */}
       <div
         ref={messagesContainerRef}
@@ -267,8 +403,11 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                   {isUser ? (
                     <div className="whitespace-pre-wrap">{msg.text}</div>
                   ) : (
-                    <div className="space-y-2 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-1 leading-relaxed">
-                      <Markdown>{msg.text}</Markdown>
+                    <div>
+                      {renderVerdictBanner(msg.text)}
+                      <div className="space-y-2 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-1 leading-relaxed">
+                        <Markdown>{msg.text}</Markdown>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -290,8 +429,11 @@ export const OracleChat: React.FC<OracleChatProps> = ({
               <LadyThaoAvatar sizeClassName="w-8 h-8 hidden sm:block" animate={true} />
               <div className="p-3.5 sm:p-4 rounded-xs text-sm sm:text-base leading-relaxed max-w-[96%] sm:max-w-[92%] font-serif bg-white border border-[#AD8A2E]/40 text-[#2E2415] rounded-tl-none shadow-[0_2px_8px_rgba(46,36,21,0.06)]">
                 {currentStreamText ? (
-                  <div className="space-y-2 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-1 inline leading-relaxed">
-                    <Markdown>{currentStreamText}</Markdown>
+                  <div>
+                    {renderVerdictBanner(currentStreamText)}
+                    <div className="space-y-2 [&_p]:my-1.5 [&_strong]:text-[#7C2A1C] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-1 inline leading-relaxed">
+                      <Markdown>{currentStreamText}</Markdown>
+                    </div>
                   </div>
                 ) : (
                   <span>Thảo đang định tâm đọc quẻ cho bạn...</span>
