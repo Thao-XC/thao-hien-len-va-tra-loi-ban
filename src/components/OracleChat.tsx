@@ -222,14 +222,14 @@ export const OracleChat: React.FC<OracleChatProps> = ({
   };
 
   const suggestionChips = [
-    'Tôi nên làm gì lúc này để đón lành tránh dữ?',
-    'Về công việc và tiền bạc sắp tới thế nào?',
-    'Có điều gì Thảo khuyên nên tránh không?',
-    'Mối quan hệ và người xung quanh ra sao?',
+    'Tôi nên tiến tới hay tạm lùi lại lúc này?',
+    'Đâu là thời điểm thuận lợi (Window of Momentum) để hành động?',
+    'Bản chất năng lượng và nút thắt của việc này là gì?',
+    'Có bao nhiêu lựa chọn hoặc chu kỳ tôi cần chuẩn bị?',
   ];
 
   interface ParsedVerdict {
-    type: 'GO' | 'NO_GO' | 'CONDITIONAL' | 'OPTION';
+    type: 'GO' | 'NO_GO' | 'CONDITIONAL' | 'OPTION' | 'TIMING' | 'COUNT' | 'INSIGHT';
     headline: string;
     sub: string;
     theme: 'emerald' | 'ruby' | 'amber';
@@ -241,7 +241,131 @@ export const OracleChat: React.FC<OracleChatProps> = ({
     if (!text) return null;
     const upper = text.toUpperCase();
 
-    // Match OPTION
+    // 1. LEAN TOWARD / LIKELY / GO
+    if (
+      upper.includes('LEAN TOWARD') ||
+      upper.includes('THIÊN VỀ TIẾN TỚI') ||
+      upper.includes('VERDICT: [LIKELY]') ||
+      upper.includes('VERDICT: LIKELY') ||
+      upper.includes('[GO -') ||
+      upper.includes('GO - RẤT NÊN TIẾN HÀNH') ||
+      upper.includes('GO - TIẾN HÀNH DỨT KHOÁT') ||
+      upper.includes('RẤT NÊN TIẾN HÀNH') ||
+      upper.includes('CƠ HỘI THÀNH CÔNG RẤT CAO')
+    ) {
+      const isLikely = upper.includes('LIKELY');
+      return {
+        type: 'GO',
+        headline: isLikely
+          ? 'MASTER THAO: LIKELY (KHẢ NĂNG CAO)'
+          : 'MASTER THAO: LEAN TOWARD (THIÊN VỀ TIẾN TỚI)',
+        sub: 'Thời thế và nội lực đang tương hỗ · Chủ động tiến bước với sự chính trực',
+        theme: 'emerald',
+        icon: '🟢',
+        badgeLabel: isLikely ? 'LIKELY' : 'LEAN TOWARD',
+      };
+    }
+
+    // 2. LEAN AGAINST / UNLIKELY / NO_GO
+    if (
+      upper.includes('LEAN AGAINST') ||
+      upper.includes('NÊN TRÁNH') ||
+      upper.includes('VERDICT: [UNLIKELY]') ||
+      upper.includes('VERDICT: UNLIKELY') ||
+      upper.includes('[NO-GO') ||
+      upper.includes('NO-GO -') ||
+      upper.includes('RỦI RO LỚN') ||
+      upper.includes('BẢO TOÀN NỘI LỰC') ||
+      upper.includes('BẢO TOÀN VỊ THẾ')
+    ) {
+      const isUnlikely = upper.includes('UNLIKELY');
+      return {
+        type: 'NO_GO',
+        headline: isUnlikely
+          ? 'MASTER THAO: UNLIKELY (KHẢ NĂNG THẤP)'
+          : 'MASTER THAO: LEAN AGAINST (NÊN TRÁNH / TẠM LÙI)',
+        sub: 'Cục diện ẩn chứa rủi ro hoặc quá đà · Chuyển sang bảo toàn và điều chỉnh',
+        theme: 'ruby',
+        icon: '🔴',
+        badgeLabel: isUnlikely ? 'UNLIKELY' : 'LEAN AGAINST',
+      };
+    }
+
+    // 3. WINDOW OF MOMENTUM (TIMING)
+    if (upper.includes('WINDOW OF MOMENTUM') || upper.includes('THỜI ĐIỂM THUẬN LỢI')) {
+      return {
+        type: 'TIMING',
+        headline: 'MASTER THAO: WINDOW OF MOMENTUM',
+        sub: 'Thời cơ chuyển hóa theo mùa tiết tự nhiên và tương tác Bát Quái',
+        theme: 'emerald',
+        icon: '🌊',
+        badgeLabel: 'TIMING WINDOW',
+      };
+    }
+
+    // 4. ESTIMATED COUNT (QUANTITATIVE)
+    if (upper.includes('ESTIMATED COUNT') || upper.includes('DỰ TOÁN')) {
+      return {
+        type: 'COUNT',
+        headline: 'MASTER THAO: ESTIMATED COUNT',
+        sub: 'Dự toán mốc chu kỳ theo số học Bát Quái Tiên Thiên & Hậu Thiên',
+        theme: 'amber',
+        icon: '🔢',
+        badgeLabel: 'ESTIMATED COUNT',
+      };
+    }
+
+    // 5. IT DEPENDS / DEPENDS ON YOU
+    if (
+      upper.includes('IT DEPENDS') ||
+      upper.includes('DEPENDS ON YOU') ||
+      upper.includes('TÙY THUỘC ĐIỀU KIỆN')
+    ) {
+      return {
+        type: 'CONDITIONAL',
+        headline: 'MASTER THAO: IT DEPENDS (TÙY ĐIỀU KIỆN)',
+        sub: 'Kết quả phụ thuộc trực tiếp vào bản lĩnh xử lý và sự đồng thuận',
+        theme: 'amber',
+        icon: '🟡',
+        badgeLabel: 'IT DEPENDS',
+      };
+    }
+
+    // 6. WAIT FOR CLARITY / NOT YET / UNCLEAR
+    if (
+      upper.includes('WAIT FOR CLARITY') ||
+      upper.includes('NOT YET') ||
+      upper.includes('UNCLEAR') ||
+      upper.includes('CHƯA PHẢI THỜI ĐIỂM') ||
+      upper.includes('CHƯA VỘI BỨT PHÁ')
+    ) {
+      return {
+        type: 'CONDITIONAL',
+        headline: 'MASTER THAO: WAIT FOR CLARITY / NOT YET',
+        sub: 'Đợi thêm dữ kiện sáng tỏ · Củng cố nội lực vững chắc trước khi quyết',
+        theme: 'amber',
+        icon: '⏳',
+        badgeLabel: 'WAIT FOR CLARITY',
+      };
+    }
+
+    // 7. CORE INSIGHT (REFLECTIVE)
+    if (
+      upper.includes('CORE INSIGHT') ||
+      upper.includes('ĐẠI Ý CỐT LÕI') ||
+      upper.includes('BẢN CHẤT CỐT LÕI')
+    ) {
+      return {
+        type: 'INSIGHT',
+        headline: 'MASTER THAO: CORE INSIGHT',
+        sub: 'Quy luật biến dịch Âm Dương · Nhận diện dòng chảy để thuận Đạo',
+        theme: 'emerald',
+        icon: '💡',
+        badgeLabel: 'CORE INSIGHT',
+      };
+    }
+
+    // 8. OPTION CHOSEN
     if (upper.includes('PHƯƠNG ÁN TỐI ƯU')) {
       const match = text.match(/\[PHƯƠNG ÁN TỐI ƯU:\s*(?:CHỌN\s+)?["']?([^\]"']+)["']?\]/i);
       const chosen = match ? match[1].trim().toUpperCase() : 'PHƯƠNG ÁN TỐI ƯU';
@@ -252,58 +376,6 @@ export const OracleChat: React.FC<OracleChatProps> = ({
         theme: 'emerald',
         icon: '⭐',
         badgeLabel: 'TỐI ƯU',
-      };
-    }
-
-    // Match NO-GO
-    if (
-      upper.includes('[NO-GO') ||
-      upper.includes('NO-GO -') ||
-      upper.includes('RỦI RO LỚN - NÊN TRÁNH') ||
-      upper.includes('BẢO TOÀN NỘI LỰC') ||
-      upper.includes('BẢO TOÀN VỊ THẾ')
-    ) {
-      return {
-        type: 'NO_GO',
-        headline: 'QUYẾT SÁCH: NO-GO — TẠM DỪNG & BẢO TOÀN',
-        sub: 'Rủi ro tiềm ẩn lớn · Không nên nóng vội dấn bước lúc này',
-        theme: 'ruby',
-        icon: '🔴',
-        badgeLabel: 'TẠM DỪNG',
-      };
-    }
-
-    // Match GO
-    if (
-      upper.includes('[GO -') ||
-      upper.includes('GO - RẤT NÊN TIẾN HÀNH') ||
-      upper.includes('GO - TIẾN HÀNH DỨT KHOÁT') ||
-      upper.includes('RẤT NÊN TIẾN HÀNH') ||
-      upper.includes('CƠ HỘI THÀNH CÔNG RẤT CAO')
-    ) {
-      return {
-        type: 'GO',
-        headline: 'QUYẾT SÁCH: GO — RẤT NÊN TIẾN HÀNH',
-        sub: 'Cát khí hanh thông · Thiên thời địa lợi hội tụ, chủ động nắm bắt',
-        theme: 'emerald',
-        icon: '🟢',
-        badgeLabel: 'TIẾN HÀNH',
-      };
-    }
-
-    // Match CONDITIONAL
-    if (
-      upper.includes('GO CÓ ĐIỀU KIỆN') ||
-      upper.includes('CHƯA VỘI BỨT PHÁ') ||
-      upper.includes('CHƯA PHẢI THỜI ĐIỂM')
-    ) {
-      return {
-        type: 'CONDITIONAL',
-        headline: 'QUYẾT SÁCH: GO CÓ ĐIỀU KIỆN — TỪNG BƯỚC CHẮC CHẮN',
-        sub: 'Cơ hội đi kèm thử thách · Củng cố phòng bị chu đáo trước khi hành động',
-        theme: 'amber',
-        icon: '🟡',
-        badgeLabel: 'CẨN TRỌNG',
       };
     }
 
@@ -358,7 +430,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
       <div className="w-full flex items-center justify-between px-3 py-1.5 bg-[#FAF3E3] border border-[#AD8A2E]/40 rounded-xs text-[0.72rem] font-sans text-[#7C2A1C] shadow-2xs">
         <div className="flex items-center gap-1.5 font-bold">
           <Sparkles className="w-3.5 h-3.5 text-[#B23B28]" />
-          <span>Hỗ Trợ Ra Quyết Định Trực Diện (Go / No-Go Decision)</span>
+          <span>Master Thao: I Ching Strategic Decision Support (Dịch Đạo & Quyết Sách Chiến Lược)</span>
         </div>
         <div className="flex items-center gap-1 text-[#2E7D32] font-semibold text-[0.68rem]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
@@ -385,7 +457,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                 }`}
               >
                 {!isUser && <LadyThaoAvatar sizeClassName="w-5 h-5" />}
-                <span>{isUser ? 'BẠN HỎI' : 'CÔ THẢO LUẬN GIẢI'}</span>
+                <span>{isUser ? 'BẠN HỎI' : 'MASTER THAO LUẬN GIẢI'}</span>
               </div>
 
               {/* Message Bubble */}
@@ -421,7 +493,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
           <div className="flex flex-col items-start">
             <div className="text-[0.7rem] font-sans font-semibold uppercase tracking-wider mb-1 px-1 text-[#7C2A1C] flex items-center gap-1.5">
               <LadyThaoAvatar sizeClassName="w-5 h-5" animate={true} />
-              <span>Cô Thảo Đang Luận Giải...</span>
+              <span>Master Thao Đang Luận Giải...</span>
               <Sparkles className="w-3.5 h-3.5 text-[#AD8A2E] animate-spin" />
             </div>
 
@@ -436,7 +508,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <span>Thảo đang định tâm đọc quẻ cho bạn...</span>
+                  <span>Thao đang định tâm soi chiếu tượng quẻ và hào động cho bạn...</span>
                 )}
                 <span className="inline-block w-1.5 h-4 bg-[#7C2A1C] ml-1 animate-pulse align-middle" />
               </div>
@@ -471,7 +543,7 @@ export const OracleChat: React.FC<OracleChatProps> = ({
             id="followup-input-field"
             value={followUpInput}
             onChange={(e) => setFollowUpInput(e.target.value)}
-            placeholder="Hỏi tiếp Cô Thảo về công việc, tình duyên, cách hành sự..."
+            placeholder="Hỏi tiếp Master Thao về chiến lược, thời cơ, cách ứng xử..."
             className="flex-1 px-3.5 py-2.5 bg-white border border-[#AD8A2E]/50 rounded-xs text-sm font-serif text-[#2E2415] placeholder:text-[#6E5C3E]/60 focus:outline-none focus:border-[#B23B28] focus:ring-1 focus:ring-[#B23B28] shadow-2xs"
           />
           <button
