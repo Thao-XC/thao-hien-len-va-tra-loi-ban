@@ -268,14 +268,14 @@ app.post('/api/interpret', async (req, res) => {
 
     const promptInstruction =
       `${hexContext}` +
-      `BẠN LÀ MASTER THAO. HÃY THỰC HIỆN LUẬN GIẢI QUẺ KINH DỊCH CHO CÂU HỎI: "${userQuestion}"\n` +
-      `Tuân thủ nghiêm ngặt 4 bước của Master Thao:\n` +
-      `1. Phân loại câu hỏi (decision / yes_no / timing / quantitative / reflective).\n` +
-      `2. Định hình phán đoán (Verdict / Strategic Leaning hoặc Core Insight nếu là reflective). Nêu rõ điều kiện xoay chuyển kết quả hoặc căn cứ số học/mùa tiết.\n` +
-      `3. Luận giải trực diện vào hoàn cảnh cụ thể của người hỏi: 1 câu tóm lược băn khoăn (questionRestated), 2-3 đoạn tổng quan dòng chảy thời thế, 2 đoạn bóc tách thế đối trọng Thượng Quái vs Hạ Quái, Hào Động và Quẻ Biến Chi Quái.\n` +
-      `4. Kế sách hành động khả thi trong vòng 7 ngày (actionSteps: 2-4 bước cụ thể gắn với Quái/Hào) và 1 câu hỏi chiêm nghiệm (reflectionQuestion) để tự vấn.\n` +
-      `Giữ độ dài vừa phải theo soft length constraints và văn phong thâm sâu, đĩnh đạc, thấu cảm, không phán xét định mệnh chết cứng.\n\n` +
-      `TRÌNH BÀY RÕ RÀNG VỚI CÁC TIÊU ĐỀ MARKDOWN THEO ĐÚNG MẪU ĐÃ HƯỚNG DẪN.`;
+      `BẠN LÀ MASTER THAO. HÃY THỰC HIỆN LUẬN GIẢI QUẺ KINH DỊCH CHO CÂU HỎI CỦA NGƯỜI XIN QUẺ: "${userQuestion}"\n\n` +
+      `QUY TẮC BẮT BUỘC ĐỂ ĐẢM BẢO TÍNH CHÍNH XÁC VÀ SÁT THỰC TẾ (RELEVANCE & ACCURACY):\n` +
+      `1. TUYỆT ĐỐI CẤM NÓI CHUNG CHUNG, CẤM TRẢ LỜI KIỂU SÁCH VỞ VÀ ĐẠO LÝ MƠ HỒ.\n` +
+      `2. Gọi đích danh các chủ thể, tên người, công ty, dự án, con số hoặc mốc thời gian đã nêu trong câu hỏi: "${userQuestion}".\n` +
+      `3. Nếu câu hỏi có 2 phương án lựa chọn (A hay B, Đi hay Ở...): BẮT BUỘC so sánh đối chiếu cả 2 phương án, phân tích rõ cái được/mất và chốt phương án tối ưu nhất.\n` +
+      `4. Nếu câu hỏi có thời gian: BẮT BUỘC kết nối tượng quẻ với đúng mốc thời gian đó.\n` +
+      `5. Kế sách hành động (Action Steps): Phải là những bước thực thi cụ thể trong 7 ngày tới cho chính vấn đề của người hỏi, gắn chặt với hào động và thượng/hạ quái.\n\n` +
+      `TUÂN THỦ ĐÚNG 4 BƯỚC VÀ CÁC TIÊU ĐỀ MARKDOWN CỦA MASTER THAO.`;
 
     let streamedAny = false;
 
@@ -286,25 +286,34 @@ app.post('/api/interpret', async (req, res) => {
         if (ai) {
           let contentsArray: any[] = [];
           if (history && Array.isArray(history) && history.length > 1) {
-            const formattedHistory = history.map((m: any) => ({
-              role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
-              parts: [{ text: m.text }],
-            }));
-            contentsArray = [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn. Hãy trả lời câu hỏi mới nhất của họ TRỰC DIỆN, ĐÚNG TRỌNG TÂM, THỰC TẾ và DỨT KHOÁT, bám sát người và mốc thời gian được hỏi.`,
-                  },
-                ],
-              },
-              {
-                role: 'model',
-                parts: [{ text: 'Thảo đã rõ câu hỏi. Trả lời thẳng vào việc bạn cần biết:' }],
-              },
-              ...formattedHistory,
-            ];
+            // Clean multi-turn format without artificial duplicate user turns
+            contentsArray = history.map((m: any, idx: number) => {
+              const role = m.role === 'assistant' || m.role === 'model' ? 'model' : 'user';
+              if (idx === 0) {
+                return {
+                  role: 'user',
+                  parts: [
+                    {
+                      text: `${hexContext}Câu hỏi ban đầu của người xin quẻ: "${m.text}"\nBẠN LÀ MASTER THAO. Hãy luận giải bám sát thực tế, trực diện và chính xác vào câu hỏi.`,
+                    },
+                  ],
+                };
+              }
+              if (idx === history.length - 1 && role === 'user') {
+                return {
+                  role: 'user',
+                  parts: [
+                    {
+                      text: `[Hỏi tiếp Master Thao]: "${m.text}"\nHãy trả lời trực diện, chính xác và thực tế vào câu hỏi mới này, giữ tính nhất quán với Quẻ #${queNum} và Hào Động #${haoNum}.`,
+                    },
+                  ],
+                };
+              }
+              return {
+                role,
+                parts: [{ text: m.text }],
+              };
+            });
           } else {
             contentsArray = [{ role: 'user', parts: [{ text: promptInstruction }] }];
           }
@@ -391,20 +400,25 @@ app.post('/api/interpret', async (req, res) => {
         ];
 
         if (history && Array.isArray(history) && history.length > 1) {
-          openRouterMessages.push({
-            role: 'user',
-            content: `${hexContext}Đây là cuộc đối thoại đang tiếp diễn. Trả lời câu hỏi mới nhất TRỰC DIỆN, ĐÚNG TRỌNG TÂM, THỰC TẾ.`,
+          history.forEach((m: any, idx: number) => {
+            const role = m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user';
+            if (idx === 0) {
+              openRouterMessages.push({
+                role: 'user',
+                content: `${hexContext}Câu hỏi ban đầu của người xin quẻ: "${m.text}"\nBẠN LÀ MASTER THAO. Hãy luận giải bám sát thực tế, trực diện và chính xác vào câu hỏi.`,
+              });
+            } else if (idx === history.length - 1 && role === 'user') {
+              openRouterMessages.push({
+                role: 'user',
+                content: `[Hỏi tiếp Master Thao]: "${m.text}"\nHãy trả lời trực diện, chính xác và thực tế vào câu hỏi mới này, giữ tính nhất quán với Quẻ #${queNum} và Hào Động #${haoNum}.`,
+              });
+            } else {
+              openRouterMessages.push({
+                role,
+                content: m.text,
+              });
+            }
           });
-          openRouterMessages.push({
-            role: 'assistant',
-            content: 'Thảo đã rõ câu hỏi. Trả lời thẳng vào việc bạn cần biết:',
-          });
-          for (const m of history) {
-            openRouterMessages.push({
-              role: m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user',
-              content: m.text,
-            });
-          }
         } else {
           openRouterMessages.push({
             role: 'user',
